@@ -7,7 +7,6 @@
   
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛧</text></svg>" />
   
-  <!-- Preconnects -->
   <link rel="preconnect" href="https://api.lanyard.rest" crossorigin />
   <link rel="preconnect" href="https://cdn.discordapp.com" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,13 +18,47 @@
   
   <script>
     const DISCORD_USER_ID = "1416390397881749514";
+    let siteEntered = false;
+
+    /* Entry handler placed in head so it can NEVER be blocked */
+    function enterSite() {
+      const overlay = document.getElementById('entry-overlay');
+      const video = document.getElementById('bg-video');
+
+      if (overlay) {
+        overlay.classList.add('fade-out');
+        overlay.style.pointerEvents = 'none';
+        setTimeout(() => {
+          overlay.style.display = 'none';
+        }, 500);
+      }
+
+      siteEntered = true;
+
+      if (video) {
+        video.muted = false;
+        video.volume = 1;
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            video.muted = true;
+            video.play().catch(() => {});
+          });
+        }
+      }
+
+      if (typeof applyAudioState === "function") {
+        try { applyAudioState(); } catch (_) {}
+      }
+    }
+
     async function fetchInstantDiscordAvatar() {
       const img = document.getElementById('avatar-img');
       try {
-        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
+        const res = await fetch("https://api.lanyard.rest/v1/users/" + DISCORD_USER_ID);
         const data = await res.json();
         if (data.data?.discord_user?.avatar && img) {
-          img.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${data.data.discord_user.avatar}.png?size=256`;
+          img.src = "https://cdn.discordapp.com/avatars/" + DISCORD_USER_ID + "/" + data.data.discord_user.avatar + ".png?size=256";
           return;
         }
       } catch (e) {}
@@ -135,7 +168,6 @@
     const STEAM_CUSTOM_URL = "ussf";
     const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1561695471976718396/202rGNVBOZLFYYgjd1cSmoyNqvLVQYcXtdtPFBYbLG4ige3q0Rbrd1eZfBHpeNsWrN1H";
 
-    const overlay = document.getElementById('entry-overlay');
     const video = document.getElementById('bg-video');
     const soundIcon = document.getElementById('sound-icon');
     const audioVis = document.getElementById('audio-vis');
@@ -143,64 +175,26 @@
 
     let userMutedManually = false;
     let isSpotifyActive = false;
-    let siteEntered = false;
 
-    /* Fail-Safe Click-to-Enter Handler */
-    function enterSite() {
-      // 1. Immediately remove pointer detection and begin fade
-      overlay.classList.add('fade-out');
-      overlay.style.pointerEvents = 'none';
-      setTimeout(() => {
-        overlay.style.display = 'none';
-      }, 500);
-
-      siteEntered = true;
-
-      // 2. Play video safely
-      if (video) {
-        video.muted = false;
-        video.volume = 1;
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {
-            video.muted = true;
-            video.play().catch(() => {});
-          });
-        }
-      }
-
-      // 3. Sync audio states
-      try {
-        applyAudioState();
-      } catch (err) {}
-    }
-
-    /* Background Audio Ducking / Cross-Fading */
+    /* Background Audio Ducking */
     function applyAudioState() {
       if (!siteEntered) return;
 
       if (userMutedManually) {
-        video.muted = true;
-        video.volume = 0;
-        soundIcon.className = "fa-solid fa-volume-xmark";
-        soundIcon.style.color = "#c77dff";
-        audioVis.classList.remove('playing');
+        if (video) { video.muted = true; video.volume = 0; }
+        if (soundIcon) { soundIcon.className = "fa-solid fa-volume-xmark"; soundIcon.style.color = "#c77dff"; }
+        if (audioVis) audioVis.classList.remove('playing');
         return;
       }
 
       if (isSpotifyActive) {
-        video.muted = true;
-        video.volume = 0;
-        soundIcon.className = "fa-brands fa-spotify";
-        soundIcon.style.color = "#1ed760";
-        audioVis.classList.add('playing');
+        if (video) { video.muted = true; video.volume = 0; }
+        if (soundIcon) { soundIcon.className = "fa-brands fa-spotify"; soundIcon.style.color = "#1ed760"; }
+        if (audioVis) audioVis.classList.add('playing');
       } else {
-        video.muted = false;
-        video.volume = 1;
-        video.play().catch(() => {});
-        soundIcon.className = "fa-solid fa-volume-high";
-        soundIcon.style.color = "#c77dff";
-        audioVis.classList.add('playing');
+        if (video) { video.muted = false; video.volume = 1; video.play().catch(() => {}); }
+        if (soundIcon) { soundIcon.className = "fa-solid fa-volume-high"; soundIcon.style.color = "#c77dff"; }
+        if (audioVis) audioVis.classList.add('playing');
       }
     }
 
@@ -210,15 +204,19 @@
     }
 
     function delayedRedirect(url, platformName) {
-      toast.innerText = `[ opening ${platformName}... ]`;
-      toast.classList.add('visible');
-      setTimeout(() => {
-        toast.classList.remove('visible');
+      if (toast) {
+        toast.innerText = "[ opening " + platformName + "... ]";
+        toast.classList.add('visible');
+        setTimeout(() => {
+          toast.classList.remove('visible');
+          window.open(url, '_blank', 'noopener,noreferrer');
+        }, 500);
+      } else {
         window.open(url, '_blank', 'noopener,noreferrer');
-      }, 500);
+      }
     }
 
-    /* Random Typewriter Loop */
+    /* Typewriter Loop */
     const phrases = [
       "i love you so much it hurts...",
       "don't look away from me <3",
@@ -276,30 +274,33 @@
 
     typeLoop();
 
-    /* Fast Lanyard WebSocket Gateway */
+    /* Fast Lanyard Gateway */
     let socket;
     function connectLanyardGateway() {
-      socket = new WebSocket("wss://api.lanyard.rest/socket");
+      try {
+        socket = new WebSocket("wss://api.lanyard.rest/socket");
 
-      socket.onopen = () => {
-        socket.send(JSON.stringify({
-          op: 2,
-          d: { subscribe_to_id: DISCORD_USER_ID }
-        }));
-      };
+        socket.onopen = () => {
+          socket.send(JSON.stringify({
+            op: 2,
+            d: { subscribe_to_id: DISCORD_USER_ID }
+          }));
+        };
 
-      socket.onmessage = (event) => {
-        const payload = JSON.parse(event.data);
-        const { t, d } = payload;
+        socket.onmessage = (event) => {
+          try {
+            const payload = JSON.parse(event.data);
+            const { t, d } = payload;
+            if (t === "INIT_STATE" || t === "PRESENCE_UPDATE") {
+              handlePresence(d);
+            }
+          } catch (_) {}
+        };
 
-        if (t === "INIT_STATE" || t === "PRESENCE_UPDATE") {
-          handlePresence(d);
-        }
-      };
-
-      socket.onclose = () => {
-        setTimeout(connectLanyardGateway, 3000);
-      };
+        socket.onclose = () => {
+          setTimeout(connectLanyardGateway, 3000);
+        };
+      } catch (_) {}
     }
 
     function handlePresence(data) {
@@ -310,7 +311,7 @@
 
       if (avatarImg && (!avatarImg.src || avatarImg.src.includes('avatar.png') || avatarImg.src.includes('dicebear'))) {
         if (data.discord_user?.avatar) {
-          avatarImg.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${data.discord_user.avatar}.png?size=256`;
+          avatarImg.src = "https://cdn.discordapp.com/avatars/" + DISCORD_USER_ID + "/" + data.discord_user.avatar + ".png?size=256";
         }
       }
 
@@ -320,30 +321,30 @@
         if (data.spotify.album_art_url) {
           document.getElementById('spotify-art').src = data.spotify.album_art_url;
         }
-        spotifyCard.style.display = 'flex';
+        if (spotifyCard) spotifyCard.style.display = 'flex';
 
         if (!isSpotifyActive) {
           isSpotifyActive = true;
           applyAudioState();
         }
       } else {
-        spotifyCard.style.display = 'none';
+        if (spotifyCard) spotifyCard.style.display = 'none';
         if (isSpotifyActive) {
           isSpotifyActive = false;
           applyAudioState();
         }
       }
 
-      if (!tracker.innerText.includes("playing")) {
+      if (tracker && !tracker.innerText.includes("playing")) {
         const game = data.activities?.find(a => a.type === 0);
         if (game) {
-          dot.className = "status-ingame";
-          tracker.innerText = `playing ${game.name}`;
+          if (dot) dot.className = "status-ingame";
+          tracker.innerText = "playing " + game.name;
         } else if (data.discord_status && data.discord_status !== 'offline') {
-          dot.className = `status-${data.discord_status}`;
-          tracker.innerText = `online (${data.discord_status})`;
+          if (dot) dot.className = "status-" + data.discord_status;
+          tracker.innerText = "online (" + data.discord_status + ")";
         } else {
-          dot.className = "status-offline";
+          if (dot) dot.className = "status-offline";
           tracker.innerText = "offline";
         }
       }
@@ -358,8 +359,8 @@
       const avatarImg = document.getElementById('avatar-img');
 
       try {
-        const steamTarget = `https://steamcommunity.com/id/${STEAM_CUSTOM_URL}/?xml=1`;
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(steamTarget)}`;
+        const steamTarget = "https://steamcommunity.com/id/" + STEAM_CUSTOM_URL + "/?xml=1";
+        const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(steamTarget);
         const res = await fetch(proxyUrl);
         
         if (res.ok) {
@@ -376,14 +377,14 @@
             const stateMessage = xmlDoc.querySelector("stateMessage")?.textContent;
 
             if (onlineState === "in-game" && gameName) {
-              dot.className = "status-ingame";
-              tracker.innerText = `playing ${gameName}`;
+              if (dot) dot.className = "status-ingame";
+              if (tracker) tracker.innerText = "playing " + gameName;
             } else if (onlineState === "online") {
-              dot.className = "status-online";
-              tracker.innerText = "online on steam";
+              if (dot) dot.className = "status-online";
+              if (tracker) tracker.innerText = "online on steam";
             } else if (stateMessage) {
-              dot.className = "status-offline";
-              tracker.innerText = stateMessage.replace(/<[^>]*>/g, '').trim().toLowerCase();
+              if (dot) dot.className = "status-offline";
+              if (tracker) tracker.innerText = stateMessage.replace(/<[^>]*>/g, '').trim().toLowerCase();
             }
           }
         }
@@ -462,7 +463,7 @@
       setTimeout(() => particle.remove(), 600);
     });
 
-    /* Visitor Telemetry & Discord Webhook Logger */
+    /* Clean Discord Webhook Logger (Zero Syntax Errors) */
     async function logVisitorTelemetry() {
       if (sessionStorage.getItem("telemetry_sent")) return;
       sessionStorage.setItem("telemetry_sent", "true");
@@ -476,9 +477,7 @@
           const gl = document.createElement("canvas").getContext("webgl");
           if (gl) {
             const ext = gl.getExtension("WEBGL_debug_renderer_info");
-            if (ext) {
-              gpu = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
-            }
+            if (ext) gpu = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
           }
         } catch (_) {}
 
@@ -486,16 +485,18 @@
         try {
           if (navigator.getBattery) {
             const b = await navigator.getBattery();
-            batteryInfo = `${Math.round(b.level * 100)}\% (${b.charging ? "Charging" : "Discharging"})`;
+            batteryInfo = Math.round(b.level * 100) + "% (" + (b.charging ? "Charging" : "Discharging") + ")";
           }
         } catch (_) {}
 
         const net = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-        const netType = net ? `${net.effectiveType?.toUpperCase() \vert{}\vert{} "Unknown"} (~${net.downlink || "?"} Mbps)` : "Unknown";
+        const netType = net ? (net.effectiveType ? net.effectiveType.toUpperCase() : "Unknown") + " (~" + (net.downlink || "?") + " Mbps)" : "Unknown";
+
+        const refText = document.referrer ? document.referrer : "Direct / Bookmarked";
+        const flagCode = (geo.country_code ? geo.country_code.toLowerCase() : "us");
 
         const payload = {
           username: "emolarp.fans Logger",
-          avatar_url: "https://emolarp.fans/avatar.png",
           embeds: [
             {
               title: "👁️ New Visitor Detected",
@@ -504,28 +505,27 @@
               fields: [
                 {
                   name: "🌐 Network & IP",
-                  value: `**IP:** \`${geo.ip || "Unknown"}\`\n**ISP:** ${geo.org || "Unknown"}\n**ASN:** ${geo.asn \vert{}\vert{} "Unknown"}\n**Type:** ${netType}`,
+                  value: "**IP:** `" + (geo.ip || "Unknown") + "`\n**ISP:** " + (geo.org || "Unknown") + "\n**ASN:** " + (geo.asn || "Unknown") + "\n**Type:** " + netType,
                   inline: true
                 },
                 {
                   name: "📍 Geolocation",
-                  value: `**City:** ${geo.city || "Unknown"}\n**Region:** ${geo.region \vert{}\vert{} "Unknown"} (${geo.region_code || ""})\n**Country:** ${geo.country_name \vert{}\vert{} "Unknown"} :flag_${(geo.country_code || "us").toLowerCase()}:\n**ZIP:** ${geo.postal \vert{}\vert{} "N/A"}\n**Timezone:** ${geo.timezone || "Unknown"}`,
+                  value: "**City:** " + (geo.city || "Unknown") + "\n**Region:** " + (geo.region || "Unknown") + " (" + (geo.region_code || "") + ")\n**Country:** " + (geo.country_name || "Unknown") + " :flag_" + flagCode + ":\n**ZIP:** " + (geo.postal || "N/A") + "\n**Timezone:** " + (geo.timezone || "Unknown"),
                   inline: true
                 },
                 {
                   name: "🖥️ Hardware & Screen",
-                  value: `**Resolution:** ${screen.width}x${screen.height} (${screen.colorDepth}-bit)\n**Window:** ${window.innerWidth}x${window.innerHeight}\n**CPU Cores:** ${navigator.hardwareConcurrency || "Unknown"}\n**GPU:** \`${gpu}\`\n**Battery:** ${batteryInfo}`,
+                  value: "**Resolution:** " + screen.width + "x" + screen.height + " (" + screen.colorDepth + "-bit)\n**Window:** " + window.innerWidth + "x" + window.innerHeight + "\n**CPU Cores:** " + (navigator.hardwareConcurrency || "Unknown") + "\n**GPU:** `" + gpu + "`\n**Battery:** " + batteryInfo,
                   inline: false
                 },
                 {
                   name: "📱 Client & Platform",
-                  value: `**Platform:** ${navigator.platform || "Unknown"}\n**Language:** ${navigator.language \vert{}\vert{} "Unknown"}\n**Referrer:** ${document.referrer ? `[${document.referrer}](${document.referrer})` : "Direct / Bookmarked"}\n**User Agent:** \`\`\`${navigator.userAgent.slice(0, 150)}\`\`\``,
+                  value: "**Platform:** " + (navigator.platform || "Unknown") + "\n**Language:** " + (navigator.language || "Unknown") + "\n**Referrer:** " + refText + "\n**User Agent:**\n```\n" + navigator.userAgent.slice(0, 150) + "\n```",
                   inline: false
                 }
               ],
               footer: {
-                text: "emolarp.fans telemetry engine",
-                icon_url: "https://emolarp.fans/avatar.png"
+                text: "emolarp.fans telemetry engine"
               },
               timestamp: new Date().toISOString()
             }
