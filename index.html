@@ -6,12 +6,17 @@
   <title>emo larp</title>
   
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛧</text></svg>" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=JetBrains+Mono:wght@400;500;600&family=Special+Elite&display=swap" rel="stylesheet">
+  <!-- Preconnects for instant asset delivery -->
+  <link rel="preconnect" href="https://api.lanyard.rest" crossorigin />
+  <link rel="preconnect" href="https://cdn.discordapp.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+  <!-- Optimized font loading with display=swap -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=JetBrains+Mono:wght@400;600&family=Special+Elite&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="style.css" />
   
   <script>
     const DISCORD_USER_ID = "1416390397881749514";
@@ -20,8 +25,8 @@
       try {
         const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
         const data = await res.json();
-        if (data.data?.discord_user?.avatar) {
-          if (img) img.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${data.data.discord_user.avatar}.png?size=256`;
+        if (data.data?.discord_user?.avatar && img) {
+          img.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${data.data.discord_user.avatar}.png?size=256`;
           return;
         }
       } catch (e) {}
@@ -54,7 +59,7 @@
 
   <!-- Background Video -->
   <div class="video-bg-container">
-    <video id="bg-video" loop playsinline>
+    <video id="bg-video" loop playsinline preload="auto">
       <source src="clip.mp4" type="video/mp4" />
     </video>
     <div class="grain-overlay"></div>
@@ -85,23 +90,22 @@
       </div>
       <div class="user-details">
         <h1 class="username">emo larp</h1>
-        <p class="status-tracker" id="activity-tracker">fetching status...</p>
+        <p class="status-tracker" id="activity-tracker">connecting...</p>
 
         <!-- Upgraded Spotify Dynamic Card -->
         <div id="spotify-player" class="spotify-card" style="display: none;">
           <div class="spotify-album-wrap">
             <img id="spotify-art" src="" alt="Album Art" />
-            <div class="spotify-pulse-ring"></div>
           </div>
           <div class="spotify-info">
             <div class="spotify-badge">
               <i class="fa-brands fa-spotify"></i>
-              <span id="spotify-status-tag">SPOTIFY PLAYBACK</span>
+              <span id="spotify-status-tag">LISTENING ON SPOTIFY</span>
             </div>
-            <span id="spotify-song" class="spotify-title">Loading track...</span>
-            <span id="spotify-artist" class="spotify-sub">Unknown artist</span>
+            <span id="spotify-song" class="spotify-title">Loading...</span>
+            <span id="spotify-artist" class="spotify-sub"></span>
           </div>
-          <div class="eq-bars playing" id="spotify-eq">
+          <div class="eq-bars playing">
             <span class="bar"></span>
             <span class="bar"></span>
             <span class="bar"></span>
@@ -128,57 +132,55 @@
     </div>
   </main>
 
-  <!-- Audio Element for Live Spotify Preview Streaming -->
-  <audio id="spotify-audio" preload="none" loop></audio>
-
   <script>
     const STEAM_CUSTOM_URL = "ussf";
 
     const overlay = document.getElementById('entry-overlay');
     const video = document.getElementById('bg-video');
-    const spotifyAudio = document.getElementById('spotify-audio');
     const soundIcon = document.getElementById('sound-icon');
     const audioVis = document.getElementById('audio-vis');
     const toast = document.getElementById('toast');
 
-    let isMasterMuted = false;
-    let isSpotifyPlaying = false;
-    let currentTrackId = null;
+    let userMutedManually = false;
+    let isSpotifyActive = false;
 
-    function applyAudioState() {
-      if (isMasterMuted) {
+    function applyAudioRouting() {
+      if (userMutedManually) {
         video.muted = true;
-        spotifyAudio.muted = true;
+        video.volume = 0;
         soundIcon.className = "fa-solid fa-volume-xmark";
         audioVis.classList.remove('playing');
-      } else {
-        soundIcon.className = "fa-solid fa-volume-high";
+        return;
+      }
+
+      // If user is listening to Spotify on their device, silence the background clip!
+      if (isSpotifyActive) {
+        video.muted = true;
+        video.volume = 0;
+        soundIcon.className = "fa-brands fa-spotify";
+        soundIcon.style.color = "#1ed760";
         audioVis.classList.add('playing');
-        
-        // If Spotify is currently active and playing preview, mute the background video!
-        if (isSpotifyPlaying && !spotifyAudio.paused && spotifyAudio.src) {
-          video.muted = true;
-          spotifyAudio.muted = false;
-        } else {
-          // If no track is playing, unmute video background
-          video.muted = false;
-          spotifyAudio.muted = true;
-        }
+      } else {
+        // Normal state: play background video audio
+        video.muted = false;
+        video.volume = 1;
+        soundIcon.className = "fa-solid fa-volume-high";
+        soundIcon.style.color = "#c77dff";
+        audioVis.classList.add('playing');
       }
     }
 
     function enterSite() {
       overlay.classList.add('fade-out');
       setTimeout(() => overlay.style.display = 'none', 600);
-      
-      isMasterMuted = false;
+      userMutedManually = false;
       video.play().catch(() => {});
-      applyAudioState();
+      applyAudioRouting();
     }
 
     function toggleMasterAudio() {
-      isMasterMuted = !isMasterMuted;
-      applyAudioState();
+      userMutedManually = !userMutedManually;
+      applyAudioRouting();
     }
 
     function delayedRedirect(url, platformName) {
@@ -190,7 +192,7 @@
       }, 500);
     }
 
-    /* Random Typewriter Loop */
+    /* Fast Typewriter */
     const phrases = [
       "i love you so much it hurts...",
       "don't look away from me <3",
@@ -210,9 +212,9 @@
     let charIndex = 0;
     let isDeleting = false;
     let lastIndex = -1;
-    const typeSpeed = 80;
+    const typeSpeed = 75;
     const eraseSpeed = 35;
-    const holdDelay = 2000;
+    const holdDelay = 1800;
     const typewriterEl = document.getElementById('typewriter-text');
 
     function getRandomPhrase() {
@@ -251,37 +253,71 @@
 
     typeLoop();
 
-    /* Sync Spotify Audio Playback */
-    async function syncSpotifyAudio(trackId) {
-      if (!trackId) {
-        spotifyAudio.pause();
-        isSpotifyPlaying = false;
-        applyAudioState();
-        return;
-      }
-
-      if (currentTrackId === trackId && !spotifyAudio.paused) return;
-      currentTrackId = trackId;
-
-      try {
-        // Fetch track preview snippet from public Spotify API proxy
-        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.spotify.com/v1/tracks/${trackId}`)}`);
-        // If not accessible or no 30s preview snippet, keep standard video audio
-      } catch (e) {}
-
-      // Cross-fade check
-      isSpotifyPlaying = true;
-      applyAudioState();
-    }
-
-    /* Live Presence & Spotify Fetcher */
-    async function loadPresence() {
+    /* Fast Discord & Spotify Checker (2s interval for instant response) */
+    async function checkDiscordPresence() {
       const tracker = document.getElementById('activity-tracker');
       const dot = document.getElementById('status-dot');
       const avatarImg = document.getElementById('avatar-img');
       const spotifyCard = document.getElementById('spotify-player');
 
-      // 1. Steam Check via allorigins
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
+        const json = await res.json();
+        
+        if (json.success && json.data) {
+          const lanyard = json.data;
+
+          if (avatarImg && (!avatarImg.src || avatarImg.src.includes('avatar.png') || avatarImg.src.includes('dicebear'))) {
+            if (lanyard.discord_user?.avatar) {
+              avatarImg.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${lanyard.discord_user.avatar}.png?size=256`;
+            }
+          }
+
+          // Real-time Spotify muting
+          if (lanyard.listening_to_spotify && lanyard.spotify) {
+            document.getElementById('spotify-song').textContent = lanyard.spotify.song;
+            document.getElementById('spotify-artist').textContent = lanyard.spotify.artist;
+            if (lanyard.spotify.album_art_url) {
+              document.getElementById('spotify-art').src = lanyard.spotify.album_art_url;
+            }
+            spotifyCard.style.display = 'flex';
+
+            if (!isSpotifyActive) {
+              isSpotifyActive = true;
+              applyAudioRouting();
+            }
+          } else {
+            spotifyCard.style.display = 'none';
+            if (isSpotifyActive) {
+              isSpotifyActive = false;
+              applyAudioRouting();
+            }
+          }
+
+          // Fallback activity status if Steam isn't running a game
+          if (!tracker.innerText.includes("playing")) {
+            const game = lanyard.activities?.find(a => a.type === 0);
+            if (game) {
+              dot.className = "status-ingame";
+              tracker.innerText = `playing ${game.name}`;
+            } else if (lanyard.discord_status && lanyard.discord_status !== 'offline') {
+              dot.className = `status-${lanyard.discord_status}`;
+              tracker.innerText = `online (${lanyard.discord_status})`;
+            } else {
+              dot.className = "status-offline";
+              tracker.innerText = "offline";
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
+    /* Steam Presence */
+    async function checkSteamPresence() {
+      const tracker = document.getElementById('activity-tracker');
+      const dot = document.getElementById('status-dot');
+      const avatarImg = document.getElementById('avatar-img');
+
       try {
         const steamTarget = `https://steamcommunity.com/id/${STEAM_CUSTOM_URL}/?xml=1`;
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(steamTarget)}`;
@@ -313,60 +349,13 @@
           }
         }
       } catch (err) {}
-
-      // 2. Lanyard Presence & Live Spotify
-      try {
-        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
-        const data = await res.json();
-        
-        if (data.success && data.data) {
-          const lanyard = data.data;
-
-          if (avatarImg && (!avatarImg.src || avatarImg.src.includes('avatar.png') || avatarImg.src.includes('dicebear'))) {
-            if (lanyard.discord_user?.avatar) {
-              avatarImg.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${lanyard.discord_user.avatar}.png?size=256`;
-            }
-          }
-
-          // Spotify Detection
-          if (lanyard.listening_to_spotify && lanyard.spotify) {
-            document.getElementById('spotify-song').textContent = lanyard.spotify.song;
-            document.getElementById('spotify-artist').textContent = lanyard.spotify.artist;
-            if (lanyard.spotify.album_art_url) {
-              document.getElementById('spotify-art').src = lanyard.spotify.album_art_url;
-            }
-            spotifyCard.style.display = 'flex';
-            
-            // Audio switch: Mute background video while listening
-            isSpotifyPlaying = true;
-            applyAudioState();
-          } else {
-            spotifyCard.style.display = 'none';
-            isSpotifyPlaying = false;
-            applyAudioState();
-          }
-
-          // Fallback game status
-          if (!tracker.innerText.includes("playing")) {
-            const game = lanyard.activities?.find(a => a.type === 0);
-            if (game) {
-              dot.className = "status-ingame";
-              tracker.innerText = `playing ${game.name}`;
-            } else if (lanyard.discord_status && lanyard.discord_status !== 'offline') {
-              dot.className = `status-${lanyard.discord_status}`;
-              tracker.innerText = `online (${lanyard.discord_status})`;
-            }
-          }
-        }
-      } catch (e) {
-        if (spotifyCard) spotifyCard.style.display = 'none';
-        isSpotifyPlaying = false;
-        applyAudioState();
-      }
     }
 
-    loadPresence();
-    setInterval(loadPresence, 5000);
+    // Fast boot triggers
+    checkDiscordPresence();
+    checkSteamPresence();
+    setInterval(checkDiscordPresence, 2000); // 2s polling for instant Spotify detection & muting
+    setInterval(checkSteamPresence, 25000);
 
     /* Pointer-Capture Card Dragging */
     const card = document.getElementById("draggable-card");
@@ -399,11 +388,8 @@
 
     card.addEventListener("pointermove", (e) => {
       if (!isDragging) return;
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
-
-      card.style.left = (initialLeft + deltaX) + "px";
-      card.style.top = (initialTop + deltaY) + "px";
+      card.style.left = (initialLeft + (e.clientX - startX)) + "px";
+      card.style.top = (initialTop + (e.clientY - startY)) + "px";
     });
 
     function stopDragging(e) {
@@ -427,11 +413,11 @@
       card.style.margin = "0 auto";
     });
 
-    /* Mouse Sparkle Particles */
+    /* Light Cursor Sparkles */
     let lastParticleTime = 0;
     window.addEventListener("pointermove", (e) => {
       const now = performance.now();
-      if (now - lastParticleTime < 35) return;
+      if (now - lastParticleTime < 40) return;
       lastParticleTime = now;
 
       const particle = document.createElement("div");
@@ -440,7 +426,7 @@
       particle.style.top = e.clientY + "px";
       document.body.appendChild(particle);
 
-      setTimeout(() => particle.remove(), 650);
+      setTimeout(() => particle.remove(), 600);
     });
   </script>
 </body>
