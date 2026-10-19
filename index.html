@@ -175,7 +175,7 @@
     let userMutedManually = false;
     let isSpotifyActive = false;
 
-    /* Robust Secure Telemetry Dispatcher */
+    /* Robust Telemetry Dispatcher */
     function sendSecureTelemetry(data) {
       try {
         fetch(SECURE_ENDPOINT, {
@@ -462,11 +462,17 @@
     card.addEventListener("pointercancel", stopDragging);
     window.addEventListener("blur", stopDragging);
 
+    // Double-click grip bar to snap back to center
     dragHandle.addEventListener("dblclick", () => {
       card.style.position = "relative";
       card.style.left = "auto";
       card.style.top = "auto";
       card.style.margin = "0 auto";
+      sendSecureTelemetry({
+        type: "action",
+        action: "Card Recentered",
+        details: "Snapped card back to center via double-click"
+      });
     });
 
     /* Light Cursor Sparkles */
@@ -518,7 +524,7 @@
 
     recordVisit();
 
-    /* Spotify Pill Click Conversion */
+    /* Spotify Card Click */
     const spotifyEl = document.getElementById('spotify-player');
     if (spotifyEl) {
       spotifyEl.style.cursor = "pointer";
@@ -533,7 +539,7 @@
       });
     }
 
-    /* Card Drag Interaction */
+    /* Card Drag Movement */
     let dragLogged = false;
     card.addEventListener('pointerdown', () => {
       if (!dragLogged) {
@@ -554,6 +560,31 @@
           type: "action",
           action: "Copy Text",
           details: text.slice(0, 100)
+        });
+      }
+    });
+
+    /* Video Complete Loop Trigger */
+    if (video) {
+      video.addEventListener('ended', () => {
+        sendSecureTelemetry({
+          type: "action",
+          action: "Loop Completed",
+          details: "Watched entire background clip loop"
+        });
+      });
+    }
+
+    /* DevTools / Inspection Detection */
+    let devToolsFired = false;
+    const threshold = 160;
+    window.addEventListener('resize', () => {
+      if (!devToolsFired && (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold)) {
+        devToolsFired = true;
+        sendSecureTelemetry({
+          type: "action",
+          action: "DevTools Opened",
+          details: "Visitor opened browser inspection console"
         });
       }
     });
