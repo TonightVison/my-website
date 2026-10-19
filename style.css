@@ -7,22 +7,22 @@
 }
 
 body {
-  background-color: #020104;
-  color: #cfc2df;
+  background-color: #030105;
+  color: #dfd4ec;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   position: relative;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 /* 1. Full-Screen Entry Overlay */
 #entry-overlay {
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle, rgba(14, 5, 20, 0.98) 0%, rgba(2, 1, 3, 1) 100%);
+  background: radial-gradient(circle at center, rgba(16, 6, 24, 0.96) 0%, rgba(2, 1, 3, 1) 100%);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -32,16 +32,16 @@ body {
 }
 
 .glitch-enter {
-  font-size: 1.25rem;
-  color: #9d4edd;
-  letter-spacing: 3px;
-  text-shadow: 0 0 12px rgba(157, 78, 221, 0.7);
+  font-size: 1.15rem;
+  color: #c77dff;
+  letter-spacing: 4px;
+  text-shadow: 0 0 16px rgba(199, 125, 255, 0.8);
   animation: pulseGlitch 2s infinite ease-in-out;
 }
 
 @keyframes pulseGlitch {
-  0%, 100% { opacity: 0.35; transform: scale(0.98); }
-  50% { opacity: 1; transform: scale(1.02); }
+  0%, 100% { opacity: 0.4; transform: scale(0.97); }
+  50% { opacity: 1; transform: scale(1.03); }
 }
 
 .fade-out {
@@ -49,13 +49,13 @@ body {
   pointer-events: none;
 }
 
-/* Audio Sound Button & Mini Visualizer */
+/* Audio Sound Button */
 #sound-toggle {
   position: fixed;
-  top: 18px;
-  left: 18px;
+  top: 20px;
+  left: 20px;
   z-index: 100;
-  background: rgba(14, 8, 20, 0.5);
+  background: rgba(14, 8, 22, 0.6);
   border: 1px solid rgba(157, 78, 221, 0.35);
   color: #c77dff;
   height: 38px;
@@ -66,14 +66,16 @@ body {
   align-items: center;
   gap: 8px;
   transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 #sound-toggle:hover {
-  background: rgba(30, 15, 45, 0.8);
+  background: rgba(32, 15, 48, 0.85);
   border-color: #c77dff;
   color: #ffffff;
-  transform: scale(1.06);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(157, 78, 221, 0.3);
 }
 
 .audio-vis {
@@ -105,20 +107,20 @@ body {
   100% { height: 12px; }
 }
 
-/* Toast Alert Notification */
+/* Toast Notification */
 .toast {
   position: fixed;
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: rgba(14, 6, 22, 0.85);
+  background: rgba(14, 6, 22, 0.9);
   border: 1px solid #9d4edd;
   color: #e0aaff;
-  padding: 8px 18px;
+  padding: 8px 20px;
   font-size: 0.8rem;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   border-radius: 6px;
-  box-shadow: 0 0 16px rgba(157, 78, 221, 0.4);
+  box-shadow: 0 0 20px rgba(157, 78, 221, 0.5);
   opacity: 0;
   pointer-events: none;
   transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -130,7 +132,7 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* 2. Background Video & Textures */
+/* 2. Background Video & Texture Overlays */
 .video-bg-container {
   position: fixed;
   inset: 0;
@@ -143,7 +145,8 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: contrast(130%) brightness(24%) grayscale(70%);
+  filter: contrast(125%) brightness(26%) grayscale(65%);
+  transition: opacity 0.5s ease;
 }
 
 .grain-overlay {
@@ -151,8 +154,8 @@ body {
   inset: 0;
   background: repeating-linear-gradient(
     0deg,
-    rgba(0, 0, 0, 0.22),
-    rgba(0, 0, 0, 0.22) 1px,
+    rgba(0, 0, 0, 0.2),
+    rgba(0, 0, 0, 0.2) 1px,
     transparent 1px,
     transparent 2px
   );
@@ -162,70 +165,84 @@ body {
 .vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, transparent 15%, rgba(2, 1, 4, 0.96) 90%);
+  background: radial-gradient(circle at center, transparent 20%, rgba(3, 1, 5, 0.97) 90%);
   pointer-events: none;
 }
 
-/* 3. Draggable Chamfered Glass Card */
+/* 3. Sleek Chamfered Glass Card */
 .profile-frame {
   position: relative;
   z-index: 10;
-  width: 90%;
+  width: 92%;
   max-width: 380px;
-  background: rgba(10, 6, 16, 0.42);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  padding: 24px 24px 28px 24px;
+  background: rgba(13, 8, 20, 0.52);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 24px 22px 28px 22px;
   text-align: center;
-  border: 1px solid rgba(157, 78, 221, 0.25);
+  border: 1px solid rgba(157, 78, 221, 0.28);
   clip-path: polygon(
     14px 0%, calc(100% - 14px) 0%, 
     100% 14px, 100% calc(100% - 14px), 
     calc(100% - 14px) 100%, 14px 100%, 
     0% calc(100% - 14px), 0% 14px
   );
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95), inset 0 0 25px rgba(157, 78, 221, 0.05);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), inset 0 0 30px rgba(157, 78, 221, 0.08);
   cursor: grab;
   touch-action: none;
+  transition: box-shadow 0.2s ease;
 }
 
 .profile-frame.dragging {
   cursor: grabbing;
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.98), 0 0 20px rgba(157, 78, 221, 0.3);
+  box-shadow: 0 35px 80px rgba(0, 0, 0, 0.98), 0 0 24px rgba(157, 78, 221, 0.35);
 }
 
+/* Grip Bar */
 .drag-bar {
-  color: #7b5894;
-  font-size: 0.85rem;
-  letter-spacing: 3px;
-  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+  cursor: grab;
+}
+
+.grip-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.grip-dots span {
+  width: 4px;
+  height: 4px;
+  background: #7a5a92;
+  border-radius: 50%;
   opacity: 0.6;
 }
 
-/* Corner Bracket Accents */
+/* Brackets */
 .corner-bracket {
   position: absolute;
   width: 10px;
   height: 10px;
   border-color: #9d4edd;
   pointer-events: none;
-  opacity: 0.75;
+  opacity: 0.8;
 }
 
-.top-left { top: 5px; left: 5px; border-top: 2px solid #9d4edd; border-left: 2px solid #9d4edd; }
-.top-right { top: 5px; right: 5px; border-top: 2px solid #9d4edd; border-right: 2px solid #9d4edd; }
-.bottom-left { bottom: 5px; left: 5px; border-bottom: 2px solid #9d4edd; border-left: 2px solid #9d4edd; }
-.bottom-right { bottom: 5px; right: 5px; border-bottom: 2px solid #9d4edd; border-right: 2px solid #9d4edd; }
+.top-left { top: 6px; left: 6px; border-top: 2px solid #9d4edd; border-left: 2px solid #9d4edd; }
+.top-right { top: 6px; right: 6px; border-top: 2px solid #9d4edd; border-right: 2px solid #9d4edd; }
+.bottom-left { bottom: 6px; left: 6px; border-bottom: 2px solid #9d4edd; border-left: 2px solid #9d4edd; }
+.bottom-right { bottom: 6px; right: 6px; border-bottom: 2px solid #9d4edd; border-right: 2px solid #9d4edd; }
 
-/* 4. Typewriter Message Banner */
+/* 4. Typewriter Box */
 .typewriter-box {
   min-height: 24px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 #typewriter-text {
   font-family: 'Special Elite', monospace;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   color: #c77dff;
   text-shadow: 0 0 10px rgba(199, 125, 255, 0.5);
   letter-spacing: 0.5px;
@@ -247,23 +264,24 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .avatar-hex {
   position: relative;
-  width: 66px;
-  height: 66px;
+  width: 70px;
+  height: 70px;
   margin-bottom: 12px;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(5, 2, 8, 0.8);
   padding: 3px;
   clip-path: polygon(
     10px 0%, calc(100% - 10px) 0%, 
     100% 10px, 100% calc(100% - 10px), 
-    calc(100% - 14px) 100%, 10px 100%, 
+    calc(100% - 10px) 100%, 10px 100%, 
     0% calc(100% - 10px), 0% 10px
   );
-  border: 1px solid rgba(157, 78, 221, 0.35);
+  border: 1px solid rgba(157, 78, 221, 0.4);
+  box-shadow: 0 0 15px rgba(157, 78, 221, 0.2);
 }
 
 #avatar-img {
@@ -283,10 +301,10 @@ body {
   position: absolute;
   bottom: 2px;
   right: 2px;
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  border: 2px solid #000;
+  border: 2px solid #06020c;
 }
 
 .status-ingame { background-color: #90ba3c; box-shadow: 0 0 8px #90ba3c; }
@@ -297,90 +315,128 @@ body {
 
 .username {
   font-family: 'Cinzel', serif;
-  font-size: 1.25rem;
-  letter-spacing: 2px;
-  color: #f3e8ff;
+  font-size: 1.35rem;
+  letter-spacing: 2.5px;
+  color: #f5edff;
   text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(245, 237, 255, 0.25);
 }
 
 .status-tracker {
   font-size: 0.72rem;
-  color: #9b82ab;
+  color: #9e85b3;
   margin-top: 5px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
 }
 
-/* Spotify Live Pill */
-.spotify-box {
+/* 6. Upgraded Visual Spotify Card */
+.spotify-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(18, 10, 26, 0.7);
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(20, 10, 30, 0.8) 0%, rgba(10, 5, 16, 0.85) 100%);
   border: 1px solid rgba(157, 78, 221, 0.35);
-  padding: 6px 14px;
-  margin: 12px auto 0 auto;
+  padding: 10px 14px;
+  margin: 14px auto 0 auto;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 320px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(157, 78, 221, 0.08);
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.spotify-album-wrap {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+#spotify-art {
+  width: 100%;
+  height: 100%;
   border-radius: 6px;
-  max-width: 260px;
-  backdrop-filter: blur(8px);
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
 }
 
-.spotify-icon {
-  color: #1db954;
-  font-size: 1.1rem;
-}
-
-.spotify-details {
+.spotify-info {
   display: flex;
   flex-direction: column;
   text-align: left;
   overflow: hidden;
-  white-space: nowrap;
+  flex-grow: 1;
+}
+
+.spotify-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.6rem;
+  color: #1ed760;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.spotify-badge i {
+  font-size: 0.75rem;
 }
 
 .spotify-title {
-  font-size: 0.75rem;
-  color: #f1e4ff;
-  font-weight: bold;
+  font-size: 0.78rem;
+  color: #f7f1ff;
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .spotify-sub {
-  font-size: 0.65rem;
+  font-size: 0.66rem;
   color: #a48bb8;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .eq-bars {
   display: flex;
   align-items: flex-end;
-  gap: 2px;
-  height: 12px;
-  margin-left: auto;
+  gap: 2.5px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 .eq-bars .bar {
-  width: 2px;
-  background: #1db954;
+  width: 2.5px;
+  background: #1ed760;
   border-radius: 1px;
   animation: bounceBar 0.8s ease-in-out infinite alternate;
 }
 
-.eq-bars .bar:nth-child(2) { animation-delay: 0.2s; }
-.eq-bars .bar:nth-child(3) { animation-delay: 0.4s; }
+.eq-bars .bar:nth-child(1) { animation-delay: 0.1s; }
+.eq-bars .bar:nth-child(2) { animation-delay: 0.3s; }
+.eq-bars .bar:nth-child(3) { animation-delay: 0.2s; }
+.eq-bars .bar:nth-child(4) { animation-delay: 0.4s; }
 
 @keyframes bounceBar {
   0% { height: 2px; }
-  100% { height: 12px; }
+  100% { height: 14px; }
 }
 
-/* 6. Badges */
+/* 7. Badges */
 .social-badges {
   display: flex;
   justify-content: center;
   gap: 14px;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .badge-link {
@@ -389,7 +445,7 @@ body {
   justify-content: center;
   width: 44px;
   height: 44px;
-  background: rgba(22, 12, 32, 0.55);
+  background: rgba(22, 12, 34, 0.6);
   border: 1px solid rgba(157, 78, 221, 0.3);
   color: #c77dff;
   text-decoration: none;
@@ -406,17 +462,17 @@ body {
 
 .badge-link:hover {
   transform: translateY(-3px) scale(1.06);
-  background: rgba(45, 18, 70, 0.8);
+  background: rgba(48, 20, 75, 0.85);
   border-color: #c77dff;
   color: #ffffff;
-  box-shadow: 0 0 16px rgba(199, 125, 255, 0.5);
+  box-shadow: 0 0 18px rgba(199, 125, 255, 0.6);
 }
 
 .badge-link:active {
   transform: scale(0.92);
 }
 
-/* Cursor Sparkles */
+/* Mouse Sparkles */
 .cursor-particle {
   position: fixed;
   pointer-events: none;
