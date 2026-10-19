@@ -49,7 +49,60 @@ body {
   pointer-events: none;
 }
 
-/* 2. Background Video & Overlays */
+/* Audio Sound Button */
+#sound-toggle {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  z-index: 100;
+  background: rgba(14, 8, 20, 0.5);
+  border: 1px solid rgba(157, 78, 221, 0.35);
+  color: #c77dff;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+#sound-toggle:hover {
+  background: rgba(30, 15, 45, 0.8);
+  border-color: #c77dff;
+  color: #ffffff;
+  transform: scale(1.08);
+}
+
+/* Toast Alert Notification */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(14, 6, 22, 0.85);
+  border: 1px solid #9d4edd;
+  color: #e0aaff;
+  padding: 8px 18px;
+  font-size: 0.8rem;
+  letter-spacing: 1.5px;
+  border-radius: 6px;
+  box-shadow: 0 0 16px rgba(157, 78, 221, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 200;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* 2. Background Video & Textures */
 .video-bg-container {
   position: fixed;
   inset: 0;
