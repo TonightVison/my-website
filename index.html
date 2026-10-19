@@ -12,7 +12,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&family=Special+Elite&display=swap" rel="stylesheet">
   
-  <!-- Instant Preload for Profile Picture -->
   <link rel="preload" as="image" href="avatar.png" />
 </head>
 <body>
@@ -23,6 +22,14 @@
       <p class="glitch-enter">[ click to enter ]</p>
     </div>
   </div>
+
+  <!-- Audio Volume / Mute Button -->
+  <button id="sound-toggle" onclick="toggleAudioMute()" title="Mute/Unmute audio">
+    <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+  </button>
+
+  <!-- Notification Toast for Transition Delayed Launches -->
+  <div id="toast" class="toast">[ opening... ]</div>
 
   <!-- Background Video -->
   <div class="video-bg-container">
@@ -40,7 +47,8 @@
     <div class="corner-bracket bottom-left"></div>
     <div class="corner-bracket bottom-right"></div>
 
-    <div class="drag-bar">
+    <!-- Drag Handle Indicator (Double click resets center) -->
+    <div class="drag-bar" id="drag-handle" title="Hold to drag / Double click to center">
       <span>:::</span>
     </div>
 
@@ -61,20 +69,20 @@
       </div>
     </div>
 
-    <!-- Symmetrical Badges -->
+    <!-- Symmetrical Badges with Custom JavaScript Triggered Delayed Opening -->
     <div class="social-badges">
-      <a href="https://discord.com/users/1416390397881749514" target="_blank" rel="noopener noreferrer" class="badge-link discord" title="Discord">
+      <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile">
         <i class="fa-brands fa-discord"></i>
-      </a>
-      <a href="https://steamcommunity.com/id/ussf/" target="_blank" rel="noopener noreferrer" class="badge-link steam" title="Steam">
+      </button>
+      <button onclick="delayedRedirect('https://steamcommunity.com/id/ussf/', 'steam')" class="badge-link steam" title="Open Steam Profile">
         <i class="fa-brands fa-steam"></i>
-      </a>
-      <a href="https://www.roblox.com/users/1871164209/profile" target="_blank" rel="noopener noreferrer" class="badge-link roblox" title="Roblox">
+      </button>
+      <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile">
         <i class="fa-solid fa-cube"></i>
-      </a>
-      <a href="https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457" target="_blank" rel="noopener noreferrer" class="badge-link spotify" title="Spotify">
+      </button>
+      <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify">
         <i class="fa-brands fa-spotify"></i>
-      </a>
+      </button>
     </div>
   </main>
 
@@ -84,17 +92,35 @@
 
     const overlay = document.getElementById('entry-overlay');
     const video = document.getElementById('bg-video');
+    const soundIcon = document.getElementById('sound-icon');
+    const toast = document.getElementById('toast');
 
     function enterSite() {
       overlay.classList.add('fade-out');
       setTimeout(() => overlay.style.display = 'none', 600);
       
       video.muted = false;
-      video.play().catch(e => {
-        console.warn("Unmuted autoplay restricted, attempting muted play:", e);
+      video.play().catch(() => {
         video.muted = true;
         video.play();
+        soundIcon.className = "fa-solid fa-volume-xmark";
       });
+    }
+
+    function toggleAudioMute() {
+      video.muted = !video.muted;
+      soundIcon.className = video.muted ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
+    }
+
+    /* Multi-Link Delay handler */
+    function delayedRedirect(url, platformName) {
+      toast.innerText = `[ opening ${platformName}... ]`;
+      toast.classList.add('visible');
+      
+      setTimeout(() => {
+        toast.classList.remove('visible');
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }, 500); // exactly 0.5-second delay
     }
 
     /* Fast Discord Avatar Fallback */
@@ -193,9 +219,7 @@
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
             const avatarFull = xmlDoc.querySelector("avatarFull")?.textContent;
-            if (avatarFull) {
-              avatarImg.src = avatarFull;
-            }
+            if (avatarFull) avatarImg.src = avatarFull;
 
             const onlineState = xmlDoc.querySelector("onlineState")?.textContent;
             const gameName = xmlDoc.querySelector("gameName")?.textContent;
@@ -216,9 +240,7 @@
             }
           }
         }
-      } catch (err) {
-        console.warn("Steam fetch failed, reading Discord presence...", err);
-      }
+      } catch (err) {}
 
       try {
         const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
@@ -245,6 +267,7 @@
 
     /* Robust Pointer-Locked Drag (No Sticky Glitch) */
     const card = document.getElementById("draggable-card");
+    const dragHandle = document.getElementById("drag-handle");
     let isDragging = false;
     let startX = 0;
     let startY = 0;
@@ -267,8 +290,8 @@
       card.style.position = "fixed";
       card.style.left = initialLeft + "px";
       card.style.top = initialTop + "px";
-      card.style.transform = "none";
       card.style.margin = "0";
+      card.style.transform = "none";
     });
 
     card.addEventListener("pointermove", (e) => {
@@ -293,6 +316,13 @@
     card.addEventListener("pointerup", stopDragging);
     card.addEventListener("pointercancel", stopDragging);
     window.addEventListener("blur", stopDragging);
+
+    dragHandle.addEventListener("dblclick", () => {
+      card.style.position = "relative";
+      card.style.left = "auto";
+      card.style.top = "auto";
+      card.style.margin = "0 auto";
+    });
   </script>
 </body>
 </html>
