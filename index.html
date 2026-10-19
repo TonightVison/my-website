@@ -86,4 +86,277 @@
       <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile">
         <i class="fa-solid fa-cube"></i>
       </button>
-      <button onclick="delayedRedirect('
+      <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify">
+        <i class="fa-brands fa-spotify"></i>
+      </button>
+    </div>
+  </main>
+
+  <script>
+    const STEAM_CUSTOM_URL = "ussf";
+    const DISCORD_USER_ID = "1416390397881749514";
+
+    const overlay = document.getElementById('entry-overlay');
+    const video = document.getElementById('bg-video');
+    const soundIcon = document.getElementById('sound-icon');
+    const audioVis = document.getElementById('audio-vis');
+    const toast = document.getElementById('toast');
+
+    function updateSoundUi(isMuted) {
+      if (isMuted) {
+        soundIcon.className = "fa-solid fa-volume-xmark";
+        if (audioVis) audioVis.classList.remove('playing');
+      } else {
+        soundIcon.className = "fa-solid fa-volume-high";
+        if (audioVis) audioVis.classList.add('playing');
+      }
+    }
+
+    function enterSite() {
+      overlay.classList.add('fade-out');
+      setTimeout(() => overlay.style.display = 'none', 600);
+      
+      video.muted = false;
+      video.play().then(() => {
+        updateSoundUi(false);
+      }).catch(() => {
+        video.muted = true;
+        video.play();
+        updateSoundUi(true);
+      });
+    }
+
+    function toggleAudioMute() {
+      video.muted = !video.muted;
+      updateSoundUi(video.muted);
+    }
+
+    /* Multi-Link Delay Handler */
+    function delayedRedirect(url, platformName) {
+      toast.innerText = `[ opening ${platformName}... ]`;
+      toast.classList.add('visible');
+      
+      setTimeout(() => {
+        toast.classList.remove('visible');
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }, 500);
+    }
+
+    /* Discord Avatar Fetcher */
+    async function fetchInstantDiscordAvatar() {
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
+        const data = await res.json();
+        if (data.data && data.data.discord_user && data.data.discord_user.avatar) {
+          document.getElementById('avatar-img').src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${data.data.discord_user.avatar}.png?size=256`;
+        }
+      } catch (e) {
+        document.getElementById('avatar-img').src = "https://api.dicebear.com/7.x/bottts/svg?seed=emolarp";
+      }
+    }
+
+    /* Random Typewriter Loop */
+    const phrases = [
+      "i love you so much it hurts...",
+      "don't look away from me <3",
+      "staring right through your screen.",
+      "thinking about you endlessly...",
+      "you can't leave this page now.",
+      "every second without you is empty.",
+      "i know you're still watching.",
+      "carved your name into my mind.",
+      "you're the only thing that matters :3",
+      "let me stay in your head forever.",
+      "obsessed is an understatement.",
+      "don't close this tab..."
+    ];
+
+    let currentPhrase = "";
+    let charIndex = 0;
+    let isDeleting = false;
+    let lastIndex = -1;
+    const typeSpeed = 85;
+    const eraseSpeed = 40;
+    const holdDelay = 1900;
+    const typewriterEl = document.getElementById('typewriter-text');
+
+    function getRandomPhrase() {
+      let nextIndex;
+      do {
+        nextIndex = Math.floor(Math.random() * phrases.length);
+      } while (nextIndex === lastIndex && phrases.length > 1);
+      lastIndex = nextIndex;
+      return phrases[nextIndex];
+    }
+
+    function typeLoop() {
+      if (!currentPhrase) currentPhrase = getRandomPhrase();
+
+      if (!isDeleting) {
+        typewriterEl.textContent = currentPhrase.substring(0, charIndex + 1);
+        charIndex++;
+
+        if (charIndex === currentPhrase.length) {
+          isDeleting = true;
+          setTimeout(typeLoop, holdDelay);
+          return;
+        }
+      } else {
+        typewriterEl.textContent = currentPhrase.substring(0, charIndex - 1);
+        charIndex--;
+
+        if (charIndex === 0) {
+          isDeleting = false;
+          currentPhrase = getRandomPhrase();
+        }
+      }
+
+      setTimeout(typeLoop, isDeleting ? eraseSpeed : typeSpeed);
+    }
+
+    typeLoop();
+
+    /* Steam & Discord Presence Fetcher */
+    async function loadPresence() {
+      const tracker = document.getElementById('activity-tracker');
+      const dot = document.getElementById('status-dot');
+      const avatarImg = document.getElementById('avatar-img');
+
+      fetchInstantDiscordAvatar();
+
+      try {
+        const steamTarget = `https://steamcommunity.com/id/${STEAM_CUSTOM_URL}/?xml=1`;
+        const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(steamTarget)}`;
+        const res = await fetch(proxyUrl);
+        
+        if (res.ok) {
+          const xmlText = await res.text();
+          if (xmlText && xmlText.includes("<profile>")) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+            const avatarFull = xmlDoc.querySelector("avatarFull")?.textContent;
+            if (avatarFull) avatarImg.src = avatarFull;
+
+            const onlineState = xmlDoc.querySelector("onlineState")?.textContent;
+            const gameName = xmlDoc.querySelector("gameName")?.textContent;
+            const stateMessage = xmlDoc.querySelector("stateMessage")?.textContent;
+
+            if (onlineState === "in-game" && gameName) {
+              dot.className = "status-ingame";
+              tracker.innerText = `playing ${gameName}`;
+              return;
+            } else if (onlineState === "online") {
+              dot.className = "status-online";
+              tracker.innerText = "online on steam";
+              return;
+            } else if (stateMessage) {
+              dot.className = "status-offline";
+              tracker.innerText = stateMessage.replace(/<[^>]*>/g, '').trim().toLowerCase();
+              return;
+            }
+          }
+        }
+      } catch (err) {}
+
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          const lanyard = data.data;
+          const game = lanyard.activities?.find(a => a.type === 0);
+          if (game) {
+            dot.className = "status-ingame";
+            tracker.innerText = `playing ${game.name}`;
+          } else if (lanyard.discord_status && lanyard.discord_status !== 'offline') {
+            dot.className = `status-${lanyard.discord_status}`;
+            tracker.innerText = `online (${lanyard.discord_status})`;
+          } else {
+            tracker.innerText = "last seen unknown";
+          }
+        }
+      } catch (e) {
+        tracker.innerText = "last seen unknown";
+      }
+    }
+
+    loadPresence();
+    setInterval(loadPresence, 15000);
+
+    /* Pointer-Capture Card Dragging */
+    const card = document.getElementById("draggable-card");
+    const dragHandle = document.getElementById("drag-handle");
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+
+    card.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("a") || e.target.closest("button")) return;
+
+      isDragging = true;
+      card.classList.add("dragging");
+      card.setPointerCapture(e.pointerId);
+
+      const rect = card.getBoundingClientRect();
+      startX = e.clientX;
+      startY = e.clientY;
+      initialLeft = rect.left;
+      initialTop = rect.top;
+
+      card.style.position = "fixed";
+      card.style.left = initialLeft + "px";
+      card.style.top = initialTop + "px";
+      card.style.margin = "0";
+      card.style.transform = "none";
+    });
+
+    card.addEventListener("pointermove", (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+
+      card.style.left = (initialLeft + deltaX) + "px";
+      card.style.top = (initialTop + deltaY) + "px";
+    });
+
+    function stopDragging(e) {
+      if (isDragging) {
+        isDragging = false;
+        card.classList.remove("dragging");
+        try {
+          if (e && e.pointerId) card.releasePointerCapture(e.pointerId);
+        } catch (_) {}
+      }
+    }
+
+    card.addEventListener("pointerup", stopDragging);
+    card.addEventListener("pointercancel", stopDragging);
+    window.addEventListener("blur", stopDragging);
+
+    dragHandle.addEventListener("dblclick", () => {
+      card.style.position = "relative";
+      card.style.left = "auto";
+      card.style.top = "auto";
+      card.style.margin = "0 auto";
+    });
+
+    /* Mouse Sparkle Particles */
+    let lastParticleTime = 0;
+    window.addEventListener("pointermove", (e) => {
+      const now = performance.now();
+      if (now - lastParticleTime < 35) return;
+      lastParticleTime = now;
+
+      const particle = document.createElement("div");
+      particle.className = "cursor-particle";
+      particle.style.left = e.clientX + "px";
+      particle.style.top = e.clientY + "px";
+      document.body.appendChild(particle);
+
+      setTimeout(() => particle.remove(), 650);
+    });
+  </script>
+</body>
+</html>
