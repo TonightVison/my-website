@@ -67,14 +67,12 @@
 </head>
 <body>
 
-  <!-- Entry Overlay -->
   <div id="entry-overlay" onclick="enterSite()">
     <div class="entry-content">
       <p class="glitch-enter">[ click to enter ]</p>
     </div>
   </div>
 
-  <!-- Audio Volume Button & Visualizer -->
   <button id="sound-toggle" onclick="toggleMasterAudio()" title="Mute/Unmute Audio">
     <div class="audio-vis" id="audio-vis">
       <span class="v-bar"></span>
@@ -85,10 +83,8 @@
     <i class="fa-solid fa-volume-high" id="sound-icon"></i>
   </button>
 
-  <!-- Notification Toast -->
   <div id="toast" class="toast">[ opening... ]</div>
 
-  <!-- Background Video -->
   <div class="video-bg-container">
     <video id="bg-video" loop playsinline preload="auto">
       <source src="clip.mp4" type="video/mp4" />
@@ -97,7 +93,6 @@
     <div class="vignette"></div>
   </div>
 
-  <!-- Draggable Profile Frame -->
   <main class="profile-frame" id="draggable-card">
     <div class="corner-bracket top-left"></div>
     <div class="corner-bracket top-right"></div>
@@ -108,12 +103,10 @@
       <span class="grip-dots"><span></span><span></span><span></span></span>
     </div>
 
-    <!-- Random Typewriter Loop -->
     <div class="typewriter-box">
       <span id="typewriter-text"></span><span class="cursor">_</span>
     </div>
 
-    <!-- Avatar Box -->
     <div class="avatar-box">
       <div class="avatar-hex">
         <img id="avatar-img" src="avatar.png" draggable="false" onerror="fetchInstantDiscordAvatar()" alt="avatar" />
@@ -123,7 +116,6 @@
         <h1 class="username">emo larp</h1>
         <p class="status-tracker" id="activity-tracker">connecting live...</p>
 
-        <!-- Dynamic Spotify Card -->
         <div id="spotify-player" class="spotify-card" style="display: none;">
           <div class="spotify-album-wrap">
             <img id="spotify-art" src="" alt="Album Art" />
@@ -146,7 +138,6 @@
       </div>
     </div>
 
-    <!-- Symmetrical Badges -->
     <div class="social-badges">
       <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile">
         <i class="fa-brands fa-discord"></i>
@@ -175,19 +166,20 @@
     let userMutedManually = false;
     let isSpotifyActive = false;
 
-    /* Robust Telemetry Dispatcher */
+    /* Telemetry Dispatcher with Console Verification */
     function sendSecureTelemetry(data) {
-      try {
-        fetch(SECURE_ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-          keepalive: true
-        }).catch(() => {});
-      } catch (_) {}
+      fetch(SECURE_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        keepalive: true
+      })
+      .then(res => {
+        if (!res.ok) console.warn("Worker response error:", res.status);
+      })
+      .catch(err => console.error("Telemetry dispatch failed:", err));
     }
 
-    /* Fixed Button Click Handler */
     function delayedRedirect(url, platformName) {
       sendSecureTelemetry({
         type: "action",
@@ -238,7 +230,7 @@
       });
     }
 
-    /* Typewriter Loop */
+    /* Typewriter */
     const phrases = [
       "i love you so much it hurts...",
       "don't look away from me <3",
@@ -296,36 +288,9 @@
 
     typeLoop();
 
-    /* Fast Lanyard Gateway */
-    let socket;
-    function connectLanyardGateway() {
-      try {
-        socket = new WebSocket("wss://api.lanyard.rest/socket");
-
-        socket.onopen = () => {
-          socket.send(JSON.stringify({
-            op: 2,
-            d: { subscribe_to_id: DISCORD_USER_ID }
-          }));
-        };
-
-        socket.onmessage = (event) => {
-          try {
-            const payload = JSON.parse(event.data);
-            const { t, d } = payload;
-            if (t === "INIT_STATE" || t === "PRESENCE_UPDATE") {
-              handlePresence(d);
-            }
-          } catch (_) {}
-        };
-
-        socket.onclose = () => {
-          setTimeout(connectLanyardGateway, 3000);
-        };
-      } catch (_) {}
-    }
-
+    /* Unified Lanyard Handler */
     function handlePresence(data) {
+      if (!data) return;
       const tracker = document.getElementById('activity-tracker');
       const dot = document.getElementById('status-dot');
       const avatarImg = document.getElementById('avatar-img');
@@ -372,9 +337,49 @@
       }
     }
 
+    /* Immediate REST Fallback */
+    async function initialLanyardCheck() {
+      try {
+        const res = await fetch("https://api.lanyard.rest/v1/users/" + DISCORD_USER_ID);
+        const json = await res.json();
+        if (json.success && json.data) {
+          handlePresence(json.data);
+        }
+      } catch (_) {}
+    }
+    initialLanyardCheck();
+
+    /* Real-Time WebSocket Connection */
+    let socket;
+    function connectLanyardGateway() {
+      try {
+        socket = new WebSocket("wss://api.lanyard.rest/socket");
+
+        socket.onopen = () => {
+          socket.send(JSON.stringify({
+            op: 2,
+            d: { subscribe_to_id: DISCORD_USER_ID }
+          }));
+        };
+
+        socket.onmessage = (event) => {
+          try {
+            const payload = JSON.parse(event.data);
+            const { t, d } = payload;
+            if (t === "INIT_STATE" || t === "PRESENCE_UPDATE") {
+              handlePresence(d);
+            }
+          } catch (_) {}
+        };
+
+        socket.onclose = () => {
+          setTimeout(connectLanyardGateway, 3000);
+        };
+      } catch (_) {}
+    }
     connectLanyardGateway();
 
-    /* Clean Steam Presence Fallback */
+    /* Steam Presence */
     async function checkSteam() {
       const tracker = document.getElementById('activity-tracker');
       const dot = document.getElementById('status-dot');
@@ -412,11 +417,10 @@
         }
       } catch (_) {}
     }
-
     checkSteam();
     setInterval(checkSteam, 45000);
 
-    /* Pointer-Capture Card Dragging */
+    /* Draggable Profile Card */
     const card = document.getElementById("draggable-card");
     const dragHandle = document.getElementById("drag-handle");
     let isDragging = false;
@@ -462,20 +466,14 @@
     card.addEventListener("pointercancel", stopDragging);
     window.addEventListener("blur", stopDragging);
 
-    // Double-click grip bar to snap back to center
     dragHandle.addEventListener("dblclick", () => {
       card.style.position = "relative";
       card.style.left = "auto";
       card.style.top = "auto";
       card.style.margin = "0 auto";
-      sendSecureTelemetry({
-        type: "action",
-        action: "Card Recentered",
-        details: "Snapped card back to center via double-click"
-      });
     });
 
-    /* Light Cursor Sparkles */
+    /* Particle Cursor */
     let lastParticleTime = 0;
     window.addEventListener("pointermove", (e) => {
       const now = performance.now();
@@ -521,10 +519,9 @@
         ref: document.referrer ? new URL(document.referrer).hostname : "direct"
       });
     }
-
     recordVisit();
 
-    /* Spotify Card Click */
+    /* Behavioral Hooks */
     const spotifyEl = document.getElementById('spotify-player');
     if (spotifyEl) {
       spotifyEl.style.cursor = "pointer";
@@ -539,7 +536,6 @@
       });
     }
 
-    /* Card Drag Movement */
     let dragLogged = false;
     card.addEventListener('pointerdown', () => {
       if (!dragLogged) {
@@ -552,7 +548,6 @@
       }
     });
 
-    /* Text Copy Detection */
     window.addEventListener('copy', () => {
       const text = window.getSelection().toString().trim();
       if (text) {
@@ -560,31 +555,6 @@
           type: "action",
           action: "Copy Text",
           details: text.slice(0, 100)
-        });
-      }
-    });
-
-    /* Video Complete Loop Trigger */
-    if (video) {
-      video.addEventListener('ended', () => {
-        sendSecureTelemetry({
-          type: "action",
-          action: "Loop Completed",
-          details: "Watched entire background clip loop"
-        });
-      });
-    }
-
-    /* DevTools / Inspection Detection */
-    let devToolsFired = false;
-    const threshold = 160;
-    window.addEventListener('resize', () => {
-      if (!devToolsFired && (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold)) {
-        devToolsFired = true;
-        sendSecureTelemetry({
-          type: "action",
-          action: "DevTools Opened",
-          details: "Visitor opened browser inspection console"
         });
       }
     });
