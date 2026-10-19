@@ -1,112 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>emo larp</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- FontAwesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&family=Special+Elite&display=swap" rel="stylesheet">
-  
-  <link rel="preload" as="image" href="avatar.png" />
-</head>
-<body>
-
-  <!-- Entry Overlay -->
-  <div id="entry-overlay" onclick="enterSite()">
-    <div class="entry-content">
-      <p class="glitch-enter">[ click to enter ]</p>
-    </div>
-  </div>
-
-  <!-- Audio Volume Button with Integrated Mini Visualizer Bars -->
-  <button id="sound-toggle" onclick="toggleAudioMute()" title="Mute/Unmute audio">
-    <div class="audio-vis" id="audio-vis">
-      <span class="v-bar"></span>
-      <span class="v-bar"></span>
-      <span class="v-bar"></span>
-      <span class="v-bar"></span>
-    </div>
-    <i class="fa-solid fa-volume-high" id="sound-icon"></i>
-  </button>
-
-  <!-- Notification Toast for Transition Delayed Launches -->
-  <div id="toast" class="toast">[ opening... ]</div>
-
-  <!-- Background Video -->
-  <div class="video-bg-container">
-    <video id="bg-video" loop playsinline>
-      <source src="clip.mp4" type="video/mp4" />
-    </video>
-    <div class="grain-overlay"></div>
-    <div class="vignette"></div>
-  </div>
-
-  <!-- Draggable Profile Frame -->
-  <main class="profile-frame" id="draggable-card">
-    <div class="corner-bracket top-left"></div>
-    <div class="corner-bracket top-right"></div>
-    <div class="corner-bracket bottom-left"></div>
-    <div class="corner-bracket bottom-right"></div>
-
-    <!-- Drag Handle Indicator (Double click resets center) -->
-    <div class="drag-bar" id="drag-handle" title="Hold to drag / Double click to center">
-      <span>:::</span>
-    </div>
-
-    <!-- Random Typewriter Message Cycle -->
-    <div class="typewriter-box">
-      <span id="typewriter-text"></span><span class="cursor">|</span>
-    </div>
-
-    <!-- Avatar Box -->
-    <div class="avatar-box">
-      <div class="avatar-hex">
-        <img id="avatar-img" src="avatar.png" draggable="false" onerror="fetchInstantDiscordAvatar()" alt="avatar" />
-        <span id="status-dot" class="status-offline"></span>
-      </div>
-      <div class="user-details">
-        <h1 class="username">emo larp</h1>
-        <p class="status-tracker" id="activity-tracker">fetching status...</p>
-        
-        <!-- Dynamic Spotify Pill -->
-        <div id="spotify-player" class="spotify-box" style="display: none;">
-          <i class="fa-brands fa-spotify spotify-icon"></i>
-          <div class="spotify-details">
-            <span id="spotify-song" class="spotify-title"></span>
-            <span id="spotify-artist" class="spotify-sub"></span>
-          </div>
-          <div class="eq-bars">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Symmetrical Badges with Custom Delayed Opening -->
-    <div class="social-badges">
-      <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile">
-        <i class="fa-brands fa-discord"></i>
-      </button>
-      <button onclick="delayedRedirect('https://steamcommunity.com/id/ussf/', 'steam')" class="badge-link steam" title="Open Steam Profile">
-        <i class="fa-brands fa-steam"></i>
-      </button>
-      <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile">
-        <i class="fa-solid fa-cube"></i>
-      </button>
-      <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify">
-        <i class="fa-brands fa-spotify"></i>
-      </button>
-    </div>
-  </main>
-
-  <script>
+<script>
     const STEAM_CUSTOM_URL = "ussf";
     const DISCORD_USER_ID = "1416390397881749514";
 
@@ -119,10 +11,10 @@
     function updateSoundUi(isMuted) {
       if (isMuted) {
         soundIcon.className = "fa-solid fa-volume-xmark";
-        audioVis.classList.remove('playing');
+        if (audioVis) audioVis.classList.remove('playing');
       } else {
         soundIcon.className = "fa-solid fa-volume-high";
-        audioVis.classList.add('playing');
+        if (audioVis) audioVis.classList.add('playing');
       }
     }
 
@@ -145,7 +37,6 @@
       updateSoundUi(video.muted);
     }
 
-    /* Multi-Link Delay handler */
     function delayedRedirect(url, platformName) {
       toast.innerText = `[ opening ${platformName}... ]`;
       toast.classList.add('visible');
@@ -169,7 +60,7 @@
       }
     }
 
-    /* Random Obsession Phrases Pool */
+    /* Random Typewriter Loop */
     const phrases = [
       "i love you so much it hurts...",
       "don't look away from me <3",
@@ -230,12 +121,52 @@
 
     typeLoop();
 
-    /* Steam & Discord Presence with Live Spotify parsing */
+    /* Independent Spotify & Discord Presence Fetcher */
+    async function updateDiscordAndSpotify() {
+      const spotifyBox = document.getElementById('spotify-player');
+      const songEl = document.getElementById('spotify-song');
+      const artistEl = document.getElementById('spotify-artist');
+
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
+        const json = await res.json();
+
+        if (json.success && json.data) {
+          const lanyard = json.data;
+
+          // Priority 1: Lanyard native spotify tracking
+          if (lanyard.listening_to_spotify && lanyard.spotify) {
+            songEl.textContent = lanyard.spotify.song;
+            artistEl.textContent = lanyard.spotify.artist;
+            spotifyBox.style.display = 'flex';
+            return;
+          }
+
+          // Priority 2: Fallback check inside general Discord activities
+          const spotifyActivity = lanyard.activities?.find(
+            a => a.name === "Spotify" || a.type === 2
+          );
+
+          if (spotifyActivity) {
+            songEl.textContent = spotifyActivity.details || "Playing music";
+            artistEl.textContent = spotifyActivity.state || "";
+            spotifyBox.style.display = 'flex';
+            return;
+          }
+
+          // If no Spotify active
+          spotifyBox.style.display = 'none';
+        }
+      } catch (err) {
+        console.warn("Lanyard fetch error:", err);
+      }
+    }
+
+    /* Steam Status Presence */
     async function loadPresence() {
       const tracker = document.getElementById('activity-tracker');
       const dot = document.getElementById('status-dot');
       const avatarImg = document.getElementById('avatar-img');
-      const spotifyBox = document.getElementById('spotify-player');
 
       fetchInstantDiscordAvatar();
 
@@ -260,54 +191,50 @@
             if (onlineState === "in-game" && gameName) {
               dot.className = "status-ingame";
               tracker.innerText = `playing ${gameName}`;
+              return;
             } else if (onlineState === "online") {
               dot.className = "status-online";
               tracker.innerText = "online on steam";
+              return;
             } else if (stateMessage) {
               dot.className = "status-offline";
               tracker.innerText = stateMessage.replace(/<[^>]*>/g, '').trim().toLowerCase();
+              return;
             }
           }
         }
       } catch (err) {}
 
-      /* Discord / Lanyard Presence & Spotify */
+      // Lanyard fallback for status dot & activity if Steam fails
       try {
         const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
-        const data = await res.json();
-        if (data.success && data.data) {
-          const lanyard = data.data;
-
-          // Spotify Pill Visibility
-          if (lanyard.listening_to_spotify && lanyard.spotify) {
-            spotifyBox.style.display = 'flex';
-            document.getElementById('spotify-song').textContent = lanyard.spotify.song;
-            document.getElementById('spotify-artist').textContent = lanyard.spotify.artist;
+        const json = await res.json();
+        if (json.success && json.data) {
+          const lanyard = json.data;
+          const game = lanyard.activities?.find(a => a.type === 0);
+          if (game) {
+            dot.className = "status-ingame";
+            tracker.innerText = `playing ${game.name}`;
+          } else if (lanyard.discord_status && lanyard.discord_status !== 'offline') {
+            dot.className = `status-${lanyard.discord_status}`;
+            tracker.innerText = `online (${lanyard.discord_status})`;
           } else {
-            spotifyBox.style.display = 'none';
-          }
-
-          // Game/Activity Fallback if Steam did not trigger
-          if (!tracker.innerText.includes("playing")) {
-            const game = lanyard.activities.find(a => a.type === 0);
-            if (game) {
-              dot.className = "status-ingame";
-              tracker.innerText = `playing ${game.name}`;
-            } else if (lanyard.discord_status !== 'offline') {
-              dot.className = `status-${lanyard.discord_status}`;
-              tracker.innerText = `online (${lanyard.discord_status})`;
-            } else {
-              tracker.innerText = "last seen unknown";
-            }
+            dot.className = "status-offline";
+            tracker.innerText = "offline";
           }
         }
       } catch (e) {
-        spotifyBox.style.display = 'none';
+        tracker.innerText = "offline";
       }
     }
 
+    // Run presence checks
     loadPresence();
-    setInterval(loadPresence, 12000);
+    updateDiscordAndSpotify();
+
+    // Check Spotify every 5 seconds, Steam presence every 20 seconds
+    setInterval(updateDiscordAndSpotify, 5000);
+    setInterval(loadPresence, 20000);
 
     /* Pointer-Capture Dragging (Zero Sticking) */
     const card = document.getElementById("draggable-card");
@@ -368,7 +295,7 @@
       card.style.margin = "0 auto";
     });
 
-    /* Mouse Sparkle Particle Trail */
+    /* Mouse Sparkle Particles */
     let lastParticleTime = 0;
     window.addEventListener("pointermove", (e) => {
       const now = performance.now();
@@ -384,5 +311,3 @@
       setTimeout(() => particle.remove(), 650);
     });
   </script>
-</body>
-</html>
