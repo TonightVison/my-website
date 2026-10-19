@@ -50,29 +50,18 @@
         try { applyAudioState(); } catch (_) {}
       }
     }
-
-    async function fetchInstantDiscordAvatar() {
-      const img = document.getElementById('avatar-img');
-      try {
-        const res = await fetch("https://api.lanyard.rest/v1/users/" + DISCORD_USER_ID);
-        const data = await res.json();
-        if (data.data?.discord_user?.avatar && img) {
-          img.src = "https://cdn.discordapp.com/avatars/" + DISCORD_USER_ID + "/" + data.data.discord_user.avatar + ".png?size=256";
-          return;
-        }
-      } catch (e) {}
-      if (img) img.src = "https://api.dicebear.com/7.x/bottts/svg?seed=emolarp";
-    }
   </script>
 </head>
 <body>
 
+  <!-- Entry Overlay -->
   <div id="entry-overlay" onclick="enterSite()">
     <div class="entry-content">
       <p class="glitch-enter">[ click to enter ]</p>
     </div>
   </div>
 
+  <!-- Audio Toggle -->
   <button id="sound-toggle" onclick="toggleMasterAudio()" title="Mute/Unmute Audio">
     <div class="audio-vis" id="audio-vis">
       <span class="v-bar"></span>
@@ -85,6 +74,7 @@
 
   <div id="toast" class="toast">[ opening... ]</div>
 
+  <!-- Background Video -->
   <div class="video-bg-container">
     <video id="bg-video" loop playsinline preload="auto">
       <source src="clip.mp4" type="video/mp4" />
@@ -93,6 +83,7 @@
     <div class="vignette"></div>
   </div>
 
+  <!-- Profile Frame -->
   <main class="profile-frame" id="draggable-card">
     <div class="corner-bracket top-left"></div>
     <div class="corner-bracket top-right"></div>
@@ -109,13 +100,14 @@
 
     <div class="avatar-box">
       <div class="avatar-hex">
-        <img id="avatar-img" src="avatar.png" draggable="false" onerror="fetchInstantDiscordAvatar()" alt="avatar" />
+        <img id="avatar-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=emolarp" draggable="false" alt="avatar" />
         <span id="status-dot" class="status-offline"></span>
       </div>
       <div class="user-details">
         <h1 class="username">emo larp</h1>
         <p class="status-tracker" id="activity-tracker">connecting live...</p>
 
+        <!-- Spotify Card -->
         <div id="spotify-player" class="spotify-card" style="display: none;">
           <div class="spotify-album-wrap">
             <img id="spotify-art" src="" alt="Album Art" />
@@ -138,6 +130,7 @@
       </div>
     </div>
 
+    <!-- Badges -->
     <div class="social-badges">
       <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile">
         <i class="fa-brands fa-discord"></i>
@@ -155,7 +148,6 @@
   </main>
 
   <script>
-    const STEAM_CUSTOM_URL = "ussf";
     const SECURE_ENDPOINT = "https://api.emolarp.fans";
 
     const video = document.getElementById('bg-video');
@@ -166,18 +158,14 @@
     let userMutedManually = false;
     let isSpotifyActive = false;
 
-    /* Telemetry Dispatcher with Console Verification */
+    /* Telemetry Dispatcher */
     function sendSecureTelemetry(data) {
       fetch(SECURE_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
         keepalive: true
-      })
-      .then(res => {
-        if (!res.ok) console.warn("Worker response error:", res.status);
-      })
-      .catch(err => console.error("Telemetry dispatch failed:", err));
+      }).catch(() => {});
     }
 
     function delayedRedirect(url, platformName) {
@@ -288,7 +276,7 @@
 
     typeLoop();
 
-    /* Unified Lanyard Handler */
+    /* Lanyard Integration */
     function handlePresence(data) {
       if (!data) return;
       const tracker = document.getElementById('activity-tracker');
@@ -296,10 +284,8 @@
       const avatarImg = document.getElementById('avatar-img');
       const spotifyCard = document.getElementById('spotify-player');
 
-      if (avatarImg && (!avatarImg.src || avatarImg.src.includes('avatar.png') || avatarImg.src.includes('dicebear'))) {
-        if (data.discord_user?.avatar) {
-          avatarImg.src = "https://cdn.discordapp.com/avatars/" + DISCORD_USER_ID + "/" + data.discord_user.avatar + ".png?size=256";
-        }
+      if (data.discord_user?.avatar && avatarImg) {
+        avatarImg.src = "https://cdn.discordapp.com/avatars/" + DISCORD_USER_ID + "/" + data.discord_user.avatar + ".png?size=256";
       }
 
       if (data.listening_to_spotify && data.spotify) {
@@ -322,22 +308,19 @@
         }
       }
 
-      if (tracker && !tracker.innerText.includes("playing")) {
-        const game = data.activities?.find(a => a.type === 0);
-        if (game) {
-          if (dot) dot.className = "status-ingame";
-          tracker.innerText = "playing " + game.name;
-        } else if (data.discord_status && data.discord_status !== 'offline') {
-          if (dot) dot.className = "status-" + data.discord_status;
-          tracker.innerText = "online (" + data.discord_status + ")";
-        } else {
-          if (dot) dot.className = "status-offline";
-          tracker.innerText = "offline";
-        }
+      const game = data.activities?.find(a => a.type === 0);
+      if (game) {
+        if (dot) dot.className = "status-ingame";
+        if (tracker) tracker.innerText = "playing " + game.name;
+      } else if (data.discord_status && data.discord_status !== 'offline') {
+        if (dot) dot.className = "status-" + data.discord_status;
+        if (tracker) tracker.innerText = "online (" + data.discord_status + ")";
+      } else {
+        if (dot) dot.className = "status-offline";
+        if (tracker) tracker.innerText = "offline";
       }
     }
 
-    /* Immediate REST Fallback */
     async function initialLanyardCheck() {
       try {
         const res = await fetch("https://api.lanyard.rest/v1/users/" + DISCORD_USER_ID);
@@ -349,11 +332,9 @@
     }
     initialLanyardCheck();
 
-    /* Real-Time WebSocket Connection */
-    let socket;
     function connectLanyardGateway() {
       try {
-        socket = new WebSocket("wss://api.lanyard.rest/socket");
+        const socket = new WebSocket("wss://api.lanyard.rest/socket");
 
         socket.onopen = () => {
           socket.send(JSON.stringify({
@@ -378,47 +359,6 @@
       } catch (_) {}
     }
     connectLanyardGateway();
-
-    /* Steam Presence */
-    async function checkSteam() {
-      const tracker = document.getElementById('activity-tracker');
-      const dot = document.getElementById('status-dot');
-      const avatarImg = document.getElementById('avatar-img');
-
-      try {
-        const steamTarget = "https://steamcommunity.com/id/" + STEAM_CUSTOM_URL + "/?xml=1";
-        const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(steamTarget);
-        const res = await fetch(proxyUrl);
-        
-        if (res.ok) {
-          const json = await res.json();
-          if (json.contents && json.contents.includes("<profile>")) {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(json.contents, "text/xml");
-
-            const avatarFull = xmlDoc.querySelector("avatarFull")?.textContent;
-            if (avatarFull && avatarImg) avatarImg.src = avatarFull;
-
-            const onlineState = xmlDoc.querySelector("onlineState")?.textContent;
-            const gameName = xmlDoc.querySelector("gameName")?.textContent;
-            const stateMessage = xmlDoc.querySelector("stateMessage")?.textContent;
-
-            if (onlineState === "in-game" && gameName) {
-              if (dot) dot.className = "status-ingame";
-              if (tracker) tracker.innerText = "playing " + gameName;
-            } else if (onlineState === "online") {
-              if (dot) dot.className = "status-online";
-              if (tracker) tracker.innerText = "online on steam";
-            } else if (stateMessage) {
-              if (dot) dot.className = "status-offline";
-              if (tracker) tracker.innerText = stateMessage.replace(/<[^>]*>/g, '').trim().toLowerCase();
-            }
-          }
-        }
-      } catch (_) {}
-    }
-    checkSteam();
-    setInterval(checkSteam, 45000);
 
     /* Draggable Profile Card */
     const card = document.getElementById("draggable-card");
@@ -521,7 +461,7 @@
     }
     recordVisit();
 
-    /* Behavioral Hooks */
+    /* Actions */
     const spotifyEl = document.getElementById('spotify-player');
     if (spotifyEl) {
       spotifyEl.style.cursor = "pointer";
