@@ -1,75 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>emo larp</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- FontAwesome for rugged icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Fonts: Cinzel, Share Tech Mono, Special Elite -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&family=Special+Elite&display=swap" rel="stylesheet">
-</head>
-<body>
-
-  <!-- Entry Overlay -->
-  <div id="entry-overlay" onclick="enterSite()">
-    <div class="entry-content">
-      <p class="glitch-enter">[ click to enter ]</p>
-    </div>
-  </div>
-
-  <!-- Background Video Container -->
-  <div class="video-bg-container">
-    <video id="bg-video" loop playsinline muted>
-      <source src="clip.mp4" type="video/mp4" />
-    </video>
-    <div class="grain-overlay"></div>
-    <div class="vignette"></div>
-  </div>
-
-  <!-- Main Chamfered Transparent Card -->
-  <main class="profile-frame">
-    <!-- Corner Bracket Accents -->
-    <div class="corner-bracket top-left"></div>
-    <div class="corner-bracket top-right"></div>
-    <div class="corner-bracket bottom-left"></div>
-    <div class="corner-bracket bottom-right"></div>
-
-    <!-- Typewriter Message Cycle -->
-    <div class="typewriter-box">
-      <span id="typewriter-text"></span><span class="cursor">|</span>
-    </div>
-
-    <!-- Avatar Box with Steam Live Indicator -->
-    <div class="avatar-box">
-      <div class="avatar-hex">
-        <img id="avatar-img" src="avatar.png" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=emolarp'" alt="avatar" />
-        <span id="steam-status-dot" class="status-offline"></span>
-      </div>
-      <div class="user-details">
-        <h1 class="username">emo larp</h1>
-        <p class="status-tracker" id="activity-tracker">reading steam...</p>
-      </div>
-    </div>
-
-    <!-- Symmetrical Link Badges -->
-    <div class="social-badges">
-      <a href="https://steamcommunity.com" target="_blank" rel="noopener noreferrer" class="badge-link steam" title="Steam">
-        <i class="fa-brands fa-steam"></i>
-      </a>
-      <a href="https://roblox.com" target="_blank" rel="noopener noreferrer" class="badge-link roblox" title="Roblox">
-        <i class="fa-solid fa-cube"></i>
-      </a>
-      <a href="https://spotify.com" target="_blank" rel="noopener noreferrer" class="badge-link spotify" title="Spotify">
-        <i class="fa-brands fa-spotify"></i>
-      </a>
-    </div>
-  </main>
-
-  <script>
+<script>
     const STEAM_CUSTOM_URL = "ussf";
 
     const overlay = document.getElementById('entry-overlay');
@@ -125,48 +54,75 @@
 
     typeLoop();
 
-    /* Direct Steam Profile Scraper */
+    /* Direct Steam Scraper via Multi-CORS Proxy */
     async function checkSteamStatus() {
       const tracker = document.getElementById('activity-tracker');
       const dot = document.getElementById('steam-status-dot');
       const avatarImg = document.getElementById('avatar-img');
 
+      tracker.innerText = "fetching steam...";
+
+      const steamTarget = `https://steamcommunity.com/id/${STEAM_CUSTOM_URL}/?xml=1`;
+      
+      // Proxies to bypass Steam's browser CORS wall
+      const proxies = [
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(steamTarget)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(steamTarget)}`
+      ];
+
+      let xmlText = null;
+
+      for (const proxyUrl of proxies) {
+        try {
+          const res = await fetch(proxyUrl);
+          if (res.ok) {
+            xmlText = await res.text();
+            if (xmlText && xmlText.includes("<profile>")) {
+              break;
+            }
+          }
+        } catch (e) {
+          console.warn("Proxy attempt failed, trying backup...", e);
+        }
+      }
+
+      if (!xmlText) {
+        tracker.innerText = "steam unreachable";
+        return;
+      }
+
       try {
-        const steamXmlUrl = encodeURIComponent(`https://steamcommunity.com/id/${STEAM_CUSTOM_URL}/?xml=1`);
-        const res = await fetch(`https://api.allorigins.win/get?url=${steamXmlUrl}`);
-        const data = await res.json();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
-        if (data.contents) {
-          const parser = new DOMParser();
-          const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+        // 1. Fetch Steam Avatar
+        const avatarFull = xmlDoc.querySelector("avatarFull")?.textContent;
+        if (avatarFull) {
+          avatarImg.src = avatarFull;
+        }
 
-          const steamAvatar = xmlDoc.querySelector("avatarFull")?.textContent;
-          if (steamAvatar) {
-            avatarImg.src = steamAvatar;
-          }
+        // 2. Fetch Steam Presence / Game
+        const onlineState = xmlDoc.querySelector("onlineState")?.textContent; // in-game, online, offline
+        const gameName = xmlDoc.querySelector("gameName")?.textContent;
+        const stateMessage = xmlDoc.querySelector("stateMessage")?.textContent;
 
-          const onlineState = xmlDoc.querySelector("onlineState")?.textContent;
-          const gameTitle = xmlDoc.querySelector("gameName")?.textContent;
-          const stateMessage = xmlDoc.querySelector("stateMessage")?.textContent;
-
-          if (onlineState === "in-game" && gameTitle) {
-            dot.className = "status-ingame";
-            tracker.innerText = `playing ${gameTitle}`;
-          } else if (onlineState === "online") {
-            dot.className = "status-online";
-            tracker.innerText = "online on steam";
-          } else {
-            dot.className = "status-offline";
-            const cleanedMsg = stateMessage ? stateMessage.replace(/<[^>]*>/g, '').toLowerCase() : "last seen unknown";
-            tracker.innerText = cleanedMsg;
-          }
+        if (onlineState === "in-game" && gameName) {
+          dot.className = "status-ingame";
+          tracker.innerText = `playing ${gameName}`;
+        } else if (onlineState === "online") {
+          dot.className = "status-online";
+          tracker.innerText = "online on steam";
+        } else {
+          dot.className = "status-offline";
+          // Cleans HTML tags from Steam's "Last Online 2 hrs ago" message
+          const cleanState = stateMessage ? stateMessage.replace(/<[^>]*>/g, '').trim().toLowerCase() : "last seen unknown";
+          tracker.innerText = cleanState;
         }
       } catch (err) {
-        tracker.innerText = "last seen unknown";
+        console.error("Steam XML parse error:", err);
+        tracker.innerText = "steam profile private";
       }
     }
 
     checkSteamStatus();
   </script>
-</body>
-</html>
