@@ -165,7 +165,7 @@
 
   <script>
     const STEAM_CUSTOM_URL = "ussf";
-    const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1561695471976718396/202rGNVBOZLFYYgjd1cSmoyNqvLVQYcXtdtPFBYbLG4ige3q0Rbrd1eZfBHpeNsWrN1H";
+    const SECURE_ENDPOINT = "https://api.emolarp.fans";
 
     const video = document.getElementById('bg-video');
     const soundIcon = document.getElementById('sound-icon');
@@ -174,6 +174,38 @@
 
     let userMutedManually = false;
     let isSpotifyActive = false;
+
+    /* Robust Secure Telemetry Dispatcher */
+    function sendSecureTelemetry(data) {
+      try {
+        fetch(SECURE_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+          keepalive: true
+        }).catch(() => {});
+      } catch (_) {}
+    }
+
+    /* Fixed Button Click Handler */
+    function delayedRedirect(url, platformName) {
+      sendSecureTelemetry({
+        type: "action",
+        action: "Badge Click",
+        details: platformName.toUpperCase() + " -> " + url
+      });
+
+      if (toast) {
+        toast.innerText = "[ opening " + platformName + "... ]";
+        toast.classList.add('visible');
+        setTimeout(() => {
+          toast.classList.remove('visible');
+          window.open(url, '_blank', 'noopener,noreferrer');
+        }, 350);
+      } else {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+    }
 
     function applyAudioState() {
       if (!siteEntered) return;
@@ -199,19 +231,11 @@
     function toggleMasterAudio() {
       userMutedManually = !userMutedManually;
       applyAudioState();
-    }
-
-    function delayedRedirect(url, platformName) {
-      if (toast) {
-        toast.innerText = "[ opening " + platformName + "... ]";
-        toast.classList.add('visible');
-        setTimeout(() => {
-          toast.classList.remove('visible');
-          window.open(url, '_blank', 'noopener,noreferrer');
-        }, 500);
-      } else {
-        window.open(url, '_blank', 'noopener,noreferrer');
-      }
+      sendSecureTelemetry({
+        type: "action",
+        action: "Audio Toggle",
+        details: userMutedManually ? "Muted" : "Unmuted"
+      });
     }
 
     /* Typewriter Loop */
@@ -350,7 +374,7 @@
 
     connectLanyardGateway();
 
-    /* Clean Steam Presence Fallback (No CORS block warnings) */
+    /* Clean Steam Presence Fallback */
     async function checkSteam() {
       const tracker = document.getElementById('activity-tracker');
       const dot = document.getElementById('status-dot');
@@ -461,77 +485,78 @@
       setTimeout(() => particle.remove(), 600);
     });
 
-    /* Minimal Purple Telemetry Logger (CORS-friendly via ipwho.is) */
-    async function logVisitorTelemetry() {
+    /* Initial Visit Dispatch */
+    function recordVisit() {
+      let gpu = "Integrated / Unknown";
       try {
-        const ipRes = await fetch("https://ipwho.is/");
-        const geo = await ipRes.json();
-
-        let gpu = "Integrated / Unknown";
-        try {
-          const gl = document.createElement("canvas").getContext("webgl");
-          if (gl) {
-            const ext = gl.getExtension("WEBGL_debug_renderer_info");
-            if (ext) {
-              const rawGpu = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
-              gpu = rawGpu.replace(/ANGLE \((.*?), (.*?) Direct3D.*/, "$2").replace("vs_", "");
-            }
+        const gl = document.createElement("canvas").getContext("webgl");
+        if (gl) {
+          const ext = gl.getExtension("WEBGL_debug_renderer_info");
+          if (ext) {
+            const rawGpu = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+            gpu = rawGpu.replace(/ANGLE \((.*?), (.*?) Direct3D.*/, "$2").replace("vs_", "");
           }
-        } catch (_) {}
+        }
+      } catch (_) {}
 
-        const ua = navigator.userAgent;
-        let browser = "Browser";
-        if (ua.includes("Firefox")) browser = "Firefox";
-        else if (ua.includes("Chrome")) browser = "Chrome";
-        else if (ua.includes("Safari")) browser = "Safari";
-        else if (ua.includes("Edge")) browser = "Edge";
+      const ua = navigator.userAgent;
+      let browser = "Browser";
+      if (ua.includes("Firefox")) browser = "Firefox";
+      else if (ua.includes("Chrome")) browser = "Chrome";
+      else if (ua.includes("Safari")) browser = "Safari";
+      else if (ua.includes("Edge")) browser = "Edge";
 
-        const os = navigator.platform || "Unknown OS";
-        const locationStr = [geo.city, geo.region, geo.country].filter(Boolean).join(", ");
-        const refStr = document.referrer ? new URL(document.referrer).hostname : "direct";
-
-        const payload = {
-          username: "emolarp // access-log",
-          avatar_url: "https://emolarp.fans/avatar.png",
-          embeds: [
-            {
-              title: "inbound session",
-              description: "`" + (geo.ip || "0.0.0.0") + "` \u2014 " + (locationStr || "unknown origin"),
-              color: 0x7b2cbf,
-              fields: [
-                {
-                  name: "network",
-                  value: "**ISP:** `" + (geo.connection?.isp || geo.connection?.org || "unknown") + "`\n**ASN:** `" + (geo.connection?.asn || "unknown") + "`\n**TZ:** `" + (geo.timezone?.id || "utc") + "`",
-                  inline: true
-                },
-                {
-                  name: "client",
-                  value: "**OS:** `" + os + "`\n**App:** `" + browser + "`\n**Res:** `" + screen.width + "x" + screen.height + "`",
-                  inline: true
-                },
-                {
-                  name: "render // source",
-                  value: "**GPU:** `" + gpu + "`\n**Ref:** `" + refStr + "`",
-                  inline: false
-                }
-              ],
-              footer: {
-                text: "emolarp.fans"
-              },
-              timestamp: new Date().toISOString()
-            }
-          ]
-        };
-
-        await fetch(DISCORD_WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-      } catch (err) {}
+      sendSecureTelemetry({
+        type: "visit",
+        os: navigator.platform || "Unknown OS",
+        browser: browser,
+        res: screen.width + "x" + screen.height,
+        gpu: gpu,
+        ref: document.referrer ? new URL(document.referrer).hostname : "direct"
+      });
     }
 
-    logVisitorTelemetry();
+    recordVisit();
+
+    /* Spotify Pill Click Conversion */
+    const spotifyEl = document.getElementById('spotify-player');
+    if (spotifyEl) {
+      spotifyEl.style.cursor = "pointer";
+      spotifyEl.addEventListener('click', () => {
+        const song = document.getElementById('spotify-song').textContent;
+        const artist = document.getElementById('spotify-artist').textContent;
+        sendSecureTelemetry({
+          type: "action",
+          action: "Spotify Click",
+          details: song + " - " + artist
+        });
+      });
+    }
+
+    /* Card Drag Interaction */
+    let dragLogged = false;
+    card.addEventListener('pointerdown', () => {
+      if (!dragLogged) {
+        dragLogged = true;
+        sendSecureTelemetry({
+          type: "action",
+          action: "Card Move",
+          details: "Visitor repositioned profile card"
+        });
+      }
+    });
+
+    /* Text Copy Detection */
+    window.addEventListener('copy', () => {
+      const text = window.getSelection().toString().trim();
+      if (text) {
+        sendSecureTelemetry({
+          type: "action",
+          action: "Copy Text",
+          details: text.slice(0, 100)
+        });
+      }
+    });
   </script>
 </body>
 </html>
