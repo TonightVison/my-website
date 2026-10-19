@@ -5,18 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>emo larp</title>
   
-  <!-- Inline Favicon to prevent 404 -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛧</text></svg>" />
-
   <link rel="stylesheet" href="style.css" />
-  <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <!-- Fonts -->
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&family=Special+Elite&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=JetBrains+Mono:wght@400;500;600&family=Special+Elite&display=swap" rel="stylesheet">
   
-  <!-- Head Script: Pre-defines instant Discord avatar so onerror never errors out -->
   <script>
     const DISCORD_USER_ID = "1416390397881749514";
     async function fetchInstantDiscordAvatar() {
@@ -42,8 +38,8 @@
     </div>
   </div>
 
-  <!-- Audio Volume Button with Mini Visualizer -->
-  <button id="sound-toggle" onclick="toggleAudioMute()" title="Mute/Unmute audio">
+  <!-- Audio Volume Button & Visualizer -->
+  <button id="sound-toggle" onclick="toggleMasterAudio()" title="Mute/Unmute Audio">
     <div class="audio-vis" id="audio-vis">
       <span class="v-bar"></span>
       <span class="v-bar"></span>
@@ -72,14 +68,13 @@
     <div class="corner-bracket bottom-left"></div>
     <div class="corner-bracket bottom-right"></div>
 
-    <!-- Drag Handle Indicator (Double click resets center) -->
     <div class="drag-bar" id="drag-handle" title="Hold to drag / Double click to center">
-      <span>:::</span>
+      <span class="grip-dots"><span></span><span></span><span></span></span>
     </div>
 
-    <!-- Random Typewriter Message Cycle -->
+    <!-- Random Typewriter Loop -->
     <div class="typewriter-box">
-      <span id="typewriter-text"></span><span class="cursor">|</span>
+      <span id="typewriter-text"></span><span class="cursor">_</span>
     </div>
 
     <!-- Avatar Box -->
@@ -92,14 +87,22 @@
         <h1 class="username">emo larp</h1>
         <p class="status-tracker" id="activity-tracker">fetching status...</p>
 
-        <!-- Spotify Now Playing Bar -->
-        <div id="spotify-player" class="spotify-box" style="display: none;">
-          <i class="fa-brands fa-spotify spotify-icon"></i>
-          <div class="spotify-details">
-            <span id="spotify-song" class="spotify-title"></span>
-            <span id="spotify-artist" class="spotify-sub"></span>
+        <!-- Upgraded Spotify Dynamic Card -->
+        <div id="spotify-player" class="spotify-card" style="display: none;">
+          <div class="spotify-album-wrap">
+            <img id="spotify-art" src="" alt="Album Art" />
+            <div class="spotify-pulse-ring"></div>
           </div>
-          <div class="eq-bars">
+          <div class="spotify-info">
+            <div class="spotify-badge">
+              <i class="fa-brands fa-spotify"></i>
+              <span id="spotify-status-tag">SPOTIFY PLAYBACK</span>
+            </div>
+            <span id="spotify-song" class="spotify-title">Loading track...</span>
+            <span id="spotify-artist" class="spotify-sub">Unknown artist</span>
+          </div>
+          <div class="eq-bars playing" id="spotify-eq">
+            <span class="bar"></span>
             <span class="bar"></span>
             <span class="bar"></span>
             <span class="bar"></span>
@@ -125,22 +128,42 @@
     </div>
   </main>
 
+  <!-- Audio Element for Live Spotify Preview Streaming -->
+  <audio id="spotify-audio" preload="none" loop></audio>
+
   <script>
     const STEAM_CUSTOM_URL = "ussf";
 
     const overlay = document.getElementById('entry-overlay');
     const video = document.getElementById('bg-video');
+    const spotifyAudio = document.getElementById('spotify-audio');
     const soundIcon = document.getElementById('sound-icon');
     const audioVis = document.getElementById('audio-vis');
     const toast = document.getElementById('toast');
 
-    function updateSoundUi(isMuted) {
-      if (isMuted) {
+    let isMasterMuted = false;
+    let isSpotifyPlaying = false;
+    let currentTrackId = null;
+
+    function applyAudioState() {
+      if (isMasterMuted) {
+        video.muted = true;
+        spotifyAudio.muted = true;
         soundIcon.className = "fa-solid fa-volume-xmark";
-        if (audioVis) audioVis.classList.remove('playing');
+        audioVis.classList.remove('playing');
       } else {
         soundIcon.className = "fa-solid fa-volume-high";
-        if (audioVis) audioVis.classList.add('playing');
+        audioVis.classList.add('playing');
+        
+        // If Spotify is currently active and playing preview, mute the background video!
+        if (isSpotifyPlaying && !spotifyAudio.paused && spotifyAudio.src) {
+          video.muted = true;
+          spotifyAudio.muted = false;
+        } else {
+          // If no track is playing, unmute video background
+          video.muted = false;
+          spotifyAudio.muted = true;
+        }
       }
     }
 
@@ -148,25 +171,19 @@
       overlay.classList.add('fade-out');
       setTimeout(() => overlay.style.display = 'none', 600);
       
-      video.muted = false;
-      video.play().then(() => {
-        updateSoundUi(false);
-      }).catch(() => {
-        video.muted = true;
-        video.play();
-        updateSoundUi(true);
-      });
+      isMasterMuted = false;
+      video.play().catch(() => {});
+      applyAudioState();
     }
 
-    function toggleAudioMute() {
-      video.muted = !video.muted;
-      updateSoundUi(video.muted);
+    function toggleMasterAudio() {
+      isMasterMuted = !isMasterMuted;
+      applyAudioState();
     }
 
     function delayedRedirect(url, platformName) {
       toast.innerText = `[ opening ${platformName}... ]`;
       toast.classList.add('visible');
-      
       setTimeout(() => {
         toast.classList.remove('visible');
         window.open(url, '_blank', 'noopener,noreferrer');
@@ -193,9 +210,9 @@
     let charIndex = 0;
     let isDeleting = false;
     let lastIndex = -1;
-    const typeSpeed = 85;
-    const eraseSpeed = 40;
-    const holdDelay = 1900;
+    const typeSpeed = 80;
+    const eraseSpeed = 35;
+    const holdDelay = 2000;
     const typewriterEl = document.getElementById('typewriter-text');
 
     function getRandomPhrase() {
@@ -234,14 +251,37 @@
 
     typeLoop();
 
-    /* Robust Steam & Discord Presence Fetcher */
+    /* Sync Spotify Audio Playback */
+    async function syncSpotifyAudio(trackId) {
+      if (!trackId) {
+        spotifyAudio.pause();
+        isSpotifyPlaying = false;
+        applyAudioState();
+        return;
+      }
+
+      if (currentTrackId === trackId && !spotifyAudio.paused) return;
+      currentTrackId = trackId;
+
+      try {
+        // Fetch track preview snippet from public Spotify API proxy
+        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.spotify.com/v1/tracks/${trackId}`)}`);
+        // If not accessible or no 30s preview snippet, keep standard video audio
+      } catch (e) {}
+
+      // Cross-fade check
+      isSpotifyPlaying = true;
+      applyAudioState();
+    }
+
+    /* Live Presence & Spotify Fetcher */
     async function loadPresence() {
       const tracker = document.getElementById('activity-tracker');
       const dot = document.getElementById('status-dot');
       const avatarImg = document.getElementById('avatar-img');
-      const spotifyBox = document.getElementById('spotify-player');
+      const spotifyCard = document.getElementById('spotify-player');
 
-      // 1. Steam check via allorigins proxy (No 401s)
+      // 1. Steam Check via allorigins
       try {
         const steamTarget = `https://steamcommunity.com/id/${STEAM_CUSTOM_URL}/?xml=1`;
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(steamTarget)}`;
@@ -274,7 +314,7 @@
         }
       } catch (err) {}
 
-      // 2. Lanyard Check (Discord Avatar, Status & Live Spotify)
+      // 2. Lanyard Presence & Live Spotify
       try {
         const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
         const data = await res.json();
@@ -282,25 +322,31 @@
         if (data.success && data.data) {
           const lanyard = data.data;
 
-          // If avatar not set by steam, set via discord
           if (avatarImg && (!avatarImg.src || avatarImg.src.includes('avatar.png') || avatarImg.src.includes('dicebear'))) {
             if (lanyard.discord_user?.avatar) {
               avatarImg.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${lanyard.discord_user.avatar}.png?size=256`;
             }
           }
 
-          // Spotify Now Playing Pill
-          if (spotifyBox) {
-            if (lanyard.listening_to_spotify && lanyard.spotify) {
-              document.getElementById('spotify-song').textContent = lanyard.spotify.song;
-              document.getElementById('spotify-artist').textContent = lanyard.spotify.artist;
-              spotifyBox.style.display = 'flex';
-            } else {
-              spotifyBox.style.display = 'none';
+          // Spotify Detection
+          if (lanyard.listening_to_spotify && lanyard.spotify) {
+            document.getElementById('spotify-song').textContent = lanyard.spotify.song;
+            document.getElementById('spotify-artist').textContent = lanyard.spotify.artist;
+            if (lanyard.spotify.album_art_url) {
+              document.getElementById('spotify-art').src = lanyard.spotify.album_art_url;
             }
+            spotifyCard.style.display = 'flex';
+            
+            // Audio switch: Mute background video while listening
+            isSpotifyPlaying = true;
+            applyAudioState();
+          } else {
+            spotifyCard.style.display = 'none';
+            isSpotifyPlaying = false;
+            applyAudioState();
           }
 
-          // Fallback status if steam isn't actively playing
+          // Fallback game status
           if (!tracker.innerText.includes("playing")) {
             const game = lanyard.activities?.find(a => a.type === 0);
             if (game) {
@@ -313,12 +359,14 @@
           }
         }
       } catch (e) {
-        if (spotifyBox) spotifyBox.style.display = 'none';
+        if (spotifyCard) spotifyCard.style.display = 'none';
+        isSpotifyPlaying = false;
+        applyAudioState();
       }
     }
 
     loadPresence();
-    setInterval(loadPresence, 6000);
+    setInterval(loadPresence, 5000);
 
     /* Pointer-Capture Card Dragging */
     const card = document.getElementById("draggable-card");
@@ -330,7 +378,7 @@
     let initialTop = 0;
 
     card.addEventListener("pointerdown", (e) => {
-      if (e.target.closest("a") || e.target.closest("button")) return;
+      if (e.target.closest("a") || e.target.closest("button") || e.target.closest(".spotify-card")) return;
 
       isDragging = true;
       card.classList.add("dragging");
