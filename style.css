@@ -1,328 +1,214 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>emo larp</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- FontAwesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&family=Special+Elite&display=swap" rel="stylesheet">
-  
-  <link rel="preload" as="image" href="avatar.png" />
-</head>
-<body>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
 
-  <!-- Entry Overlay -->
-  <div id="entry-overlay" onclick="enterSite()">
-    <div class="entry-content">
-      <p class="glitch-enter">[ click to enter ]</p>
-    </div>
-  </div>
+body {
+  background-color: #020104;
+  color: #cfc2df;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  font-family: 'Share Tech Mono', monospace;
+}
 
-  <!-- Audio Volume / Mute Button -->
-  <button id="sound-toggle" onclick="toggleAudioMute()" title="Mute/Unmute audio">
-    <i class="fa-solid fa-volume-high" id="sound-icon"></i>
-  </button>
+/* 1. Full-Screen Entry Overlay */
+#entry-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, rgba(14, 5, 20, 0.98) 0%, rgba(2, 1, 3, 1) 100%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 
-  <!-- Notification Toast for Transition Delayed Launches -->
-  <div id="toast" class="toast">[ opening... ]</div>
+.glitch-enter {
+  font-size: 1.25rem;
+  color: #9d4edd;
+  letter-spacing: 3px;
+  text-shadow: 0 0 12px rgba(157, 78, 221, 0.7);
+  animation: pulseGlitch 2s infinite ease-in-out;
+}
 
-  <!-- Background Video -->
-  <div class="video-bg-container">
-    <video id="bg-video" loop playsinline>
-      <source src="clip.mp4" type="video/mp4" />
-    </video>
-    <div class="grain-overlay"></div>
-    <div class="vignette"></div>
-  </div>
+@keyframes pulseGlitch {
+  0%, 100% { opacity: 0.35; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
 
-  <!-- Draggable Profile Frame -->
-  <main class="profile-frame" id="draggable-card">
-    <div class="corner-bracket top-left"></div>
-    <div class="corner-bracket top-right"></div>
-    <div class="corner-bracket bottom-left"></div>
-    <div class="corner-bracket bottom-right"></div>
+.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
 
-    <!-- Drag Handle Indicator (Double click resets center) -->
-    <div class="drag-bar" id="drag-handle" title="Hold to drag / Double click to center">
-      <span>:::</span>
-    </div>
+/* Audio Sound Button */
+#sound-toggle {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  z-index: 100;
+  background: rgba(14, 8, 20, 0.5);
+  border: 1px solid rgba(157, 78, 221, 0.35);
+  color: #c77dff;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
 
-    <!-- Random Typewriter Message Cycle -->
-    <div class="typewriter-box">
-      <span id="typewriter-text"></span><span class="cursor">|</span>
-    </div>
+#sound-toggle:hover {
+  background: rgba(30, 15, 45, 0.8);
+  border-color: #c77dff;
+  color: #ffffff;
+  transform: scale(1.08);
+}
 
-    <!-- Avatar Box -->
-    <div class="avatar-box">
-      <div class="avatar-hex">
-        <img id="avatar-img" src="avatar.png" draggable="false" onerror="fetchInstantDiscordAvatar()" alt="avatar" />
-        <span id="status-dot" class="status-offline"></span>
-      </div>
-      <div class="user-details">
-        <h1 class="username">emo larp</h1>
-        <p class="status-tracker" id="activity-tracker">fetching status...</p>
-      </div>
-    </div>
+/* Toast Alert Notification */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(14, 6, 22, 0.9);
+  border: 1px solid #9d4edd;
+  color: #e0aaff;
+  padding: 8px 18px;
+  font-size: 0.8rem;
+  letter-spacing: 1.5px;
+  border-radius: 6px;
+  box-shadow: 0 0 16px rgba(157, 78, 221, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 200;
+}
 
-    <!-- Symmetrical Badges with Custom JavaScript Triggered Delayed Opening -->
-    <div class="social-badges">
-      <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile">
-        <i class="fa-brands fa-discord"></i>
-      </button>
-      <button onclick="delayedRedirect('https://steamcommunity.com/id/ussf/', 'steam')" class="badge-link steam" title="Open Steam Profile">
-        <i class="fa-brands fa-steam"></i>
-      </button>
-      <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile">
-        <i class="fa-solid fa-cube"></i>
-      </button>
-      <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify">
-        <i class="fa-brands fa-spotify"></i>
-      </button>
-    </div>
-  </main>
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 
-  <script>
-    const STEAM_CUSTOM_URL = "ussf";
-    const DISCORD_USER_ID = "1416390397881749514";
+/* 2. Background Video & Overlays */
+.video-bg-container {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
 
-    const overlay = document.getElementById('entry-overlay');
-    const video = document.getElementById('bg-video');
-    const soundIcon = document.getElementById('sound-icon');
-    const toast = document.getElementById('toast');
+#bg-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: contrast(130%) brightness(24%) grayscale(70%);
+}
 
-    function enterSite() {
-      overlay.classList.add('fade-out');
-      setTimeout(() => overlay.style.display = 'none', 600);
-      
-      video.muted = false;
-      video.play().catch(() => {
-        video.muted = true;
-        video.play();
-        soundIcon.className = "fa-solid fa-volume-xmark";
-      });
-    }
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.22),
+    rgba(0, 0, 0, 0.22) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+}
 
-    function toggleAudioMute() {
-      video.muted = !video.muted;
-      soundIcon.className = video.muted ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
-    }
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 15%, rgba(2, 1, 4, 0.96) 90%);
+  pointer-events: none;
+}
 
-    /* Multi-Link Delay handler */
-    function delayedRedirect(url, platformName) {
-      toast.innerText = `[ opening ${platformName}... ]`;
-      toast.classList.add('visible');
-      
-      setTimeout(() => {
-        toast.classList.remove('visible');
-        window.open(url, '_blank', 'noopener,noreferrer');
-      }, 500); // exactly 0.5-second delay
-    }
+/* 3. Draggable Chamfered Glass Card */
+.profile-frame {
+  position: relative;
+  z-index: 10;
+  width: 90%;
+  max-width: 380px;
+  background: rgba(10, 6, 16, 0.42);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: 24px 24px 28px 24px;
+  text-align: center;
+  border: 1px solid rgba(157, 78, 221, 0.25);
+  clip-path: polygon(
+    14px 0%, calc(100% - 14px) 0%, 
+    100% 14px, 100% calc(100% - 14px), 
+    calc(100% - 14px) 100%, 14px 100%, 
+    0% calc(100% - 14px), 0% 14px
+  );
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95), inset 0 0 25px rgba(157, 78, 221, 0.05);
+  cursor: grab;
+  touch-action: none;
+}
 
-    /* Fast Discord Avatar Fallback */
-    async function fetchInstantDiscordAvatar() {
-      try {
-        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
-        const data = await res.json();
-        if (data.data?.discord_user?.avatar) {
-          document.getElementById('avatar-img').src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${data.data.discord_user.avatar}.png?size=256`;
-        }
-      } catch (e) {
-        document.getElementById('avatar-img').src = "https://api.dicebear.com/7.x/bottts/svg?seed=emolarp";
-      }
-    }
+.profile-frame.dragging {
+  cursor: grabbing;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.98), 0 0 20px rgba(157, 78, 221, 0.3);
+}
 
-    /* Random Obsession Phrases Pool */
-    const phrases = [
-      "i love you so much it hurts...",
-      "don't look away from me <3",
-      "staring right through your screen.",
-      "thinking about you endlessly...",
-      "you can't leave this page now.",
-      "every second without you is empty.",
-      "i know you're still watching.",
-      "carved your name into my mind.",
-      "you're the only thing that matters :3",
-      "let me stay in your head forever.",
-      "obsessed is an understatement.",
-      "don't close this tab..."
-    ];
+.drag-bar {
+  color: #7b5894;
+  font-size: 0.85rem;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+  opacity: 0.6;
+}
 
-    let currentPhrase = "";
-    let charIndex = 0;
-    let isDeleting = false;
-    let lastIndex = -1;
-    const typeSpeed = 85;
-    const eraseSpeed = 40;
-    const holdDelay = 1900;
-    const typewriterEl = document.getElementById('typewriter-text');
+/* Corner Bracket Accents */
+.corner-bracket {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: #9d4edd;
+  pointer-events: none;
+  opacity: 0.75;
+}
 
-    function getRandomPhrase() {
-      let nextIndex;
-      do {
-        nextIndex = Math.floor(Math.random() * phrases.length);
-      } while (nextIndex === lastIndex && phrases.length > 1);
-      lastIndex = nextIndex;
-      return phrases[nextIndex];
-    }
+.top-left { top: 5px; left: 5px; border-top: 2px solid #9d4edd; border-left: 2px solid #9d4edd; }
+.top-right { top: 5px; right: 5px; border-top: 2px solid #9d4edd; border-right: 2px solid #9d4edd; }
+.bottom-left { bottom: 5px; left: 5px; border-bottom: 2px solid #9d4edd; border-left: 2px solid #9d4edd; }
+.bottom-right { bottom: 5px; right: 5px; border-bottom: 2px solid #9d4edd; border-right: 2px solid #9d4edd; }
 
-    function typeLoop() {
-      if (!currentPhrase) {
-        currentPhrase = getRandomPhrase();
-      }
+/* 4. Typewriter Message Banner */
+.typewriter-box {
+  min-height: 24px;
+  margin-bottom: 18px;
+}
 
-      if (!isDeleting) {
-        typewriterEl.textContent = currentPhrase.substring(0, charIndex + 1);
-        charIndex++;
+#typewriter-text {
+  font-family: 'Special Elite', monospace;
+  font-size: 0.88rem;
+  color: #c77dff;
+  text-shadow: 0 0 10px rgba(199, 125, 255, 0.5);
+  letter-spacing: 0.5px;
+}
 
-        if (charIndex === currentPhrase.length) {
-          isDeleting = true;
-          setTimeout(typeLoop, holdDelay);
-          return;
-        }
-      } else {
-        typewriterEl.textContent = currentPhrase.substring(0, charIndex - 1);
-        charIndex--;
+.cursor {
+  font-weight: bold;
+  color: #9d4edd;
+  animation: blink 0.9s infinite;
+}
 
-        if (charIndex === 0) {
-          isDeleting = false;
-          currentPhrase = getRandomPhrase();
-        }
-      }
-
-      setTimeout(typeLoop, isDeleting ? eraseSpeed : typeSpeed);
-    }
-
-    typeLoop();
-
-    /* Steam with Immediate Discord Fallback */
-    async function loadPresence() {
-      const tracker = document.getElementById('activity-tracker');
-      const dot = document.getElementById('status-dot');
-      const avatarImg = document.getElementById('avatar-img');
-
-      fetchInstantDiscordAvatar();
-
-      try {
-        const steamTarget = `https://steamcommunity.com/id/${STEAM_CUSTOM_URL}/?xml=1`;
-        const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(steamTarget)}`;
-        const res = await fetch(proxyUrl);
-        
-        if (res.ok) {
-          const xmlText = await res.text();
-          if (xmlText && xmlText.includes("<profile>")) {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-
-            const avatarFull = xmlDoc.querySelector("avatarFull")?.textContent;
-            if (avatarFull) avatarImg.src = avatarFull;
-
-            const onlineState = xmlDoc.querySelector("onlineState")?.textContent;
-            const gameName = xmlDoc.querySelector("gameName")?.textContent;
-            const stateMessage = xmlDoc.querySelector("stateMessage")?.textContent;
-
-            if (onlineState === "in-game" && gameName) {
-              dot.className = "status-ingame";
-              tracker.innerText = `playing ${gameName}`;
-              return;
-            } else if (onlineState === "online") {
-              dot.className = "status-online";
-              tracker.innerText = "online on steam";
-              return;
-            } else if (stateMessage) {
-              dot.className = "status-offline";
-              tracker.innerText = stateMessage.replace(/<[^>]*>/g, '').trim().toLowerCase();
-              return;
-            }
-          }
-        }
-      } catch (err) {}
-
-      try {
-        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
-        const data = await res.json();
-        if (data.success && data.data) {
-          const lanyard = data.data;
-          const game = lanyard.activities.find(a => a.type === 0);
-          if (game) {
-            dot.className = "status-ingame";
-            tracker.innerText = `playing ${game.name}`;
-          } else if (lanyard.discord_status !== 'offline') {
-            dot.className = `status-${lanyard.discord_status}`;
-            tracker.innerText = `online (${lanyard.discord_status})`;
-          } else {
-            tracker.innerText = "last seen unknown";
-          }
-        }
-      } catch (e) {
-        tracker.innerText = "last seen unknown";
-      }
-    }
-
-    loadPresence();
-
-    /* Robust Pointer-Locked Drag (No Sticky Glitch) */
-    const card = document.getElementById("draggable-card");
-    const dragHandle = document.getElementById("drag-handle");
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let initialLeft = 0;
-    let initialTop = 0;
-
-    card.addEventListener("pointerdown", (e) => {
-      if (e.target.closest("a") || e.target.closest("button")) return;
-
-      isDragging = true;
-      card.classList.add("dragging");
-      card.setPointerCapture(e.pointerId);
-
-      const rect = card.getBoundingClientRect();
-      startX = e.clientX;
-      startY = e.clientY;
-      initialLeft = rect.left;
-      initialTop = rect.top;
-
-      card.style.position = "fixed";
-      card.style.left = initialLeft + "px";
-      card.style.top = initialTop + "px";
-      card.style.margin = "0";
-      card.style.transform = "none";
-    });
-
-    card.addEventListener("pointermove", (e) => {
-      if (!isDragging) return;
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
-
-      card.style.left = (initialLeft + deltaX) + "px";
-      card.style.top = (initialTop + deltaY) + "px";
-    });
-
-    function stopDragging(e) {
-      if (isDragging) {
-        isDragging = false;
-        card.classList.remove("dragging");
-        try {
-          if (e && e.pointerId) card.releasePointerCapture(e.pointerId);
-        } catch (_) {}
-      }
-    }
-
-    card.addEventListener("pointerup", stopDragging);
-    card.addEventListener("pointercancel", stopDragging);
-    window.addEventListener("blur", stopDragging);
-
-    dragHandle.addEventListener("dblclick", () => {
-      card.style.position = "relative";
-      card.style.left = "auto";
-      card.style.top = "auto";
-      card.style.margin = "0 auto";
-    });
-  </script>
-</body>
-</html>
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0
