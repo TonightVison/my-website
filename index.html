@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>emo larp</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- FontAwesome for rugged icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Stylized Fonts -->
+  <!-- Fonts: Cinzel, Share Tech Mono, Special Elite -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&family=Special+Elite&display=swap" rel="stylesheet">
@@ -20,7 +21,7 @@
     </div>
   </div>
 
-  <!-- Background Video -->
+  <!-- Background Video Container -->
   <div class="video-bg-container">
     <video id="bg-video" loop playsinline muted>
       <source src="clip.mp4" type="video/mp4" />
@@ -29,9 +30,9 @@
     <div class="vignette"></div>
   </div>
 
-  <!-- Main Fancy Cut-Corner Transparent Card -->
+  <!-- Main Chamfered Transparent Card -->
   <main class="profile-frame">
-    <!-- Corner Accents for Rugged Fancy Aesthetic -->
+    <!-- Corner Bracket Accents -->
     <div class="corner-bracket top-left"></div>
     <div class="corner-bracket top-right"></div>
     <div class="corner-bracket bottom-left"></div>
@@ -42,34 +43,34 @@
       <span id="typewriter-text"></span><span class="cursor">|</span>
     </div>
 
-    <!-- Avatar Box -->
+    <!-- Avatar Box with Steam Live Indicator -->
     <div class="avatar-box">
       <div class="avatar-hex">
         <img id="avatar-img" src="avatar.png" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=emolarp'" alt="avatar" />
-        <span id="discord-status-dot" class="status-offline"></span>
+        <span id="steam-status-dot" class="status-offline"></span>
       </div>
       <div class="user-details">
         <h1 class="username">emo larp</h1>
-        <p class="status-tracker" id="activity-tracker">last seen unknown</p>
+        <p class="status-tracker" id="activity-tracker">reading steam...</p>
       </div>
     </div>
 
-    <!-- Rugged Cut-Corner Link Badges -->
+    <!-- Symmetrical Link Badges -->
     <div class="social-badges">
-      <a href="https://steamcommunity.com/id/ussf/" target="_blank" rel="noopener noreferrer" class="badge-link steam" title="Steam">
+      <a href="https://steamcommunity.com" target="_blank" rel="noopener noreferrer" class="badge-link steam" title="Steam">
         <i class="fa-brands fa-steam"></i>
       </a>
-      <a href="https://www.roblox.com/users/1871164209/profile" target="_blank" rel="noopener noreferrer" class="badge-link roblox" title="Roblox">
+      <a href="https://roblox.com" target="_blank" rel="noopener noreferrer" class="badge-link roblox" title="Roblox">
         <i class="fa-solid fa-cube"></i>
       </a>
-      <a href="https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457" target="_blank" rel="noopener noreferrer" class="badge-link spotify" title="Spotify">
+      <a href="https://spotify.com" target="_blank" rel="noopener noreferrer" class="badge-link spotify" title="Spotify">
         <i class="fa-brands fa-spotify"></i>
       </a>
     </div>
   </main>
 
   <script>
-    const DISCORD_USER_ID = "1416390397881749514";
+    const STEAM_CUSTOM_URL = "ussf";
 
     const overlay = document.getElementById('entry-overlay');
     const video = document.getElementById('bg-video');
@@ -80,7 +81,7 @@
       video.play().catch(() => {});
     }
 
-    /* Typewriter Cycle Logic */
+    /* Typewriter Cycle */
     const phrases = [
       "i love you so much it hurts...",
       "don't look away from me <3",
@@ -124,36 +125,48 @@
 
     typeLoop();
 
-    /* Single Initial Discord Presence Check (No 60s Loop) */
-    async function checkDiscord() {
-      try {
-        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
-        const data = await res.json();
-        if (data.success && data.data) {
-          const lanyard = data.data;
+    /* Direct Steam Profile Scraper */
+    async function checkSteamStatus() {
+      const tracker = document.getElementById('activity-tracker');
+      const dot = document.getElementById('steam-status-dot');
+      const avatarImg = document.getElementById('avatar-img');
 
-          if (lanyard.discord_user && lanyard.discord_user.avatar) {
-            document.getElementById('avatar-img').src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${lanyard.discord_user.avatar}.png?size=256`;
+      try {
+        const steamXmlUrl = encodeURIComponent(`https://steamcommunity.com/id/${STEAM_CUSTOM_URL}/?xml=1`);
+        const res = await fetch(`https://api.allorigins.win/get?url=${steamXmlUrl}`);
+        const data = await res.json();
+
+        if (data.contents) {
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+
+          const steamAvatar = xmlDoc.querySelector("avatarFull")?.textContent;
+          if (steamAvatar) {
+            avatarImg.src = steamAvatar;
           }
 
-          document.getElementById('discord-status-dot').className = `status-${lanyard.discord_status}`;
+          const onlineState = xmlDoc.querySelector("onlineState")?.textContent;
+          const gameTitle = xmlDoc.querySelector("gameName")?.textContent;
+          const stateMessage = xmlDoc.querySelector("stateMessage")?.textContent;
 
-          const game = lanyard.activities.find(a => a.type === 0);
-          const tracker = document.getElementById('activity-tracker');
-          if (game) {
-            tracker.innerText = `playing ${game.name}`;
-          } else if (lanyard.discord_status !== 'offline') {
-            tracker.innerText = `online (${lanyard.discord_status})`;
+          if (onlineState === "in-game" && gameTitle) {
+            dot.className = "status-ingame";
+            tracker.innerText = `playing ${gameTitle}`;
+          } else if (onlineState === "online") {
+            dot.className = "status-online";
+            tracker.innerText = "online on steam";
           } else {
-            tracker.innerText = `last seen unknown`;
+            dot.className = "status-offline";
+            const cleanedMsg = stateMessage ? stateMessage.replace(/<[^>]*>/g, '').toLowerCase() : "last seen unknown";
+            tracker.innerText = cleanedMsg;
           }
         }
-      } catch (e) {
-        console.log("Presence check failed", e);
+      } catch (err) {
+        tracker.innerText = "last seen unknown";
       }
     }
 
-    checkDiscord();
+    checkSteamStatus();
   </script>
 </body>
 </html>
