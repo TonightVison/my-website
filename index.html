@@ -23,8 +23,14 @@
     </div>
   </div>
 
-  <!-- Audio Volume / Mute Button -->
+  <!-- Audio Volume Button with Integrated Mini Visualizer Bars -->
   <button id="sound-toggle" onclick="toggleAudioMute()" title="Mute/Unmute audio">
+    <div class="audio-vis" id="audio-vis">
+      <span class="v-bar"></span>
+      <span class="v-bar"></span>
+      <span class="v-bar"></span>
+      <span class="v-bar"></span>
+    </div>
     <i class="fa-solid fa-volume-high" id="sound-icon"></i>
   </button>
 
@@ -66,10 +72,24 @@
       <div class="user-details">
         <h1 class="username">emo larp</h1>
         <p class="status-tracker" id="activity-tracker">fetching status...</p>
+        
+        <!-- Dynamic Spotify Pill -->
+        <div id="spotify-player" class="spotify-box" style="display: none;">
+          <i class="fa-brands fa-spotify spotify-icon"></i>
+          <div class="spotify-details">
+            <span id="spotify-song" class="spotify-title"></span>
+            <span id="spotify-artist" class="spotify-sub"></span>
+          </div>
+          <div class="eq-bars">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Symmetrical Badges with Custom JavaScript Triggered Delayed Opening -->
+    <!-- Symmetrical Badges with Custom Delayed Opening -->
     <div class="social-badges">
       <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile">
         <i class="fa-brands fa-discord"></i>
@@ -93,23 +113,36 @@
     const overlay = document.getElementById('entry-overlay');
     const video = document.getElementById('bg-video');
     const soundIcon = document.getElementById('sound-icon');
+    const audioVis = document.getElementById('audio-vis');
     const toast = document.getElementById('toast');
+
+    function updateSoundUi(isMuted) {
+      if (isMuted) {
+        soundIcon.className = "fa-solid fa-volume-xmark";
+        audioVis.classList.remove('playing');
+      } else {
+        soundIcon.className = "fa-solid fa-volume-high";
+        audioVis.classList.add('playing');
+      }
+    }
 
     function enterSite() {
       overlay.classList.add('fade-out');
       setTimeout(() => overlay.style.display = 'none', 600);
       
       video.muted = false;
-      video.play().catch(() => {
+      video.play().then(() => {
+        updateSoundUi(false);
+      }).catch(() => {
         video.muted = true;
         video.play();
-        soundIcon.className = "fa-solid fa-volume-xmark";
+        updateSoundUi(true);
       });
     }
 
     function toggleAudioMute() {
       video.muted = !video.muted;
-      soundIcon.className = video.muted ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
+      updateSoundUi(video.muted);
     }
 
     /* Multi-Link Delay handler */
@@ -120,7 +153,7 @@
       setTimeout(() => {
         toast.classList.remove('visible');
         window.open(url, '_blank', 'noopener,noreferrer');
-      }, 500); // exactly 0.5-second delay
+      }, 500);
     }
 
     /* Fast Discord Avatar Fallback */
@@ -171,9 +204,7 @@
     }
 
     function typeLoop() {
-      if (!currentPhrase) {
-        currentPhrase = getRandomPhrase();
-      }
+      if (!currentPhrase) currentPhrase = getRandomPhrase();
 
       if (!isDeleting) {
         typewriterEl.textContent = currentPhrase.substring(0, charIndex + 1);
@@ -199,11 +230,12 @@
 
     typeLoop();
 
-    /* Steam with Immediate Discord Fallback */
+    /* Steam & Discord Presence with Live Spotify parsing */
     async function loadPresence() {
       const tracker = document.getElementById('activity-tracker');
       const dot = document.getElementById('status-dot');
       const avatarImg = document.getElementById('avatar-img');
+      const spotifyBox = document.getElementById('spotify-player');
 
       fetchInstantDiscordAvatar();
 
@@ -228,44 +260,56 @@
             if (onlineState === "in-game" && gameName) {
               dot.className = "status-ingame";
               tracker.innerText = `playing ${gameName}`;
-              return;
             } else if (onlineState === "online") {
               dot.className = "status-online";
               tracker.innerText = "online on steam";
-              return;
             } else if (stateMessage) {
               dot.className = "status-offline";
               tracker.innerText = stateMessage.replace(/<[^>]*>/g, '').trim().toLowerCase();
-              return;
             }
           }
         }
       } catch (err) {}
 
+      /* Discord / Lanyard Presence & Spotify */
       try {
         const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
         const data = await res.json();
         if (data.success && data.data) {
           const lanyard = data.data;
-          const game = lanyard.activities.find(a => a.type === 0);
-          if (game) {
-            dot.className = "status-ingame";
-            tracker.innerText = `playing ${game.name}`;
-          } else if (lanyard.discord_status !== 'offline') {
-            dot.className = `status-${lanyard.discord_status}`;
-            tracker.innerText = `online (${lanyard.discord_status})`;
+
+          // Spotify Pill Visibility
+          if (lanyard.listening_to_spotify && lanyard.spotify) {
+            spotifyBox.style.display = 'flex';
+            document.getElementById('spotify-song').textContent = lanyard.spotify.song;
+            document.getElementById('spotify-artist').textContent = lanyard.spotify.artist;
           } else {
-            tracker.innerText = "last seen unknown";
+            spotifyBox.style.display = 'none';
+          }
+
+          // Game/Activity Fallback if Steam did not trigger
+          if (!tracker.innerText.includes("playing")) {
+            const game = lanyard.activities.find(a => a.type === 0);
+            if (game) {
+              dot.className = "status-ingame";
+              tracker.innerText = `playing ${game.name}`;
+            } else if (lanyard.discord_status !== 'offline') {
+              dot.className = `status-${lanyard.discord_status}`;
+              tracker.innerText = `online (${lanyard.discord_status})`;
+            } else {
+              tracker.innerText = "last seen unknown";
+            }
           }
         }
       } catch (e) {
-        tracker.innerText = "last seen unknown";
+        spotifyBox.style.display = 'none';
       }
     }
 
     loadPresence();
+    setInterval(loadPresence, 12000);
 
-    /* Robust Pointer-Locked Drag (No Sticky Glitch) */
+    /* Pointer-Capture Dragging (Zero Sticking) */
     const card = document.getElementById("draggable-card");
     const dragHandle = document.getElementById("drag-handle");
     let isDragging = false;
@@ -322,6 +366,22 @@
       card.style.left = "auto";
       card.style.top = "auto";
       card.style.margin = "0 auto";
+    });
+
+    /* Mouse Sparkle Particle Trail */
+    let lastParticleTime = 0;
+    window.addEventListener("pointermove", (e) => {
+      const now = performance.now();
+      if (now - lastParticleTime < 35) return;
+      lastParticleTime = now;
+
+      const particle = document.createElement("div");
+      particle.className = "cursor-particle";
+      particle.style.left = e.clientX + "px";
+      particle.style.top = e.clientY + "px";
+      document.body.appendChild(particle);
+
+      setTimeout(() => particle.remove(), 650);
     });
   </script>
 </body>
