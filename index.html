@@ -12,7 +12,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&family=Special+Elite&display=swap" rel="stylesheet">
   
-  <!-- Instant Preload for Profile Picture -->
   <link rel="preload" as="image" href="avatar.png" />
 </head>
 <body>
@@ -23,6 +22,14 @@
       <p class="glitch-enter">[ click to enter ]</p>
     </div>
   </div>
+
+  <!-- Audio Volume / Mute Button -->
+  <button id="sound-toggle" onclick="toggleAudioMute()" title="Mute/Unmute audio">
+    <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+  </button>
+
+  <!-- Notification Toast for Copied Info -->
+  <div id="toast" class="toast">[ copied to clipboard ]</div>
 
   <!-- Background Video -->
   <div class="video-bg-container">
@@ -40,7 +47,8 @@
     <div class="corner-bracket bottom-left"></div>
     <div class="corner-bracket bottom-right"></div>
 
-    <div class="drag-bar">
+    <!-- Drag Handle Indicator (Double click resets center) -->
+    <div class="drag-bar" id="drag-handle" title="Hold to drag / Double click to center">
       <span>:::</span>
     </div>
 
@@ -52,7 +60,7 @@
     <!-- Avatar Box -->
     <div class="avatar-box">
       <div class="avatar-hex">
-        <img id="avatar-img" src="avatar.png" onerror="fetchInstantDiscordAvatar()" alt="avatar" />
+        <img id="avatar-img" src="avatar.png" draggable="false" onerror="fetchInstantDiscordAvatar()" alt="avatar" />
         <span id="status-dot" class="status-offline"></span>
       </div>
       <div class="user-details">
@@ -61,11 +69,11 @@
       </div>
     </div>
 
-    <!-- Symmetrical Badges (Discord Included) -->
+    <!-- Symmetrical Badges -->
     <div class="social-badges">
-      <a href="https://discord.com/users/1416390397881749514" target="_blank" rel="noopener noreferrer" class="badge-link discord" title="Discord">
+      <button onclick="copyDiscordId()" class="badge-link discord" title="Copy Discord ID">
         <i class="fa-brands fa-discord"></i>
-      </a>
+      </button>
       <a href="https://steamcommunity.com/id/ussf/" target="_blank" rel="noopener noreferrer" class="badge-link steam" title="Steam">
         <i class="fa-brands fa-steam"></i>
       </a>
@@ -84,16 +92,37 @@
 
     const overlay = document.getElementById('entry-overlay');
     const video = document.getElementById('bg-video');
+    const soundIcon = document.getElementById('sound-icon');
+    const toast = document.getElementById('toast');
 
     function enterSite() {
       overlay.classList.add('fade-out');
       setTimeout(() => overlay.style.display = 'none', 600);
       
       video.muted = false;
-      video.play().catch(e => {
-        console.warn("Unmuted autoplay restricted, attempting muted play:", e);
+      video.play().catch(() => {
         video.muted = true;
         video.play();
+        soundIcon.className = "fa-solid fa-volume-xmark";
+      });
+    }
+
+    function toggleAudioMute() {
+      video.muted = !video.muted;
+      soundIcon.className = video.muted ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
+    }
+
+    function showToast(text) {
+      toast.innerText = text;
+      toast.classList.add('visible');
+      setTimeout(() => toast.classList.remove('visible'), 2200);
+    }
+
+    function copyDiscordId() {
+      navigator.clipboard.writeText(DISCORD_USER_ID).then(() => {
+        showToast("[ discord id copied ]");
+      }).catch(() => {
+        window.open(`https://discord.com/users/${DISCORD_USER_ID}`, '_blank');
       });
     }
 
@@ -179,7 +208,6 @@
       const dot = document.getElementById('status-dot');
       const avatarImg = document.getElementById('avatar-img');
 
-      // Pre-fetch Discord avatar in parallel so it never lags
       fetchInstantDiscordAvatar();
 
       try {
@@ -194,9 +222,7 @@
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
             const avatarFull = xmlDoc.querySelector("avatarFull")?.textContent;
-            if (avatarFull) {
-              avatarImg.src = avatarFull;
-            }
+            if (avatarFull) avatarImg.src = avatarFull;
 
             const onlineState = xmlDoc.querySelector("onlineState")?.textContent;
             const gameName = xmlDoc.querySelector("gameName")?.textContent;
@@ -217,11 +243,8 @@
             }
           }
         }
-      } catch (err) {
-        console.warn("Steam fetch failed, reading Discord presence...", err);
-      }
+      } catch (err) {}
 
-      // Discord Status Fallback
       try {
         const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
         const data = await res.json();
@@ -233,63 +256,3 @@
             tracker.innerText = `playing ${game.name}`;
           } else if (lanyard.discord_status !== 'offline') {
             dot.className = `status-${lanyard.discord_status}`;
-            tracker.innerText = `online (${lanyard.discord_status})`;
-          } else {
-            tracker.innerText = "last seen unknown";
-          }
-        }
-      } catch (e) {
-        tracker.innerText = "last seen unknown";
-      }
-    }
-
-    loadPresence();
-
-    /* Drag-and-Drop Implementation */
-    const card = document.getElementById("draggable-card");
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let initialLeft = 0;
-    let initialTop = 0;
-
-    card.addEventListener("mousedown", (e) => {
-      if (e.target.closest("a") || e.target.closest("button")) return;
-
-      isDragging = true;
-      card.classList.add("dragging");
-
-      const rect = card.getBoundingClientRect();
-      startX = e.clientX;
-      startY = e.clientY;
-      initialLeft = rect.left;
-      initialTop = rect.top;
-
-      card.style.position = "fixed";
-      card.style.left = initialLeft + "px";
-      card.style.top = initialTop + "px";
-      card.style.transform = "none";
-      card.style.margin = "0";
-
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
-    });
-
-    function onMouseMove(e) {
-      if (!isDragging) return;
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
-
-      card.style.left = (initialLeft + deltaX) + "px";
-      card.style.top = (initialTop + deltaY) + "px";
-    }
-
-    function onMouseUp() {
-      isDragging = false;
-      card.classList.remove("dragging");
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    }
-  </script>
-</body>
-</html>
