@@ -190,4 +190,109 @@
           const xmlText = await res.text();
           if (xmlText && xmlText.includes("<profile>")) {
             const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+            const avatarFull = xmlDoc.querySelector("avatarFull")?.textContent;
+            if (avatarFull) {
+              avatarImg.src = avatarFull;
+            }
+
+            const onlineState = xmlDoc.querySelector("onlineState")?.textContent;
+            const gameName = xmlDoc.querySelector("gameName")?.textContent;
+            const stateMessage = xmlDoc.querySelector("stateMessage")?.textContent;
+
+            if (onlineState === "in-game" && gameName) {
+              dot.className = "status-ingame";
+              tracker.innerText = `playing ${gameName}`;
+              return;
+            } else if (onlineState === "online") {
+              dot.className = "status-online";
+              tracker.innerText = "online on steam";
+              return;
+            } else if (stateMessage) {
+              dot.className = "status-offline";
+              tracker.innerText = stateMessage.replace(/<[^>]*>/g, '').trim().toLowerCase();
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Steam fetch failed, reading Discord presence...", err);
+      }
+
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          const lanyard = data.data;
+          const game = lanyard.activities.find(a => a.type === 0);
+          if (game) {
+            dot.className = "status-ingame";
+            tracker.innerText = `playing ${game.name}`;
+          } else if (lanyard.discord_status !== 'offline') {
+            dot.className = `status-${lanyard.discord_status}`;
+            tracker.innerText = `online (${lanyard.discord_status})`;
+          } else {
+            tracker.innerText = "last seen unknown";
+          }
+        }
+      } catch (e) {
+        tracker.innerText = "last seen unknown";
+      }
+    }
+
+    loadPresence();
+
+    /* Robust Pointer-Locked Drag (No Sticky Glitch) */
+    const card = document.getElementById("draggable-card");
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+
+    card.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("a") || e.target.closest("button")) return;
+
+      isDragging = true;
+      card.classList.add("dragging");
+      card.setPointerCapture(e.pointerId);
+
+      const rect = card.getBoundingClientRect();
+      startX = e.clientX;
+      startY = e.clientY;
+      initialLeft = rect.left;
+      initialTop = rect.top;
+
+      card.style.position = "fixed";
+      card.style.left = initialLeft + "px";
+      card.style.top = initialTop + "px";
+      card.style.transform = "none";
+      card.style.margin = "0";
+    });
+
+    card.addEventListener("pointermove", (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+
+      card.style.left = (initialLeft + deltaX) + "px";
+      card.style.top = (initialTop + deltaY) + "px";
+    });
+
+    function stopDragging(e) {
+      if (isDragging) {
+        isDragging = false;
+        card.classList.remove("dragging");
+        try {
+          if (e && e.pointerId) card.releasePointerCapture(e.pointerId);
+        } catch (_) {}
+      }
+    }
+
+    card.addEventListener("pointerup", stopDragging);
+    card.addEventListener("pointercancel", stopDragging);
+    window.addEventListener("blur", stopDragging);
+  </script>
+</body>
+</html>
