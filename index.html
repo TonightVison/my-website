@@ -5,52 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>l0_0lmii</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- FontAwesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Eerie / Stylized Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=Rubik+Glitch&family=Special+Elite&family=VT323&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <!-- 1. Click to Enter Screen -->
+  <!-- Entry Overlay -->
   <div id="entry-overlay" onclick="enterSite()">
     <div class="entry-content">
-      <p>[ click anywhere to enter ]</p>
+      <p class="glitch-enter">[ click to enter my head ]</p>
     </div>
   </div>
 
-  <!-- 2. Looping Video Background -->
+  <!-- Looping Background Video -->
   <div class="video-bg-container">
     <video id="bg-video" loop playsinline muted>
       <source src="clip.mp4" type="video/mp4" />
     </video>
-    <div class="scanlines"></div>
+    <div class="grain-overlay"></div>
     <div class="vignette"></div>
   </div>
 
-  <!-- Background Audio (Plays on Enter) -->
   <audio id="bg-audio" loop>
     <source src="song.mp3" type="audio/mp3" />
   </audio>
 
-  <!-- 3. Main Center Card -->
+  <!-- Main Transparent / Frosted Profile Card -->
   <main class="profile-frame">
-    <!-- Top Text / Subtitle -->
-    <div class="sub-header">
-      <span class="user-status">i love you ^!</span>
-      <span class="location-pin"><i class="fa-solid fa-location-dot"></i> silly town</span>
+    
+    <!-- Obsession / Chaotic Multi-Font Header -->
+    <div class="obsession-banner">
+      <span class="f-nosifer">I</span>
+      <span class="f-creepster">LOVE</span>
+      <span class="f-glitch">YOU</span>
+      <span class="f-typewriter">DONT</span>
+      <span class="f-vt">LOOK</span>
+      <span class="f-nosifer">AWAY</span>
+      <span class="f-creepster">&lt;3</span>
+    </div>
+    
+    <div class="sub-whisper">
+      <span>staring right through your screen...</span>
     </div>
 
-    <!-- Avatar & Badges -->
+    <!-- Live Discord Avatar & Badges -->
     <div class="avatar-box">
-      <div class="avatar-ring">
-        <img src="avatar.png" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=l0_0lmii'" alt="avatar" />
+      <div class="avatar-wrapper">
+        <img id="avatar-img" src="avatar.png" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=l0_0lmii'" alt="avatar" />
+        <span id="discord-status-dot" class="status-offline"></span>
       </div>
       <div class="user-details">
         <h1 class="username">l0_0lmii <i class="fa-solid fa-cat cat-icon"></i></h1>
-        <p class="seen-status">last seen unknown</p>
+        <p class="status-tracker" id="activity-tracker">checking activity...</p>
       </div>
     </div>
 
-    <!-- Rugged Red Icon Links -->
+    <!-- Rugged Badges -->
     <div class="social-badges">
       <a href="https://steamcommunity.com/id/ussf/" target="_blank" rel="noopener noreferrer" class="badge-link steam" title="Steam">
         <i class="fa-brands fa-steam"></i>
@@ -63,13 +76,14 @@
       </a>
     </div>
 
-    <!-- 4. Music Player Widget -->
+    <!-- Live Spotify / Media Player Widget -->
     <div class="music-card">
-      <img src="avatar.png" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=l0_0lmii'" class="track-thumb" alt="album art" />
+      <img id="spotify-art" src="avatar.png" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=l0_0lmii'" class="track-thumb" alt="art" />
       <div class="track-info">
-        <div class="track-title">overtonight</div>
+        <div class="track-title" id="spotify-title">overtonight</div>
+        <div class="track-artist" id="spotify-artist">Offline / Local Audio</div>
         <div class="track-progress-container">
-          <span class="time" id="current-time">0:01</span>
+          <span class="time" id="current-time">0:00</span>
           <div class="progress-bar">
             <div class="progress-fill" id="track-fill"></div>
           </div>
@@ -78,13 +92,16 @@
       </div>
       <div class="track-controls">
         <button onclick="toggleAudio()" id="play-btn" aria-label="Play/Pause">
-          <i class="fa-solid fa-pause" id="play-icon"></i>
+          <i class="fa-solid fa-play" id="play-icon"></i>
         </button>
       </div>
     </div>
   </main>
 
   <script>
+    // REPLACE WITH YOUR DISCORD USER ID TO ENABLE LIVE LANYARD SYNC
+    const DISCORD_USER_ID = "YOUR_DISCORD_ID_HERE"; 
+
     const overlay = document.getElementById('entry-overlay');
     const audio = document.getElementById('bg-audio');
     const video = document.getElementById('bg-video');
@@ -95,13 +112,11 @@
 
     function enterSite() {
       overlay.classList.add('fade-out');
-      setTimeout(() => {
-        overlay.style.display = 'none';
-      }, 500);
-
-      // Play video & audio
-      video.play().catch(e => console.log('Video error:', e));
-      audio.play().catch(e => console.log('Audio autoplay blocked:', e));
+      setTimeout(() => overlay.style.display = 'none', 600);
+      video.play().catch(() => {});
+      audio.play().then(() => {
+        playIcon.className = "fa-solid fa-pause";
+      }).catch(() => {});
     }
 
     function toggleAudio() {
@@ -114,7 +129,6 @@
       }
     }
 
-    // Update Progress Bar
     audio.ontimeupdate = function() {
       if (audio.duration) {
         const percent = (audio.currentTime / audio.duration) * 100;
@@ -129,6 +143,53 @@
       let s = Math.floor(sec % 60);
       return m + ':' + (s < 10 ? '0' : '') + s;
     }
+
+    // Live Lanyard (Discord + Spotify) fetcher
+    async function fetchLanyardData() {
+      if (!DISCORD_USER_ID || DISCORD_USER_ID === "YOUR_DISCORD_ID_HERE") {
+        document.getElementById('activity-tracker').innerText = "watching you... (60s loop active)";
+        return;
+      }
+
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
+        const data = await res.json();
+
+        if (data.success && data.data) {
+          const lanyard = data.data;
+
+          // Status Dot
+          const dot = document.getElementById('discord-status-dot');
+          dot.className = `status-${lanyard.discord_status}`;
+
+          // Game / Activity Tracking
+          const tracker = document.getElementById('activity-tracker');
+          const game = lanyard.activities.find(a => a.type === 0);
+          if (game) {
+            tracker.innerText = `playing ${game.name}`;
+          } else if (lanyard.discord_status !== 'offline') {
+            tracker.innerText = `online (${lanyard.discord_status})`;
+          } else {
+            tracker.innerText = `last seen unknown`;
+          }
+
+          // Live Spotify Sync
+          if (lanyard.listening_to_spotify && lanyard.spotify) {
+            document.getElementById('spotify-title').innerText = lanyard.spotify.song;
+            document.getElementById('spotify-artist').innerText = lanyard.spotify.artist;
+            if (lanyard.spotify.album_art_url) {
+              document.getElementById('spotify-art').src = lanyard.spotify.album_art_url;
+            }
+          }
+        }
+      } catch (err) {
+        console.log("Lanyard fetch error:", err);
+      }
+    }
+
+    // Initial check + 60s periodic loop
+    fetchLanyardData();
+    setInterval(fetchLanyardData, 60000);
   </script>
 </body>
 </html>
