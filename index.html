@@ -145,6 +145,36 @@
     let isSpotifyActive = false;
     let siteEntered = false;
 
+    /* Fail-Safe Click-to-Enter Handler */
+    function enterSite() {
+      // 1. Immediately remove pointer detection and begin fade
+      overlay.classList.add('fade-out');
+      overlay.style.pointerEvents = 'none';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, 500);
+
+      siteEntered = true;
+
+      // 2. Play video safely
+      if (video) {
+        video.muted = false;
+        video.volume = 1;
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            video.muted = true;
+            video.play().catch(() => {});
+          });
+        }
+      }
+
+      // 3. Sync audio states
+      try {
+        applyAudioState();
+      } catch (err) {}
+    }
+
     /* Background Audio Ducking / Cross-Fading */
     function applyAudioState() {
       if (!siteEntered) return;
@@ -176,15 +206,6 @@
 
     function toggleMasterAudio() {
       userMutedManually = !userMutedManually;
-      applyAudioState();
-    }
-
-    function enterSite() {
-      siteEntered = true;
-      overlay.classList.add('fade-out');
-      setTimeout(() => overlay.style.display = 'none', 500);
-
-      video.play().catch(() => {});
       applyAudioState();
     }
 
