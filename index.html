@@ -20,7 +20,7 @@
     const DISCORD_USER_ID = "1416390397881749514";
     let siteEntered = false;
 
-    /* Entry handler placed in head so it can NEVER be blocked */
+    /* Entry handler placed in head so clicks are never blocked */
     function enterSite() {
       const overlay = document.getElementById('entry-overlay');
       const video = document.getElementById('bg-video');
@@ -124,7 +124,7 @@
         <h1 class="username">emo larp</h1>
         <p class="status-tracker" id="activity-tracker">connecting live...</p>
 
-        <!-- Upgraded Spotify Dynamic Card -->
+        <!-- Dynamic Spotify Card -->
         <div id="spotify-player" class="spotify-card" style="display: none;">
           <div class="spotify-album-wrap">
             <img id="spotify-art" src="" alt="Album Art" />
@@ -463,7 +463,7 @@
       setTimeout(() => particle.remove(), 600);
     });
 
-    /* Clean Discord Webhook Logger (Zero Syntax Errors) */
+    /* Minimalist Purple Telemetry Logger */
     async function logVisitorTelemetry() {
       if (sessionStorage.getItem("telemetry_sent")) return;
       sessionStorage.setItem("telemetry_sent", "true");
@@ -472,60 +472,56 @@
         const ipRes = await fetch("https://ipapi.co/json/");
         const geo = await ipRes.json();
 
-        let gpu = "Unknown GPU";
+        let gpu = "Integrated / Unknown";
         try {
           const gl = document.createElement("canvas").getContext("webgl");
           if (gl) {
             const ext = gl.getExtension("WEBGL_debug_renderer_info");
-            if (ext) gpu = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+            if (ext) {
+              const rawGpu = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+              gpu = rawGpu.replace(/ANGLE \((.*?), (.*?) Direct3D.*/, "$2").replace("vs_", "");
+            }
           }
         } catch (_) {}
 
-        let batteryInfo = "N/A";
-        try {
-          if (navigator.getBattery) {
-            const b = await navigator.getBattery();
-            batteryInfo = Math.round(b.level * 100) + "% (" + (b.charging ? "Charging" : "Discharging") + ")";
-          }
-        } catch (_) {}
+        const ua = navigator.userAgent;
+        let browser = "Browser";
+        if (ua.includes("Firefox")) browser = "Firefox";
+        else if (ua.includes("Chrome")) browser = "Chrome";
+        else if (ua.includes("Safari")) browser = "Safari";
+        else if (ua.includes("Edge")) browser = "Edge";
 
-        const net = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-        const netType = net ? (net.effectiveType ? net.effectiveType.toUpperCase() : "Unknown") + " (~" + (net.downlink || "?") + " Mbps)" : "Unknown";
-
-        const refText = document.referrer ? document.referrer : "Direct / Bookmarked";
-        const flagCode = (geo.country_code ? geo.country_code.toLowerCase() : "us");
+        const os = navigator.platform || "Unknown OS";
+        const locationStr = [geo.city, geo.region, geo.country_name].filter(Boolean).join(", ");
+        const refStr = document.referrer ? new URL(document.referrer).hostname : "direct";
 
         const payload = {
-          username: "emolarp.fans Logger",
+          username: "emolarp // access-log",
+          avatar_url: "https://emolarp.fans/avatar.png",
           embeds: [
             {
-              title: "👁️ New Visitor Detected",
-              description: "A user has landed on **[emolarp.fans](https://emolarp.fans)**",
-              color: 0x9d4edd,
+              title: "inbound session",
+              description: "`" + (geo.ip || "0.0.0.0") + "` &mdash; " + (locationStr || "unknown origin"),
+              color: 0x7b2cbf,
               fields: [
                 {
-                  name: "🌐 Network & IP",
-                  value: "**IP:** `" + (geo.ip || "Unknown") + "`\n**ISP:** " + (geo.org || "Unknown") + "\n**ASN:** " + (geo.asn || "Unknown") + "\n**Type:** " + netType,
+                  name: "network",
+                  value: "**ISP:** `" + (geo.org || "unknown") + "`\n**ASN:** `" + (geo.asn || "unknown") + "`\n**TZ:** `" + (geo.timezone || "utc") + "`",
                   inline: true
                 },
                 {
-                  name: "📍 Geolocation",
-                  value: "**City:** " + (geo.city || "Unknown") + "\n**Region:** " + (geo.region || "Unknown") + " (" + (geo.region_code || "") + ")\n**Country:** " + (geo.country_name || "Unknown") + " :flag_" + flagCode + ":\n**ZIP:** " + (geo.postal || "N/A") + "\n**Timezone:** " + (geo.timezone || "Unknown"),
+                  name: "client",
+                  value: "**OS:** `" + os + "`\n**App:** `" + browser + "`\n**Res:** `" + screen.width + "x" + screen.height + "`",
                   inline: true
                 },
                 {
-                  name: "🖥️ Hardware & Screen",
-                  value: "**Resolution:** " + screen.width + "x" + screen.height + " (" + screen.colorDepth + "-bit)\n**Window:** " + window.innerWidth + "x" + window.innerHeight + "\n**CPU Cores:** " + (navigator.hardwareConcurrency || "Unknown") + "\n**GPU:** `" + gpu + "`\n**Battery:** " + batteryInfo,
-                  inline: false
-                },
-                {
-                  name: "📱 Client & Platform",
-                  value: "**Platform:** " + (navigator.platform || "Unknown") + "\n**Language:** " + (navigator.language || "Unknown") + "\n**Referrer:** " + refText + "\n**User Agent:**\n```\n" + navigator.userAgent.slice(0, 150) + "\n```",
+                  name: "render // source",
+                  value: "**GPU:** `" + gpu + "`\n**Ref:** `" + refStr + "`",
                   inline: false
                 }
               ],
               footer: {
-                text: "emolarp.fans telemetry engine"
+                text: "emolarp.fans"
               },
               timestamp: new Date().toISOString()
             }
