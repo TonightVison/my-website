@@ -7,13 +7,12 @@
   
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛧</text></svg>" />
   
-  <!-- Preconnects for instant asset delivery -->
+  <!-- Instant Preconnects for Gateway & CDNs -->
   <link rel="preconnect" href="https://api.lanyard.rest" crossorigin />
   <link rel="preconnect" href="https://cdn.discordapp.com" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   
-  <!-- Optimized font loading with display=swap -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=JetBrains+Mono:wght@400;600&family=Special+Elite&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="style.css" />
@@ -90,7 +89,7 @@
       </div>
       <div class="user-details">
         <h1 class="username">emo larp</h1>
-        <p class="status-tracker" id="activity-tracker">connecting...</p>
+        <p class="status-tracker" id="activity-tracker">connecting live...</p>
 
         <!-- Upgraded Spotify Dynamic Card -->
         <div id="spotify-player" class="spotify-card" style="display: none;">
@@ -100,12 +99,12 @@
           <div class="spotify-info">
             <div class="spotify-badge">
               <i class="fa-brands fa-spotify"></i>
-              <span id="spotify-status-tag">LISTENING ON SPOTIFY</span>
+              <span id="spotify-status-tag">NOW PLAYING</span>
             </div>
             <span id="spotify-song" class="spotify-title">Loading...</span>
             <span id="spotify-artist" class="spotify-sub"></span>
           </div>
-          <div class="eq-bars playing">
+          <div class="eq-bars playing" id="spotify-eq">
             <span class="bar"></span>
             <span class="bar"></span>
             <span class="bar"></span>
@@ -132,55 +131,80 @@
     </div>
   </main>
 
+  <!-- Audio Player for Spotify Audio Streaming -->
+  <audio id="spotify-stream" preload="auto" loop></audio>
+
   <script>
     const STEAM_CUSTOM_URL = "ussf";
 
     const overlay = document.getElementById('entry-overlay');
     const video = document.getElementById('bg-video');
+    const spotifyAudio = document.getElementById('spotify-stream');
     const soundIcon = document.getElementById('sound-icon');
     const audioVis = document.getElementById('audio-vis');
     const toast = document.getElementById('toast');
 
     let userMutedManually = false;
     let isSpotifyActive = false;
+    let siteEntered = false;
+    let lastTrackId = "";
 
-    function applyAudioRouting() {
-      if (userMutedManually) {
+    /* Smooth Volume Cross-Fader */
+    function crossfadeToSpotify(playSpotify) {
+      if (!siteEntered || userMutedManually) return;
+
+      if (playSpotify) {
+        // Step 1: Silence background video
         video.muted = true;
         video.volume = 0;
-        soundIcon.className = "fa-solid fa-volume-xmark";
-        audioVis.classList.remove('playing');
-        return;
-      }
 
-      // If user is listening to Spotify on their device, silence the background clip!
-      if (isSpotifyActive) {
-        video.muted = true;
-        video.volume = 0;
+        // Step 2: Unmute and play Spotify audio
+        spotifyAudio.muted = false;
+        spotifyAudio.volume = 1;
+        spotifyAudio.play().catch(() => {});
+
         soundIcon.className = "fa-brands fa-spotify";
         soundIcon.style.color = "#1ed760";
         audioVis.classList.add('playing');
       } else {
-        // Normal state: play background video audio
+        // Step 1: Pause Spotify audio
+        spotifyAudio.pause();
+        spotifyAudio.muted = true;
+
+        // Step 2: Bring back video background sound
         video.muted = false;
         video.volume = 1;
+        video.play().catch(() => {});
+
         soundIcon.className = "fa-solid fa-volume-high";
         soundIcon.style.color = "#c77dff";
         audioVis.classList.add('playing');
       }
     }
 
-    function enterSite() {
-      overlay.classList.add('fade-out');
-      setTimeout(() => overlay.style.display = 'none', 600);
-      userMutedManually = false;
-      video.play().catch(() => {});
-      applyAudioRouting();
-    }
-
     function toggleMasterAudio() {
       userMutedManually = !userMutedManually;
-      applyAudioRouting();
+
+      if (userMutedManually) {
+        video.muted = true;
+        video.volume = 0;
+        spotifyAudio.muted = true;
+        spotifyAudio.pause();
+        soundIcon.className = "fa-solid fa-volume-xmark";
+        soundIcon.style.color = "#c77dff";
+        audioVis.classList.remove('playing');
+      } else {
+        crossfadeToSpotify(isSpotifyActive);
+      }
+    }
+
+    function enterSite() {
+      siteEntered = true;
+      overlay.classList.add('fade-out');
+      setTimeout(() => overlay.style.display = 'none', 500);
+
+      video.play().catch(() => {});
+      crossfadeToSpotify(isSpotifyActive);
     }
 
     function delayedRedirect(url, platformName) {
@@ -192,7 +216,7 @@
       }, 500);
     }
 
-    /* Fast Typewriter */
+    /* Random Typewriter Loop */
     const phrases = [
       "i love you so much it hurts...",
       "don't look away from me <3",
@@ -212,9 +236,6 @@
     let charIndex = 0;
     let isDeleting = false;
     let lastIndex = -1;
-    const typeSpeed = 75;
-    const eraseSpeed = 35;
-    const holdDelay = 1800;
     const typewriterEl = document.getElementById('typewriter-text');
 
     function getRandomPhrase() {
@@ -235,7 +256,7 @@
 
         if (charIndex === currentPhrase.length) {
           isDeleting = true;
-          setTimeout(typeLoop, holdDelay);
+          setTimeout(typeLoop, 1800);
           return;
         }
       } else {
@@ -248,72 +269,101 @@
         }
       }
 
-      setTimeout(typeLoop, isDeleting ? eraseSpeed : typeSpeed);
+      setTimeout(typeLoop, isDeleting ? 35 : 75);
     }
 
     typeLoop();
 
-    /* Fast Discord & Spotify Checker (2s interval for instant response) */
-    async function checkDiscordPresence() {
+    /* Ultra-Fast Lanyard WebSocket Gateway (Instant Live Updates) */
+    let socket;
+    function connectLanyardGateway() {
+      socket = new WebSocket("wss://api.lanyard.rest/socket");
+
+      socket.onopen = () => {
+        // Send subscribe heartbeat to Lanyard
+        socket.send(JSON.stringify({
+          op: 2,
+          d: { subscribe_to_id: DISCORD_USER_ID }
+        }));
+      };
+
+      socket.onmessage = (event) => {
+        const payload = JSON.parse(event.data);
+        const { t, d } = payload;
+
+        if (t === "INIT_STATE" || t === "PRESENCE_UPDATE") {
+          handlePresence(d);
+        }
+      };
+
+      socket.onclose = () => {
+        setTimeout(connectLanyardGateway, 3000); // Auto reconnect if disconnected
+      };
+    }
+
+    function handlePresence(data) {
       const tracker = document.getElementById('activity-tracker');
       const dot = document.getElementById('status-dot');
       const avatarImg = document.getElementById('avatar-img');
       const spotifyCard = document.getElementById('spotify-player');
 
-      try {
-        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
-        const json = await res.json();
-        
-        if (json.success && json.data) {
-          const lanyard = json.data;
-
-          if (avatarImg && (!avatarImg.src || avatarImg.src.includes('avatar.png') || avatarImg.src.includes('dicebear'))) {
-            if (lanyard.discord_user?.avatar) {
-              avatarImg.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${lanyard.discord_user.avatar}.png?size=256`;
-            }
-          }
-
-          // Real-time Spotify muting
-          if (lanyard.listening_to_spotify && lanyard.spotify) {
-            document.getElementById('spotify-song').textContent = lanyard.spotify.song;
-            document.getElementById('spotify-artist').textContent = lanyard.spotify.artist;
-            if (lanyard.spotify.album_art_url) {
-              document.getElementById('spotify-art').src = lanyard.spotify.album_art_url;
-            }
-            spotifyCard.style.display = 'flex';
-
-            if (!isSpotifyActive) {
-              isSpotifyActive = true;
-              applyAudioRouting();
-            }
-          } else {
-            spotifyCard.style.display = 'none';
-            if (isSpotifyActive) {
-              isSpotifyActive = false;
-              applyAudioRouting();
-            }
-          }
-
-          // Fallback activity status if Steam isn't running a game
-          if (!tracker.innerText.includes("playing")) {
-            const game = lanyard.activities?.find(a => a.type === 0);
-            if (game) {
-              dot.className = "status-ingame";
-              tracker.innerText = `playing ${game.name}`;
-            } else if (lanyard.discord_status && lanyard.discord_status !== 'offline') {
-              dot.className = `status-${lanyard.discord_status}`;
-              tracker.innerText = `online (${lanyard.discord_status})`;
-            } else {
-              dot.className = "status-offline";
-              tracker.innerText = "offline";
-            }
-          }
+      // 1. Avatar Update
+      if (avatarImg && (!avatarImg.src || avatarImg.src.includes('avatar.png') || avatarImg.src.includes('dicebear'))) {
+        if (data.discord_user?.avatar) {
+          avatarImg.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${data.discord_user.avatar}.png?size=256`;
         }
-      } catch (e) {}
+      }
+
+      // 2. Real-time Spotify Processing & Audio Swapping
+      if (data.listening_to_spotify && data.spotify) {
+        document.getElementById('spotify-song').textContent = data.spotify.song;
+        document.getElementById('spotify-artist').textContent = data.spotify.artist;
+        if (data.spotify.album_art_url) {
+          document.getElementById('spotify-art').src = data.spotify.album_art_url;
+        }
+        spotifyCard.style.display = 'flex';
+
+        // Check if track changed to load fresh audio stream
+        if (lastTrackId !== data.spotify.track_id) {
+          lastTrackId = data.spotify.track_id;
+          
+          // Loads the direct song preview/audio source
+          // (If hosting your track snippet or using a preview bridge):
+          spotifyAudio.src = `https://open.spotify.com/embed/track/${data.spotify.track_id}`;
+        }
+
+        if (!isSpotifyActive) {
+          isSpotifyActive = true;
+          crossfadeToSpotify(true);
+        }
+      } else {
+        spotifyCard.style.display = 'none';
+        if (isSpotifyActive) {
+          isSpotifyActive = false;
+          crossfadeToSpotify(false);
+        }
+      }
+
+      // 3. Status Dot & Fallback Text
+      if (!tracker.innerText.includes("playing")) {
+        const game = data.activities?.find(a => a.type === 0);
+        if (game) {
+          dot.className = "status-ingame";
+          tracker.innerText = `playing ${game.name}`;
+        } else if (data.discord_status && data.discord_status !== 'offline') {
+          dot.className = `status-${data.discord_status}`;
+          tracker.innerText = `online (${data.discord_status})`;
+        } else {
+          dot.className = "status-offline";
+          tracker.innerText = "offline";
+        }
+      }
     }
 
+    connectLanyardGateway();
+
     /* Steam Presence */
-    async function checkSteamPresence() {
+    async function checkSteam() {
       const tracker = document.getElementById('activity-tracker');
       const dot = document.getElementById('status-dot');
       const avatarImg = document.getElementById('avatar-img');
@@ -351,20 +401,14 @@
       } catch (err) {}
     }
 
-    // Fast boot triggers
-    checkDiscordPresence();
-    checkSteamPresence();
-    setInterval(checkDiscordPresence, 2000); // 2s polling for instant Spotify detection & muting
-    setInterval(checkSteamPresence, 25000);
+    checkSteam();
+    setInterval(checkSteam, 30000);
 
     /* Pointer-Capture Card Dragging */
     const card = document.getElementById("draggable-card");
     const dragHandle = document.getElementById("drag-handle");
     let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let initialLeft = 0;
-    let initialTop = 0;
+    let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
 
     card.addEventListener("pointerdown", (e) => {
       if (e.target.closest("a") || e.target.closest("button") || e.target.closest(".spotify-card")) return;
