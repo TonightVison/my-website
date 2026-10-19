@@ -4,15 +4,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>emo larp</title>
+  
+  <!-- Inline Favicon to prevent 404 -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛧</text></svg>" />
+
   <link rel="stylesheet" href="style.css" />
-  <!-- FontAwesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&family=Special+Elite&display=swap" rel="stylesheet">
   
-  <link rel="preload" as="image" href="avatar.png" />
+  <!-- Head Script: Pre-defines instant Discord avatar so onerror never errors out -->
+  <script>
+    const DISCORD_USER_ID = "1416390397881749514";
+    async function fetchInstantDiscordAvatar() {
+      const img = document.getElementById('avatar-img');
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
+        const data = await res.json();
+        if (data.data?.discord_user?.avatar) {
+          if (img) img.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${data.data.discord_user.avatar}.png?size=256`;
+          return;
+        }
+      } catch (e) {}
+      if (img) img.src = "https://api.dicebear.com/7.x/bottts/svg?seed=emolarp";
+    }
+  </script>
 </head>
 <body>
 
@@ -34,7 +53,7 @@
     <i class="fa-solid fa-volume-high" id="sound-icon"></i>
   </button>
 
-  <!-- Notification Toast for Transition Delayed Launches -->
+  <!-- Notification Toast -->
   <div id="toast" class="toast">[ opening... ]</div>
 
   <!-- Background Video -->
@@ -72,10 +91,24 @@
       <div class="user-details">
         <h1 class="username">emo larp</h1>
         <p class="status-tracker" id="activity-tracker">fetching status...</p>
+
+        <!-- Spotify Now Playing Bar -->
+        <div id="spotify-player" class="spotify-box" style="display: none;">
+          <i class="fa-brands fa-spotify spotify-icon"></i>
+          <div class="spotify-details">
+            <span id="spotify-song" class="spotify-title"></span>
+            <span id="spotify-artist" class="spotify-sub"></span>
+          </div>
+          <div class="eq-bars">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Symmetrical Badges with Custom Delayed Opening -->
+    <!-- Symmetrical Badges -->
     <div class="social-badges">
       <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile">
         <i class="fa-brands fa-discord"></i>
@@ -94,7 +127,6 @@
 
   <script>
     const STEAM_CUSTOM_URL = "ussf";
-    const DISCORD_USER_ID = "1416390397881749514";
 
     const overlay = document.getElementById('entry-overlay');
     const video = document.getElementById('bg-video');
@@ -131,7 +163,6 @@
       updateSoundUi(video.muted);
     }
 
-    /* Multi-Link Delay Handler */
     function delayedRedirect(url, platformName) {
       toast.innerText = `[ opening ${platformName}... ]`;
       toast.classList.add('visible');
@@ -140,19 +171,6 @@
         toast.classList.remove('visible');
         window.open(url, '_blank', 'noopener,noreferrer');
       }, 500);
-    }
-
-    /* Discord Avatar Fetcher */
-    async function fetchInstantDiscordAvatar() {
-      try {
-        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
-        const data = await res.json();
-        if (data.data && data.data.discord_user && data.data.discord_user.avatar) {
-          document.getElementById('avatar-img').src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${data.data.discord_user.avatar}.png?size=256`;
-        }
-      } catch (e) {
-        document.getElementById('avatar-img').src = "https://api.dicebear.com/7.x/bottts/svg?seed=emolarp";
-      }
     }
 
     /* Random Typewriter Loop */
@@ -216,17 +234,17 @@
 
     typeLoop();
 
-    /* Steam & Discord Presence Fetcher */
+    /* Robust Steam & Discord Presence Fetcher */
     async function loadPresence() {
       const tracker = document.getElementById('activity-tracker');
       const dot = document.getElementById('status-dot');
       const avatarImg = document.getElementById('avatar-img');
+      const spotifyBox = document.getElementById('spotify-player');
 
-      fetchInstantDiscordAvatar();
-
+      // 1. Steam check via allorigins proxy (No 401s)
       try {
         const steamTarget = `https://steamcommunity.com/id/${STEAM_CUSTOM_URL}/?xml=1`;
-        const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(steamTarget)}`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(steamTarget)}`;
         const res = await fetch(proxyUrl);
         
         if (res.ok) {
@@ -236,7 +254,7 @@
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
             const avatarFull = xmlDoc.querySelector("avatarFull")?.textContent;
-            if (avatarFull) avatarImg.src = avatarFull;
+            if (avatarFull && avatarImg) avatarImg.src = avatarFull;
 
             const onlineState = xmlDoc.querySelector("onlineState")?.textContent;
             const gameName = xmlDoc.querySelector("gameName")?.textContent;
@@ -245,43 +263,62 @@
             if (onlineState === "in-game" && gameName) {
               dot.className = "status-ingame";
               tracker.innerText = `playing ${gameName}`;
-              return;
             } else if (onlineState === "online") {
               dot.className = "status-online";
               tracker.innerText = "online on steam";
-              return;
             } else if (stateMessage) {
               dot.className = "status-offline";
               tracker.innerText = stateMessage.replace(/<[^>]*>/g, '').trim().toLowerCase();
-              return;
             }
           }
         }
       } catch (err) {}
 
+      // 2. Lanyard Check (Discord Avatar, Status & Live Spotify)
       try {
         const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
         const data = await res.json();
+        
         if (data.success && data.data) {
           const lanyard = data.data;
-          const game = lanyard.activities?.find(a => a.type === 0);
-          if (game) {
-            dot.className = "status-ingame";
-            tracker.innerText = `playing ${game.name}`;
-          } else if (lanyard.discord_status && lanyard.discord_status !== 'offline') {
-            dot.className = `status-${lanyard.discord_status}`;
-            tracker.innerText = `online (${lanyard.discord_status})`;
-          } else {
-            tracker.innerText = "last seen unknown";
+
+          // If avatar not set by steam, set via discord
+          if (avatarImg && (!avatarImg.src || avatarImg.src.includes('avatar.png') || avatarImg.src.includes('dicebear'))) {
+            if (lanyard.discord_user?.avatar) {
+              avatarImg.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${lanyard.discord_user.avatar}.png?size=256`;
+            }
+          }
+
+          // Spotify Now Playing Pill
+          if (spotifyBox) {
+            if (lanyard.listening_to_spotify && lanyard.spotify) {
+              document.getElementById('spotify-song').textContent = lanyard.spotify.song;
+              document.getElementById('spotify-artist').textContent = lanyard.spotify.artist;
+              spotifyBox.style.display = 'flex';
+            } else {
+              spotifyBox.style.display = 'none';
+            }
+          }
+
+          // Fallback status if steam isn't actively playing
+          if (!tracker.innerText.includes("playing")) {
+            const game = lanyard.activities?.find(a => a.type === 0);
+            if (game) {
+              dot.className = "status-ingame";
+              tracker.innerText = `playing ${game.name}`;
+            } else if (lanyard.discord_status && lanyard.discord_status !== 'offline') {
+              dot.className = `status-${lanyard.discord_status}`;
+              tracker.innerText = `online (${lanyard.discord_status})`;
+            }
           }
         }
       } catch (e) {
-        tracker.innerText = "last seen unknown";
+        if (spotifyBox) spotifyBox.style.display = 'none';
       }
     }
 
     loadPresence();
-    setInterval(loadPresence, 15000);
+    setInterval(loadPresence, 6000);
 
     /* Pointer-Capture Card Dragging */
     const card = document.getElementById("draggable-card");
