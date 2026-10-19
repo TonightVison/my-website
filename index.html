@@ -3,26 +3,132 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Personal Hub</title>
+  <title>l0_0lmii</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body>
-  <div class="card">
-    <header>
-      <h1>Welcome to My Domain</h1>
-      <p class="tagline">Coder, gamer, and creator :3</p>
-    </header>
 
-    <section class="bio">
-      <p>Hey! This is my corner of the web built completely from scratch.</p>
-    </section>
-
-    <section class="links">
-      <h2>Featured Works & Links</h2>
-      <a href="https://github.com" target="_blank" class="btn">GitHub</a>
-      <a href="https://steamcommunity.com" target="_blank" class="btn">Steam Profile</a>
-      <a href="#" class="btn">My Projects</a>
-    </section>
+  <!-- 1. Click to Enter Screen -->
+  <div id="entry-overlay" onclick="enterSite()">
+    <div class="entry-content">
+      <p>[ click anywhere to enter ]</p>
+    </div>
   </div>
+
+  <!-- 2. Looping Video Background -->
+  <div class="video-bg-container">
+    <video id="bg-video" loop playsinline muted>
+      <source src="clip.mp4" type="video/mp4" />
+    </video>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <!-- Background Audio (Plays on Enter) -->
+  <audio id="bg-audio" loop>
+    <source src="song.mp3" type="audio/mp3" />
+  </audio>
+
+  <!-- 3. Main Center Card -->
+  <main class="profile-frame">
+    <!-- Top Text / Subtitle -->
+    <div class="sub-header">
+      <span class="user-status">i love you ^!</span>
+      <span class="location-pin"><i class="fa-solid fa-location-dot"></i> silly town</span>
+    </div>
+
+    <!-- Avatar & Badges -->
+    <div class="avatar-box">
+      <div class="avatar-ring">
+        <img src="avatar.png" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=l0_0lmii'" alt="avatar" />
+      </div>
+      <div class="user-details">
+        <h1 class="username">l0_0lmii <i class="fa-solid fa-cat cat-icon"></i></h1>
+        <p class="seen-status">last seen unknown</p>
+      </div>
+    </div>
+
+    <!-- Rugged Red Icon Links -->
+    <div class="social-badges">
+      <a href="https://steamcommunity.com/id/ussf/" target="_blank" rel="noopener noreferrer" class="badge-link steam" title="Steam">
+        <i class="fa-brands fa-steam"></i>
+      </a>
+      <a href="https://www.roblox.com/users/1871164209/profile" target="_blank" rel="noopener noreferrer" class="badge-link roblox" title="Roblox">
+        <i class="fa-solid fa-cube"></i>
+      </a>
+      <a href="https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457" target="_blank" rel="noopener noreferrer" class="badge-link spotify" title="Spotify">
+        <i class="fa-brands fa-spotify"></i>
+      </a>
+    </div>
+
+    <!-- 4. Music Player Widget -->
+    <div class="music-card">
+      <img src="avatar.png" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=l0_0lmii'" class="track-thumb" alt="album art" />
+      <div class="track-info">
+        <div class="track-title">overtonight</div>
+        <div class="track-progress-container">
+          <span class="time" id="current-time">0:01</span>
+          <div class="progress-bar">
+            <div class="progress-fill" id="track-fill"></div>
+          </div>
+          <span class="time" id="total-time">2:07</span>
+        </div>
+      </div>
+      <div class="track-controls">
+        <button onclick="toggleAudio()" id="play-btn" aria-label="Play/Pause">
+          <i class="fa-solid fa-pause" id="play-icon"></i>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const overlay = document.getElementById('entry-overlay');
+    const audio = document.getElementById('bg-audio');
+    const video = document.getElementById('bg-video');
+    const playIcon = document.getElementById('play-icon');
+    const trackFill = document.getElementById('track-fill');
+    const currentTimeEl = document.getElementById('current-time');
+    const totalTimeEl = document.getElementById('total-time');
+
+    function enterSite() {
+      overlay.classList.add('fade-out');
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, 500);
+
+      // Play video & audio
+      video.play().catch(e => console.log('Video error:', e));
+      audio.play().catch(e => console.log('Audio autoplay blocked:', e));
+    }
+
+    function toggleAudio() {
+      if (audio.paused) {
+        audio.play();
+        playIcon.className = "fa-solid fa-pause";
+      } else {
+        audio.pause();
+        playIcon.className = "fa-solid fa-play";
+      }
+    }
+
+    // Update Progress Bar
+    audio.ontimeupdate = function() {
+      if (audio.duration) {
+        const percent = (audio.currentTime / audio.duration) * 100;
+        trackFill.style.width = percent + '%';
+        currentTimeEl.innerText = formatTime(audio.currentTime);
+        totalTimeEl.innerText = formatTime(audio.duration);
+      }
+    };
+
+    function formatTime(sec) {
+      let m = Math.floor(sec / 60);
+      let s = Math.floor(sec % 60);
+      return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+  </script>
 </body>
 </html>
