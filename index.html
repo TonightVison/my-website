@@ -20,7 +20,6 @@
     const DISCORD_USER_ID = "1416390397881749514";
     let siteEntered = false;
 
-    /* Entry handler placed in head so clicks are never blocked */
     function enterSite() {
       const overlay = document.getElementById('entry-overlay');
       const video = document.getElementById('bg-video');
@@ -176,7 +175,6 @@
     let userMutedManually = false;
     let isSpotifyActive = false;
 
-    /* Background Audio Ducking */
     function applyAudioState() {
       if (!siteEntered) return;
 
@@ -352,7 +350,7 @@
 
     connectLanyardGateway();
 
-    /* Steam Presence */
+    /* Clean Steam Presence Fallback (No CORS block warnings) */
     async function checkSteam() {
       const tracker = document.getElementById('activity-tracker');
       const dot = document.getElementById('status-dot');
@@ -360,14 +358,14 @@
 
       try {
         const steamTarget = "https://steamcommunity.com/id/" + STEAM_CUSTOM_URL + "/?xml=1";
-        const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(steamTarget);
+        const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(steamTarget);
         const res = await fetch(proxyUrl);
         
         if (res.ok) {
-          const xmlText = await res.text();
-          if (xmlText && xmlText.includes("<profile>")) {
+          const json = await res.json();
+          if (json.contents && json.contents.includes("<profile>")) {
             const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+            const xmlDoc = parser.parseFromString(json.contents, "text/xml");
 
             const avatarFull = xmlDoc.querySelector("avatarFull")?.textContent;
             if (avatarFull && avatarImg) avatarImg.src = avatarFull;
@@ -388,11 +386,11 @@
             }
           }
         }
-      } catch (err) {}
+      } catch (_) {}
     }
 
     checkSteam();
-    setInterval(checkSteam, 30000);
+    setInterval(checkSteam, 45000);
 
     /* Pointer-Capture Card Dragging */
     const card = document.getElementById("draggable-card");
@@ -463,13 +461,10 @@
       setTimeout(() => particle.remove(), 600);
     });
 
-    /* Minimalist Purple Telemetry Logger */
+    /* Minimal Purple Telemetry Logger (CORS-friendly via ipwho.is) */
     async function logVisitorTelemetry() {
-      if (sessionStorage.getItem("telemetry_sent")) return;
-      sessionStorage.setItem("telemetry_sent", "true");
-
       try {
-        const ipRes = await fetch("https://ipapi.co/json/");
+        const ipRes = await fetch("https://ipwho.is/");
         const geo = await ipRes.json();
 
         let gpu = "Integrated / Unknown";
@@ -492,7 +487,7 @@
         else if (ua.includes("Edge")) browser = "Edge";
 
         const os = navigator.platform || "Unknown OS";
-        const locationStr = [geo.city, geo.region, geo.country_name].filter(Boolean).join(", ");
+        const locationStr = [geo.city, geo.region, geo.country].filter(Boolean).join(", ");
         const refStr = document.referrer ? new URL(document.referrer).hostname : "direct";
 
         const payload = {
@@ -501,12 +496,12 @@
           embeds: [
             {
               title: "inbound session",
-              description: "`" + (geo.ip || "0.0.0.0") + "` &mdash; " + (locationStr || "unknown origin"),
+              description: "`" + (geo.ip || "0.0.0.0") + "` \u2014 " + (locationStr || "unknown origin"),
               color: 0x7b2cbf,
               fields: [
                 {
                   name: "network",
-                  value: "**ISP:** `" + (geo.org || "unknown") + "`\n**ASN:** `" + (geo.asn || "unknown") + "`\n**TZ:** `" + (geo.timezone || "utc") + "`",
+                  value: "**ISP:** `" + (geo.connection?.isp || geo.connection?.org || "unknown") + "`\n**ASN:** `" + (geo.connection?.asn || "unknown") + "`\n**TZ:** `" + (geo.timezone?.id || "utc") + "`",
                   inline: true
                 },
                 {
