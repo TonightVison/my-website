@@ -3,9 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>emo larp</title>
+  <title>emo larp :3</title>
   
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛧</text></svg>" />
+  
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="emo larp ⛧" />
+  <meta property="og:description" content="live status // real-time dynamic presence" />
+  <meta property="og:url" content="https://emolarp.fans" />
+  <meta name="theme-color" content="#7b2cbf" />
   
   <link rel="preconnect" href="https://api.lanyard.rest" crossorigin />
   <link rel="preconnect" href="https://cdn.discordapp.com" crossorigin />
@@ -27,7 +33,7 @@
       if (overlay) {
         overlay.classList.add('fade-out');
         overlay.style.pointerEvents = 'none';
-        setTimeout(() => {
+        setTimeout(function() {
           overlay.style.display = 'none';
         }, 500);
       }
@@ -39,9 +45,9 @@
         video.volume = 1;
         const playPromise = video.play();
         if (playPromise !== undefined) {
-          playPromise.catch(() => {
+          playPromise.catch(function() {
             video.muted = true;
-            video.play().catch(() => {});
+            video.play().catch(function() {});
           });
         }
       }
@@ -75,10 +81,10 @@
   <!-- Notification Toast -->
   <div id="toast" class="toast">[ opening... ]</div>
 
-  <!-- Background Video -->
+  <!-- Background Video with Cache-Buster -->
   <div class="video-bg-container">
     <video id="bg-video" loop playsinline preload="auto">
-      <source src="clip.mp4" type="video/mp4" />
+      <source src="clip.mp4?v=2" type="video/mp4" />
     </video>
     <div class="grain-overlay"></div>
     <div class="vignette"></div>
@@ -158,10 +164,73 @@
     const audioVis = document.getElementById('audio-vis');
     const toast = document.getElementById('toast');
     const statusTracker = document.getElementById('activity-tracker');
+    const card = document.getElementById("draggable-card");
+    const dragHandle = document.getElementById("drag-handle");
 
     let userMutedManually = false;
     let isSpotifyActive = false;
     let lastTelemetryTime = 0;
+
+    /* Synthesized Zero-Asset Audio Blip */
+    let audioCtx;
+    function playGlitchBlip() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(820, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.04);
+      } catch (_) {}
+    }
+
+    /* Active Dynamic Tab Title Loop (:3, o_O, etc.) */
+    const dynamicTitles = [
+      "hi :3",
+      "emo larp",
+      "o_O",
+      "watching u...",
+      "stay here <3",
+      "⛧",
+      "thinking of u...",
+      "(˶ᵔ ᵕ ᵔ˶)"
+    ];
+    let titleIdx = 0;
+    let titleInterval = setInterval(function() {
+      if (document.visibilityState === 'visible' && !isSpotifyActive) {
+        document.title = dynamicTitles[titleIdx];
+        titleIdx = (titleIdx + 1) % dynamicTitles.length;
+      }
+    }, 2400);
+
+    let tabLeaveTime = 0;
+    window.addEventListener('blur', function() {
+      tabLeaveTime = Date.now();
+      document.title = "where did you go...? <3";
+    });
+
+    window.addEventListener('focus', function() {
+      if (tabLeaveTime > 0) {
+        const awaySeconds = Math.round((Date.now() - tabLeaveTime) / 1000);
+        if (awaySeconds >= 4) {
+          sendDiscordEmbed({
+            title: "action: Visitor Returned",
+            description: "Visitor was tabbed away for **" + awaySeconds + "s**",
+            color: 0x9d4edd,
+            footer: { text: "emolarp.fans // focus" },
+            timestamp: new Date().toISOString()
+          });
+        }
+      }
+      document.title = isSpotifyActive ? "♫ " + document.getElementById('spotify-song').textContent + " :3" : "hi :3";
+    });
 
     /* Direct Discord Webhook Dispatcher */
     function sendDiscordEmbed(embed) {
@@ -192,6 +261,7 @@
     }
 
     function delayedRedirect(url, platformName) {
+      playGlitchBlip();
       sendDiscordEmbed({
         title: "action: Badge Click",
         description: "Visitor opened **" + platformName.toUpperCase() + "**\nTarget: `" + url + "`",
@@ -211,6 +281,7 @@
       statusTracker.addEventListener('click', function() {
         const textToCopy = statusTracker.innerText.trim();
         if (!textToCopy || textToCopy === "connecting live...") return;
+        playGlitchBlip();
 
         navigator.clipboard.writeText(textToCopy).then(function() {
           showToast("[ copied status! ]");
@@ -242,6 +313,7 @@
         if (video) { video.muted = true; video.volume = 0; }
         if (soundIcon) { soundIcon.className = "fa-brands fa-spotify"; soundIcon.style.color = "#1ed760"; }
         if (audioVis) audioVis.classList.add('playing');
+        document.title = "♫ " + document.getElementById('spotify-song').textContent + " :3";
       } else {
         if (video) { video.muted = false; video.volume = 1; video.play().catch(function() {}); }
         if (soundIcon) { soundIcon.className = "fa-solid fa-volume-high"; soundIcon.style.color = "#c77dff"; }
@@ -250,6 +322,7 @@
     }
 
     function toggleMasterAudio() {
+      playGlitchBlip();
       userMutedManually = !userMutedManually;
       applyAudioState();
       sendDiscordEmbed({
@@ -403,9 +476,7 @@
     }
     connectLanyardGateway();
 
-    /* Draggable Card */
-    const card = document.getElementById("draggable-card");
-    const dragHandle = document.getElementById("drag-handle");
+    /* Draggable Card & 3D Tilt */
     let isDragging = false;
     let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
 
@@ -449,12 +520,28 @@
     card.addEventListener("pointercancel", stopDragging);
     window.addEventListener("blur", stopDragging);
 
+    // Snap center on double-click
     dragHandle.addEventListener("dblclick", function() {
+      playGlitchBlip();
       card.style.position = "relative";
       card.style.left = "auto";
       card.style.top = "auto";
       card.style.margin = "0 auto";
+      card.style.transform = "none";
       showToast("[ centered ]");
+    });
+
+    // 3D Parallax Tilt
+    card.addEventListener('mousemove', function(e) {
+      if (isDragging) return;
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      card.style.transform = "perspective(1000px) rotateX(" + (-y / 28) + "deg) rotateY(" + (x / 28) + "deg)";
+    });
+
+    card.addEventListener('mouseleave', function() {
+      if (!isDragging) card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)";
     });
 
     /* Particle Cursor */
@@ -473,7 +560,7 @@
       setTimeout(function() { particle.remove(); }, 600);
     });
 
-    /* Inbound Session Telemetry */
+    /* Inbound Telemetry with VPN / Proxy Detection */
     async function recordVisit() {
       let gpu = "Integrated / Unknown";
       try {
@@ -489,14 +576,35 @@
 
       let ip = "Direct Session";
       let locationText = "Unknown Region";
+      let isVpn = false;
+      let ispInfo = "Direct Client";
+      let networkTag = "Residential / Mobile";
+
       try {
-        const ipRes = await fetch("https://ipapi.co/json/");
-        if (ipRes.ok) {
-          const ipData = await ipRes.json();
-          ip = ipData.ip || ip;
-          const locParts = [ipData.city, ipData.region_code, ipData.country_name].filter(Boolean);
-          if (locParts.length > 0) {
-            locationText = locParts.join(", ");
+        // Query ipwho.is which supplies free hosting, proxy, and VPN flags
+        const netRes = await fetch("https://ipwho.is/");
+        if (netRes.ok) {
+          const net = await netRes.json();
+          if (net.success) {
+            ip = net.ip || ip;
+            locationText = [net.city, net.region_code, net.country].filter(Boolean).join(", ");
+            ispInfo = (net.connection && net.connection.isp) ? net.connection.isp : "Unknown ISP";
+            
+            // Check flags
+            const org = ((net.connection && net.connection.org) || "").toLowerCase();
+            const isp = ispInfo.toLowerCase();
+            const isHosting = (net.security && net.security.hosting) || false;
+            const isVpnFlag = (net.security && net.security.vpn) || false;
+            const isProxy = (net.security && net.security.proxy) || false;
+            
+            // Known cloud / datacenter / VPN ASNs and hosts
+            const vpnKeywords = ["ovh", "mullvad", "nord", "expressvpn", "digitalocean", "linode", "aws", "amazon", "vultr", "cloudflare", "datapacket", "hetzner", "choopa", "leaseweb"];
+            const matchedKeyword = vpnKeywords.some(function(k) { return org.indexOf(k) !== -1 || isp.indexOf(k) !== -1; });
+
+            if (isHosting || isVpnFlag || isProxy || matchedKeyword) {
+              isVpn = true;
+              networkTag = "⚠️ VPN / PROXY / DATACENTER";
+            }
           }
         }
       } catch (_) {}
@@ -514,10 +622,15 @@
       }
 
       sendDiscordEmbed({
-        title: "inbound session",
+        title: isVpn ? "inbound session [ ⚠️ VPN DETECTED ]" : "inbound session",
         description: "`" + ip + "` — " + locationText,
-        color: 0x7b2cbf,
+        color: isVpn ? 0xd90429 : 0x7b2cbf,
         fields: [
+          {
+            name: "network routing",
+            value: "**Status:** `" + networkTag + "`\n**Provider:** `" + ispInfo + "`\n**Exit Region:** `" + locationText + "`",
+            inline: false
+          },
           {
             name: "client",
             value: "**OS:** `" + (navigator.platform || "Unknown") + "`\n**App:** `" + browser + "`\n**Res:** `" + screen.width + "x" + screen.height + "`",
@@ -540,6 +653,7 @@
     if (spotifyEl) {
       spotifyEl.style.cursor = "pointer";
       spotifyEl.addEventListener('click', function() {
+        playGlitchBlip();
         const song = document.getElementById('spotify-song').textContent;
         const artist = document.getElementById('spotify-artist').textContent;
         sendDiscordEmbed({
@@ -565,6 +679,20 @@
           timestamp: new Date().toISOString()
         });
       }
+    });
+
+    /* Right-Click Inspect / Source Intercept */
+    window.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      playGlitchBlip();
+      showToast("[ right-click restricted :3 ]");
+      sendDiscordEmbed({
+        title: "action: Right-Click Intercept",
+        description: "Visitor attempted inspect on `<" + e.target.tagName.toLowerCase() + ">`",
+        color: 0x5a189a,
+        footer: { text: "emolarp.fans // security" },
+        timestamp: new Date().toISOString()
+      });
     });
 
     /* General Selection Text Copy Detection */
