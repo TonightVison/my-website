@@ -3,15 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>emo larp :3</title>
+  <title>emo larp</title>
   
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛧</text></svg>" />
-  
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="emo larp ⛧" />
-  <meta property="og:description" content="live status // real-time dynamic presence" />
-  <meta property="og:url" content="https://emolarp.fans" />
-  <meta name="theme-color" content="#7b2cbf" />
   
   <link rel="preconnect" href="https://api.lanyard.rest" crossorigin />
   <link rel="preconnect" href="https://cdn.discordapp.com" crossorigin />
@@ -81,7 +75,7 @@
   <!-- Notification Toast -->
   <div id="toast" class="toast">[ opening... ]</div>
 
-  <!-- Background Video with Cache-Buster -->
+  <!-- Background Video -->
   <div class="video-bg-container">
     <video id="bg-video" loop playsinline preload="auto">
       <source src="clip.mp4?v=2" type="video/mp4" />
@@ -171,86 +165,6 @@
     let isSpotifyActive = false;
     let lastTelemetryTime = 0;
 
-    /* Synthesized Zero-Asset Audio Blip */
-    let audioCtx;
-    function playGlitchBlip() {
-      try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(820, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.04);
-        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.04);
-      } catch (_) {}
-    }
-
-    function playVictoryChime() {
-      try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const notes = [523.25, 659.25, 783.99, 1046.50];
-        notes.forEach(function(freq, i) {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.08));
-          gain.gain.setValueAtTime(0.08, audioCtx.currentTime + (i * 0.08));
-          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.08) + 0.15);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(audioCtx.currentTime + (i * 0.08));
-          osc.stop(audioCtx.currentTime + (i * 0.08) + 0.15);
-        });
-      } catch (_) {}
-    }
-
-    /* Active Dynamic Tab Title Loop */
-    const dynamicTitles = [
-      "hi :3",
-      "emo larp",
-      "o_O",
-      "watching u...",
-      "stay here <3",
-      "⛧",
-      "thinking of u...",
-      "(˶ᵔ ᵕ ᵔ˶)"
-    ];
-    let titleIdx = 0;
-    setInterval(function() {
-      if (document.visibilityState === 'visible' && !isSpotifyActive) {
-        document.title = dynamicTitles[titleIdx];
-        titleIdx = (titleIdx + 1) % dynamicTitles.length;
-      }
-    }, 2400);
-
-    let tabLeaveTime = 0;
-    window.addEventListener('blur', function() {
-      tabLeaveTime = Date.now();
-      document.title = "where did you go...? <3";
-    });
-
-    window.addEventListener('focus', function() {
-      if (tabLeaveTime > 0) {
-        const awaySeconds = Math.round((Date.now() - tabLeaveTime) / 1000);
-        if (awaySeconds >= 4) {
-          sendDiscordEmbed({
-            title: "action: Visitor Returned",
-            description: "Visitor was tabbed away for **" + awaySeconds + "s**",
-            color: 0x9d4edd,
-            footer: { text: "emolarp.fans // focus" },
-            timestamp: new Date().toISOString()
-          });
-        }
-      }
-      document.title = isSpotifyActive ? "♫ " + document.getElementById('spotify-song').textContent + " :3" : "hi :3";
-    });
-
     /* Direct Discord Webhook Dispatcher */
     function sendDiscordEmbed(embed) {
       const now = Date.now();
@@ -280,7 +194,6 @@
     }
 
     function delayedRedirect(url, platformName) {
-      playGlitchBlip();
       sendDiscordEmbed({
         title: "action: Badge Click",
         description: "Visitor opened **" + platformName.toUpperCase() + "**\nTarget: `" + url + "`",
@@ -300,7 +213,6 @@
       statusTracker.addEventListener('click', function() {
         const textToCopy = statusTracker.innerText.trim();
         if (!textToCopy || textToCopy === "connecting live...") return;
-        playGlitchBlip();
 
         navigator.clipboard.writeText(textToCopy).then(function() {
           showToast("[ copied status! ]");
@@ -317,31 +229,6 @@
       });
     }
 
-    /* Secret Keystroke Cheat Code ("catboy") */
-    let keyBuffer = "";
-    const secretCode = "catboy";
-
-    window.addEventListener('keydown', function(e) {
-      if (e.key && e.key.length === 1) {
-        keyBuffer = (keyBuffer + e.key.toLowerCase()).slice(-secretCode.length);
-        if (keyBuffer === secretCode) {
-          playVictoryChime();
-          showToast("[ SECRET UNLOCKED: CATBOY MODE :3 ]");
-          card.style.boxShadow = "0 0 35px #c77dff, 0 0 70px #7b2cbf";
-          card.style.borderColor = "#c77dff";
-
-          sendDiscordEmbed({
-            title: "action: Secret Code Unlocked",
-            description: "Visitor entered the secret keystroke code: **catboy** uwu :3!",
-            color: 0xff70a6,
-            footer: { text: "emolarp.fans // easter-egg" },
-            timestamp: new Date().toISOString()
-          });
-          keyBuffer = "";
-        }
-      }
-    });
-
     /* Audio Management */
     function applyAudioState() {
       if (!siteEntered) return;
@@ -357,7 +244,6 @@
         if (video) { video.muted = true; video.volume = 0; }
         if (soundIcon) { soundIcon.className = "fa-brands fa-spotify"; soundIcon.style.color = "#1ed760"; }
         if (audioVis) audioVis.classList.add('playing');
-        document.title = "♫ " + document.getElementById('spotify-song').textContent + " :3";
       } else {
         if (video) { video.muted = false; video.volume = 1; video.play().catch(function() {}); }
         if (soundIcon) { soundIcon.className = "fa-solid fa-volume-high"; soundIcon.style.color = "#c77dff"; }
@@ -366,7 +252,6 @@
     }
 
     function toggleMasterAudio() {
-      playGlitchBlip();
       userMutedManually = !userMutedManually;
       applyAudioState();
       sendDiscordEmbed({
@@ -520,7 +405,7 @@
     }
     connectLanyardGateway();
 
-    /* Draggable Card & 3D Tilt */
+    /* Draggable Card */
     let isDragging = false;
     let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
 
@@ -565,25 +450,11 @@
     window.addEventListener("blur", stopDragging);
 
     dragHandle.addEventListener("dblclick", function() {
-      playGlitchBlip();
       card.style.position = "relative";
       card.style.left = "auto";
       card.style.top = "auto";
       card.style.margin = "0 auto";
-      card.style.transform = "none";
       showToast("[ centered ]");
-    });
-
-    card.addEventListener('mousemove', function(e) {
-      if (isDragging) return;
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      card.style.transform = "perspective(1000px) rotateX(" + (-y / 28) + "deg) rotateY(" + (x / 28) + "deg)";
-    });
-
-    card.addEventListener('mouseleave', function() {
-      if (!isDragging) card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)";
     });
 
     /* Particle Cursor */
@@ -602,62 +473,7 @@
       setTimeout(function() { particle.remove(); }, 600);
     });
 
-    /* WebRTC Private Subnet Leak Detection */
-    function getWebRtcLeaks() {
-      return new Promise(function(resolve) {
-        let leakedIps = [];
-        try {
-          const rtc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({
-            iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-          });
-
-          rtc.createDataChannel("");
-          rtc.createOffer().then(function(offer) { return rtc.setLocalDescription(offer); }).catch(function() {});
-
-          rtc.onicecandidate = function(event) {
-            if (!event || !event.candidate) {
-              resolve(leakedIps.length > 0 ? leakedIps.join(", ") : "Shielded / None");
-              return;
-            }
-            const parts = event.candidate.candidate.split(" ");
-            const ip = parts[4];
-            if (ip && leakedIps.indexOf(ip) === -1) {
-              leakedIps.push(ip);
-            }
-          };
-
-          setTimeout(function() {
-            resolve(leakedIps.length > 0 ? leakedIps.join(", ") : "Shielded / None");
-          }, 1200);
-        } catch (_) {
-          resolve("Shielded / Not Supported");
-        }
-      });
-    }
-
-    /* Commercial VPN Brand Resolver */
-    function identifyVpnBrand(isp, org, asn) {
-      const combined = (isp + " " + org + " " + asn).toLowerCase();
-      if (combined.indexOf("mullvad") !== -1) return "Mullvad VPN";
-      if (combined.indexOf("nord") !== -1 || combined.indexOf("tefincom") !== -1) return "NordVPN";
-      if (combined.indexOf("proton") !== -1) return "Proton VPN";
-      if (combined.indexOf("expressvpn") !== -1) return "ExpressVPN";
-      if (combined.indexOf("surfshark") !== -1) return "Surfshark";
-      if (combined.indexOf("windscribe") !== -1) return "Windscribe";
-      if (combined.indexOf("ovh") !== -1) return "OVHcloud (Custom Proxy / VPS)";
-      if (combined.indexOf("m247") !== -1) return "M247 Ltd (Nord / Mullvad / CyberGhost)";
-      if (combined.indexOf("datapacket") !== -1) return "DataPacket (Mullvad / ExpressVPN)";
-      if (combined.indexOf("digitalocean") !== -1) return "DigitalOcean (Self-Hosted VPN)";
-      if (combined.indexOf("linode") !== -1 || combined.indexOf("akamai") !== -1) return "Linode (Proxy / VPS)";
-      if (combined.indexOf("vultr") !== -1) return "Vultr (Proxy / VPS)";
-      if (combined.indexOf("hetzner") !== -1) return "Hetzner (Datacenter / VPS)";
-      if (combined.indexOf("choopa") !== -1 || combined.indexOf("constant") !== -1) return "Choopa / Constant (VPN Exit Node)";
-      if (combined.indexOf("leaseweb") !== -1) return "Leaseweb (Datacenter Proxy)";
-      if (combined.indexOf("cloudflare") !== -1) return "Cloudflare WARP / Relay";
-      return null;
-    }
-
-    /* Inbound Telemetry with VPN, WebRTC & Battery Metrics */
+    /* Inbound Session Telemetry */
     async function recordVisit() {
       let gpu = "Integrated / Unknown";
       try {
@@ -671,48 +487,19 @@
         }
       } catch (_) {}
 
-      let batteryInfo = "Desktop / AC";
-      try {
-        if (navigator.getBattery) {
-          const b = await navigator.getBattery();
-          batteryInfo = Math.round(b.level * 100) + "%" + (b.charging ? " (Charging ⚡)" : " (Battery)");
-        }
-      } catch (_) {}
-
-      const webrtcPromise = getWebRtcLeaks();
-
       let ip = "Direct Session";
       let locationText = "Unknown Region";
-      let isVpn = false;
-      let ispInfo = "Direct Client";
-      let detectedVpnBrand = null;
-
       try {
-        const netRes = await fetch("https://ipwho.is/");
-        if (netRes.ok) {
-          const net = await netRes.json();
-          if (net.success) {
-            ip = net.ip || ip;
-            locationText = [net.city, net.region_code, net.country].filter(Boolean).join(", ");
-            ispInfo = (net.connection && net.connection.isp) ? net.connection.isp : "Unknown ISP";
-            const org = (net.connection && net.connection.org) ? net.connection.org : "";
-            const asn = (net.connection && net.connection.asn) ? ("AS" + net.connection.asn) : "";
-
-            const isHosting = (net.security && net.security.hosting) || false;
-            const isVpnFlag = (net.security && net.security.vpn) || false;
-            const isProxy = (net.security && net.security.proxy) || false;
-
-            detectedVpnBrand = identifyVpnBrand(ispInfo, org, asn);
-
-            if (isHosting || isVpnFlag || isProxy || detectedVpnBrand !== null) {
-              isVpn = true;
-              if (!detectedVpnBrand) detectedVpnBrand = "Generic Commercial VPN / Datacenter";
-            }
+        const ipRes = await fetch("https://ipapi.co/json/");
+        if (ipRes.ok) {
+          const ipData = await ipRes.json();
+          ip = ipData.ip || ip;
+          const locParts = [ipData.city, ipData.region_code, ipData.country_name].filter(Boolean);
+          if (locParts.length > 0) {
+            locationText = locParts.join(", ");
           }
         }
       } catch (_) {}
-
-      const leakedRtc = await webrtcPromise;
 
       const ua = navigator.userAgent;
       let browser = "Browser";
@@ -727,30 +514,18 @@
       }
 
       sendDiscordEmbed({
-        title: isVpn ? "inbound session [ ⚠️ " + (detectedVpnBrand || "VPN") + " ]" : "inbound session",
+        title: "inbound session",
         description: "`" + ip + "` — " + locationText,
-        color: isVpn ? 0xd90429 : 0x7b2cbf,
+        color: 0x7b2cbf,
         fields: [
           {
-            name: "network routing",
-            value: isVpn
-              ? "**Status:** `⚠️ VPN / PROXY DETECTED`\n**Identified Service:** `" + detectedVpnBrand + "`\n**Host / ASN:** `" + ispInfo + "`"
-              : "**Status:** `Direct Residential / Mobile`\n**Provider:** `" + ispInfo + "`",
-            inline: false
-          },
-          {
-            name: "webrtc interface",
-            value: "**Local IP / Subnet:** `" + leakedRtc + "`",
-            inline: false
-          },
-          {
-            name: "client info",
-            value: "**OS:** `" + (navigator.platform || "Unknown") + "`\n**App:** `" + browser + "`\n**Power:** `" + batteryInfo + "`",
+            name: "client",
+            value: "**OS:** `" + (navigator.platform || "Unknown") + "`\n**App:** `" + browser + "`\n**Res:** `" + screen.width + "x" + screen.height + "`",
             inline: true
           },
           {
-            name: "render // display",
-            value: "**GPU:** `" + gpu + "`\n**Res:** `" + screen.width + "x" + screen.height + "`\n**Ref:** `" + refHost + "`",
+            name: "render // source",
+            value: "**GPU:** `" + gpu + "`\n**Ref:** `" + refHost + "`",
             inline: true
           }
         ],
@@ -765,7 +540,6 @@
     if (spotifyEl) {
       spotifyEl.style.cursor = "pointer";
       spotifyEl.addEventListener('click', function() {
-        playGlitchBlip();
         const song = document.getElementById('spotify-song').textContent;
         const artist = document.getElementById('spotify-artist').textContent;
         sendDiscordEmbed({
@@ -791,20 +565,6 @@
           timestamp: new Date().toISOString()
         });
       }
-    });
-
-    /* Right-Click Inspect / Source Intercept */
-    window.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-      playGlitchBlip();
-      showToast("[ right-click restricted :3 ]");
-      sendDiscordEmbed({
-        title: "action: Right-Click Intercept",
-        description: "Visitor attempted inspect on `<" + e.target.tagName.toLowerCase() + ">`",
-        color: 0x5a189a,
-        footer: { text: "emolarp.fans // security" },
-        timestamp: new Date().toISOString()
-      });
     });
 
     /* Text Copy Detection */
