@@ -521,3 +521,67 @@ html, body {
   .avatar-hex { width: 72px; height: 72px; }
   .typewriter-box { font-size: 0.85rem; }
 }
+
+/* --- SECRET CODE OVERRIDES --- */
+
+/* Catboy Mode */
+.profile-frame.theme-catboy {
+  border-color: #c77dff !important;
+  box-shadow: 0 0 35px rgba(199, 125, 255, 0.6), 0 0 70px rgba(123, 44, 191, 0.4) !important;
+}
+.profile-frame.theme-catboy .username {
+  color: #c77dff !important;
+  text-shadow: 0 0 15px rgba(199, 125, 255, 0.8) !important;
+}
+.profile-frame.theme-catboy .typewriter-box {
+  color: #e0aaff !important;
+  font-style: italic !important;
+  text-shadow: 0 0 10px rgba(199, 125, 255, 0.8) !important;
+}
+
+/* Femboy Mode */
+.profile-frame.theme-femboy {
+  border: 2px dashed #ff70a6 !important;
+  box-shadow: 0 0 35px rgba(255, 112, 166, 0.6), 0 0 70px rgba(255, 179, 198, 0.4) !important;
+}
+.profile-frame.theme-femboy .username {
+  color: #ffb3c6 !important;
+  text-shadow: 0 0 15px rgba(255, 112, 166, 0.8) !important;
+}
+.profile-frame.theme-femboy .typewriter-box {
+  color: #ff70a6 !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.5px !important;
+  text-shadow: 0 0 10px rgba(255, 112, 166, 0.8) !important;
+}
+
+/* Floating Corner Sticker */
+#secret-popup {
+  position: fixed;
+  bottom: -220px;
+  right: 32px;
+  width: 140px;
+  z-index: 999;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#secret-popup.show {
+  bottom: 24px;
+}
+
+.secret-bubble {
+  background: rgba(22, 16, 31, 0.9);
+  border: 1px solid var(--border-color);
+  color: #ff70a6;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+}
