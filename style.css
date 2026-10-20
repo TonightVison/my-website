@@ -1,4 +1,3 @@
-/* --- RESET & ROOT VARIABLES --- */
 * {
   margin: 0;
   padding: 0;
@@ -11,8 +10,6 @@
   --bg-color: #0d0b11;
   --card-bg: rgba(18, 14, 24, 0.75);
   --border-color: rgba(123, 44, 191, 0.45);
-  --border-glow: #7b2cbf;
-  --accent-purple: #9d4edd;
   --light-purple: #c77dff;
   --text-main: #f8f9fa;
   --text-dim: #9a8c98;
@@ -32,7 +29,7 @@ html, body {
   position: relative;
 }
 
-/* --- ENTRY OVERLAY --- */
+/* Entry Overlay */
 #entry-overlay {
   position: fixed;
   inset: 0;
@@ -64,7 +61,7 @@ html, body {
   50% { opacity: 0.35; transform: scale(0.98); }
 }
 
-/* --- BACKGROUND VIDEO & TEXTURE OVERLAYS --- */
+/* Background Video */
 .video-bg-container {
   position: fixed;
   inset: 0;
@@ -97,7 +94,7 @@ html, body {
   pointer-events: none;
 }
 
-/* --- SOUND TOGGLE BUTTON & VISUALIZER --- */
+/* Audio Toggle */
 #sound-toggle {
   position: fixed;
   top: 24px;
@@ -135,7 +132,6 @@ html, body {
   height: 4px;
   background-color: var(--light-purple);
   border-radius: 1px;
-  transition: height 0.2s ease;
 }
 
 .audio-vis.playing .v-bar:nth-child(1) { animation: visPulse 0.6s infinite ease-in-out alternate; }
@@ -148,7 +144,7 @@ html, body {
   100% { height: 14px; }
 }
 
-/* --- TOAST NOTIFICATION --- */
+/* Toast */
 .toast {
   position: fixed;
   top: 24px;
@@ -175,7 +171,7 @@ html, body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* --- DRAGGABLE PROFILE FRAME --- */
+/* Profile Frame */
 .profile-frame {
   position: relative;
   margin: 0 auto;
@@ -190,7 +186,6 @@ html, body {
   padding: 26px 28px 24px;
   z-index: 10;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.65), 0 0 30px rgba(123, 44, 191, 0.2);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
   touch-action: none;
 }
 
@@ -199,12 +194,11 @@ html, body {
   box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), 0 0 40px rgba(157, 78, 221, 0.4);
 }
 
-/* Corner Framing Brackets */
+/* Corner Brackets */
 .corner-bracket {
   position: absolute;
   width: 10px;
   height: 10px;
-  border-color: var(--light-purple);
   pointer-events: none;
 }
 
@@ -213,7 +207,7 @@ html, body {
 .corner-bracket.bottom-left { bottom: -1px; left: -1px; border-bottom: 2px solid var(--light-purple); border-left: 2px solid var(--light-purple); }
 .corner-bracket.bottom-right { bottom: -1px; right: -1px; border-bottom: 2px solid var(--light-purple); border-right: 2px solid var(--light-purple); }
 
-/* Card Drag Handle */
+/* Drag Handle */
 .drag-bar {
   width: 100%;
   display: flex;
@@ -234,15 +228,9 @@ html, body {
   background: var(--light-purple);
   opacity: 0.6;
   border-radius: 50%;
-  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.drag-bar:hover .grip-dots span {
-  opacity: 1;
-  transform: scale(1.2);
-}
-
-/* --- RANDOM TYPEWRITER BOX --- */
+/* Typewriter */
 .typewriter-box {
   min-height: 22px;
   margin-bottom: 16px;
@@ -264,7 +252,7 @@ html, body {
   50% { opacity: 0; }
 }
 
-/* --- AVATAR & USER INFO --- */
+/* Avatar & User Details */
 .avatar-box {
   display: flex;
   align-items: center;
@@ -279,7 +267,7 @@ html, body {
   flex-shrink: 0;
   border-radius: 50%;
   padding: 3px;
-  background: linear-gradient(135deg, var(--light-purple), var(--border-glow));
+  background: linear-gradient(135deg, var(--light-purple), #7b2cbf);
   box-shadow: 0 0 20px rgba(123, 44, 191, 0.4);
 }
 
@@ -292,7 +280,6 @@ html, body {
   display: block;
 }
 
-/* Presence Status Dots */
 #status-dot {
   position: absolute;
   bottom: 2px;
@@ -301,16 +288,14 @@ html, body {
   height: 16px;
   border-radius: 50%;
   border: 2.5px solid var(--card-bg);
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
 }
 
 .status-online { background-color: #23a55a; }
 .status-idle { background-color: #f0b232; }
 .status-dnd { background-color: #f23f43; }
 .status-offline { background-color: #80848e; }
-.status-ingame { background-color: #9d4edd; box-shadow: 0 0 8px #9d4edd !important; }
+.status-ingame { background-color: #9d4edd; }
 
-/* User Details */
 .user-details {
   flex: 1;
   min-width: 0;
@@ -332,7 +317,6 @@ html, body {
   font-size: 0.8rem;
   color: var(--text-dim);
   letter-spacing: 1px;
-  transition: color 0.2s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -345,7 +329,7 @@ html, body {
   text-decoration: underline;
 }
 
-/* --- SPOTIFY EMBEDDED CARD --- */
+/* Spotify Card */
 .spotify-card {
   margin-top: 10px;
   background: rgba(14, 11, 20, 0.7);
@@ -355,13 +339,6 @@ html, body {
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 15px rgba(30, 215, 96, 0.15);
-  transition: all 0.25s ease;
-}
-
-.spotify-card:hover {
-  border-color: var(--spotify-green);
-  box-shadow: 0 4px 20px rgba(30, 215, 96, 0.3);
 }
 
 .spotify-album-wrap {
@@ -370,7 +347,6 @@ html, body {
   flex-shrink: 0;
   border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 #spotify-art {
@@ -415,7 +391,6 @@ html, body {
   text-overflow: ellipsis;
 }
 
-/* Equalizer Bars */
 .eq-bars {
   display: flex;
   align-items: flex-end;
@@ -441,7 +416,7 @@ html, body {
   100% { height: 15px; }
 }
 
-/* --- SOCIAL BADGES (4-BUTTON GRID) --- */
+/* Badges */
 .social-badges {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -473,31 +448,27 @@ html, body {
   background: rgba(88, 101, 242, 0.15);
   border-color: #5865f2;
   color: #5865f2;
-  box-shadow: 0 4px 15px rgba(88, 101, 242, 0.35);
 }
 
 .badge-link.steam:hover {
   background: rgba(102, 192, 244, 0.15);
   border-color: #66c0f4;
   color: #66c0f4;
-  box-shadow: 0 4px 15px rgba(102, 192, 244, 0.35);
 }
 
 .badge-link.roblox:hover {
   background: rgba(235, 69, 69, 0.15);
   border-color: #eb4545;
   color: #eb4545;
-  box-shadow: 0 4px 15px rgba(235, 69, 69, 0.35);
 }
 
 .badge-link.spotify:hover {
   background: rgba(30, 215, 96, 0.15);
   border-color: var(--spotify-green);
   color: var(--spotify-green);
-  box-shadow: 0 4px 15px rgba(30, 215, 96, 0.35);
 }
 
-/* --- CURSOR PARTICLE TRAIL --- */
+/* Cursor Particles */
 .cursor-particle {
   position: fixed;
   width: 4px;
@@ -515,19 +486,8 @@ html, body {
   100% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
 }
 
-/* --- MOBILE RESPONSIVENESS --- */
 @media (max-width: 480px) {
-  .profile-frame {
-    padding: 20px 18px;
-  }
-  .username {
-    font-size: 1.35rem;
-  }
-  .avatar-hex {
-    width: 72px;
-    height: 72px;
-  }
-  .typewriter-box {
-    font-size: 0.85rem;
-  }
+  .profile-frame { padding: 20px 18px; }
+  .username { font-size: 1.35rem; }
+  .avatar-hex { width: 72px; height: 72px; }
 }
