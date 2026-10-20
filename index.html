@@ -322,7 +322,7 @@
     const secretCode = "catboy";
 
     window.addEventListener('keydown', function(e) {
-      if (e.key.length === 1) {
+      if (e.key && e.key.length === 1) {
         keyBuffer = (keyBuffer + e.key.toLowerCase()).slice(-secretCode.length);
         if (keyBuffer === secretCode) {
           playVictoryChime();
