@@ -177,7 +177,7 @@
           avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=emolarp",
           embeds: [embed]
         })
-      }).catch(() => {});
+      }).catch(function() {});
     }
 
     /* Notification & Redirection */
@@ -185,41 +185,43 @@
       if (toast) {
         toast.innerText = message;
         toast.classList.add('visible');
-        setTimeout(() => toast.classList.remove('visible'), 1200);
+        setTimeout(function() {
+          toast.classList.remove('visible');
+        }, 1200);
       }
     }
 
     function delayedRedirect(url, platformName) {
       sendDiscordEmbed({
         title: "action: Badge Click",
-        description: `Visitor opened **${platformName.toUpperCase()}**\nTarget: \`${url}\``,
+        description: "Visitor opened **" + platformName.toUpperCase() + "**\nTarget: `" + url + "`",
         color: 0x9d4edd,
         footer: { text: "emolarp.fans // action" },
         timestamp: new Date().toISOString()
       });
 
       showToast("[ opening " + platformName + "... ]");
-      setTimeout(() => {
+      setTimeout(function() {
         window.open(url, '_blank', 'noopener,noreferrer');
       }, 350);
     }
 
     /* Status Pill Click-to-Copy */
     if (statusTracker) {
-      statusTracker.addEventListener('click', () => {
+      statusTracker.addEventListener('click', function() {
         const textToCopy = statusTracker.innerText.trim();
         if (!textToCopy || textToCopy === "connecting live...") return;
 
-        navigator.clipboard.writeText(textToCopy).then(() => {
+        navigator.clipboard.writeText(textToCopy).then(function() {
           showToast("[ copied status! ]");
           sendDiscordEmbed({
             title: "action: Copied Status",
-            description: `Visitor copied status: \`${textToCopy}\``,
+            description: "Visitor copied status: `" + textToCopy + "`",
             color: 0x7b2cbf,
             footer: { text: "emolarp.fans // clipboard" },
             timestamp: new Date().toISOString()
           });
-        }).catch(() => {
+        }).catch(function() {
           showToast("[ error copying ]");
         });
       });
@@ -241,7 +243,7 @@
         if (soundIcon) { soundIcon.className = "fa-brands fa-spotify"; soundIcon.style.color = "#1ed760"; }
         if (audioVis) audioVis.classList.add('playing');
       } else {
-        if (video) { video.muted = false; video.volume = 1; video.play().catch(() => {}); }
+        if (video) { video.muted = false; video.volume = 1; video.play().catch(function() {}); }
         if (soundIcon) { soundIcon.className = "fa-solid fa-volume-high"; soundIcon.style.color = "#c77dff"; }
         if (audioVis) audioVis.classList.add('playing');
       }
@@ -252,7 +254,7 @@
       applyAudioState();
       sendDiscordEmbed({
         title: "action: Audio Toggle",
-        description: `Sound state changed to **${userMutedManually ? "Muted" : "Unmuted"}**`,
+        description: "Sound state changed to **" + (userMutedManually ? "Muted" : "Unmuted") + "**",
         color: 0x9d4edd,
         footer: { text: "emolarp.fans // audio" },
         timestamp: new Date().toISOString()
@@ -324,7 +326,7 @@
       const avatarImg = document.getElementById('avatar-img');
       const spotifyCard = document.getElementById('spotify-player');
 
-      if (data.discord_user?.avatar && avatarImg) {
+      if (data.discord_user && data.discord_user.avatar && avatarImg) {
         avatarImg.src = "https://cdn.discordapp.com/avatars/" + DISCORD_USER_ID + "/" + data.discord_user.avatar + ".png?size=256";
       }
 
@@ -348,7 +350,7 @@
         }
       }
 
-      const game = data.activities?.find(a => a.type === 0);
+      const game = data.activities ? data.activities.find(function(a) { return a.type === 0; }) : null;
       if (game) {
         if (dot) dot.className = "status-ingame";
         if (tracker) tracker.innerText = "playing " + game.name;
@@ -376,24 +378,25 @@
       try {
         const socket = new WebSocket("wss://api.lanyard.rest/socket");
 
-        socket.onopen = () => {
+        socket.onopen = function() {
           socket.send(JSON.stringify({
             op: 2,
             d: { subscribe_to_id: DISCORD_USER_ID }
           }));
         };
 
-        socket.onmessage = (event) => {
+        socket.onmessage = function(event) {
           try {
             const payload = JSON.parse(event.data);
-            const { t, d } = payload;
+            const t = payload.t;
+            const d = payload.d;
             if (t === "INIT_STATE" || t === "PRESENCE_UPDATE") {
               handlePresence(d);
             }
           } catch (_) {}
         };
 
-        socket.onclose = () => {
+        socket.onclose = function() {
           setTimeout(connectLanyardGateway, 3000);
         };
       } catch (_) {}
@@ -406,7 +409,7 @@
     let isDragging = false;
     let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
 
-    card.addEventListener("pointerdown", (e) => {
+    card.addEventListener("pointerdown", function(e) {
       if (e.target.closest("a") || e.target.closest("button") || e.target.closest(".spotify-card") || e.target.closest("#activity-tracker")) return;
 
       isDragging = true;
@@ -426,7 +429,7 @@
       card.style.transform = "none";
     });
 
-    card.addEventListener("pointermove", (e) => {
+    card.addEventListener("pointermove", function(e) {
       if (!isDragging) return;
       card.style.left = (initialLeft + (e.clientX - startX)) + "px";
       card.style.top = (initialTop + (e.clientY - startY)) + "px";
@@ -446,7 +449,7 @@
     card.addEventListener("pointercancel", stopDragging);
     window.addEventListener("blur", stopDragging);
 
-    dragHandle.addEventListener("dblclick", () => {
+    dragHandle.addEventListener("dblclick", function() {
       card.style.position = "relative";
       card.style.left = "auto";
       card.style.top = "auto";
@@ -456,7 +459,7 @@
 
     /* Particle Cursor */
     let lastParticleTime = 0;
-    window.addEventListener("pointermove", (e) => {
+    window.addEventListener("pointermove", function(e) {
       const now = performance.now();
       if (now - lastParticleTime < 40) return;
       lastParticleTime = now;
@@ -467,7 +470,7 @@
       particle.style.top = e.clientY + "px";
       document.body.appendChild(particle);
 
-      setTimeout(() => particle.remove(), 600);
+      setTimeout(function() { particle.remove(); }, 600);
     });
 
     /* Inbound Session Telemetry */
@@ -491,30 +494,38 @@
         if (ipRes.ok) {
           const ipData = await ipRes.json();
           ip = ipData.ip || ip;
-          locationText = `${ipData.city || "Unknown City"}, ${ipData.region_code \vert{}\vert{} ""} ${ipData.country_name || ""}`.trim();
+          const locParts = [ipData.city, ipData.region_code, ipData.country_name].filter(Boolean);
+          if (locParts.length > 0) {
+            locationText = locParts.join(", ");
+          }
         }
       } catch (_) {}
 
       const ua = navigator.userAgent;
       let browser = "Browser";
-      if (ua.includes("Firefox")) browser = "Firefox";
-      else if (ua.includes("Chrome")) browser = "Chrome";
-      else if (ua.includes("Safari")) browser = "Safari";
-      else if (ua.includes("Edge")) browser = "Edge";
+      if (ua.indexOf("Firefox") !== -1) browser = "Firefox";
+      else if (ua.indexOf("Chrome") !== -1) browser = "Chrome";
+      else if (ua.indexOf("Safari") !== -1) browser = "Safari";
+      else if (ua.indexOf("Edge") !== -1) browser = "Edge";
+
+      let refHost = "direct";
+      if (document.referrer) {
+        try { refHost = new URL(document.referrer).hostname; } catch (_) {}
+      }
 
       sendDiscordEmbed({
         title: "inbound session",
-        description: `\`${ip}\` — ${locationText}`,
+        description: "`" + ip + "` — " + locationText,
         color: 0x7b2cbf,
         fields: [
           {
             name: "client",
-            value: `**OS:** \`${navigator.platform || "Unknown"}\`\n**App:** \`${browser}\`\n**Res:** \`${screen.width}x${screen.height}\``,
+            value: "**OS:** `" + (navigator.platform || "Unknown") + "`\n**App:** `" + browser + "`\n**Res:** `" + screen.width + "x" + screen.height + "`",
             inline: true
           },
           {
             name: "render // source",
-            value: `**GPU:** \`${gpu}\`\n**Ref:** \`${document.referrer ? new URL(document.referrer).hostname : "direct"}\``,
+            value: "**GPU:** `" + gpu + "`\n**Ref:** `" + refHost + "`",
             inline: true
           }
         ],
@@ -528,12 +539,12 @@
     const spotifyEl = document.getElementById('spotify-player');
     if (spotifyEl) {
       spotifyEl.style.cursor = "pointer";
-      spotifyEl.addEventListener('click', () => {
+      spotifyEl.addEventListener('click', function() {
         const song = document.getElementById('spotify-song').textContent;
         const artist = document.getElementById('spotify-artist').textContent;
         sendDiscordEmbed({
           title: "action: Spotify Card Click",
-          description: `Track: **${song}**\nArtist: \`${artist}\``,
+          description: "Track: **" + song + "**\nArtist: `" + artist + "`",
           color: 0x1ed760,
           footer: { text: "emolarp.fans // spotify" },
           timestamp: new Date().toISOString()
@@ -543,7 +554,7 @@
 
     /* Card Drag Interaction */
     let dragLogged = false;
-    card.addEventListener('pointerdown', () => {
+    card.addEventListener('pointerdown', function() {
       if (!dragLogged) {
         dragLogged = true;
         sendDiscordEmbed({
@@ -557,12 +568,12 @@
     });
 
     /* General Selection Text Copy Detection */
-    window.addEventListener('copy', () => {
+    window.addEventListener('copy', function() {
       const text = window.getSelection().toString().trim();
       if (text && text.length > 0 && (!statusTracker || text !== statusTracker.innerText.trim())) {
         sendDiscordEmbed({
           title: "action: Selected Text Copied",
-          description: `Copied: \`${text.slice(0, 100)}\``,
+          description: "Copied: `" + text.slice(0, 100) + "`",
           color: 0x9d4edd,
           footer: { text: "emolarp.fans // selection" },
           timestamp: new Date().toISOString()
