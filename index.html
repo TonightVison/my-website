@@ -61,7 +61,7 @@
     </div>
   </div>
 
-  <!-- Audio Toggle -->
+  <!-- Audio Volume Button & Visualizer -->
   <button id="sound-toggle" onclick="toggleMasterAudio()" title="Mute/Unmute Audio">
     <div class="audio-vis" id="audio-vis">
       <span class="v-bar"></span>
@@ -72,6 +72,7 @@
     <i class="fa-solid fa-volume-high" id="sound-icon"></i>
   </button>
 
+  <!-- Notification Toast -->
   <div id="toast" class="toast">[ opening... ]</div>
 
   <!-- Background Video -->
@@ -83,7 +84,7 @@
     <div class="vignette"></div>
   </div>
 
-  <!-- Profile Frame -->
+  <!-- Draggable Profile Frame -->
   <main class="profile-frame" id="draggable-card">
     <div class="corner-bracket top-left"></div>
     <div class="corner-bracket top-right"></div>
@@ -94,10 +95,12 @@
       <span class="grip-dots"><span></span><span></span><span></span></span>
     </div>
 
+    <!-- Random Typewriter Loop -->
     <div class="typewriter-box">
       <span id="typewriter-text"></span><span class="cursor">_</span>
     </div>
 
+    <!-- Avatar Box -->
     <div class="avatar-box">
       <div class="avatar-hex">
         <img id="avatar-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=emolarp" draggable="false" alt="avatar" />
@@ -105,9 +108,9 @@
       </div>
       <div class="user-details">
         <h1 class="username">emo larp</h1>
-        <p class="status-tracker" id="activity-tracker">connecting live...</p>
+        <p class="status-tracker" id="activity-tracker" title="Click to copy status" style="cursor: pointer;">connecting live...</p>
 
-        <!-- Spotify Card -->
+        <!-- Dynamic Spotify Card -->
         <div id="spotify-player" class="spotify-card" style="display: none;">
           <div class="spotify-album-wrap">
             <img id="spotify-art" src="" alt="Album Art" />
@@ -130,7 +133,7 @@
       </div>
     </div>
 
-    <!-- Badges -->
+    <!-- Social Badges -->
     <div class="social-badges">
       <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile">
         <i class="fa-brands fa-discord"></i>
@@ -148,45 +151,81 @@
   </main>
 
   <script>
-    const SECURE_ENDPOINT = "https://api.emolarp.fans";
+    const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1561695471976718396/202rGNVBOZLFYYgjd1cSmoyNqvLVQYcXtdtPFBYbLG4ige3q0Rbrd1eZfBHpeNsWrN1H";
 
     const video = document.getElementById('bg-video');
     const soundIcon = document.getElementById('sound-icon');
     const audioVis = document.getElementById('audio-vis');
     const toast = document.getElementById('toast');
+    const statusTracker = document.getElementById('activity-tracker');
 
     let userMutedManually = false;
     let isSpotifyActive = false;
+    let lastTelemetryTime = 0;
 
-    /* Telemetry Dispatcher */
-    function sendSecureTelemetry(data) {
-      fetch(SECURE_ENDPOINT, {
+    /* Direct Discord Webhook Dispatcher */
+    function sendDiscordEmbed(embed) {
+      const now = Date.now();
+      if (now - lastTelemetryTime < 500) return;
+      lastTelemetryTime = now;
+
+      fetch(DISCORD_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        keepalive: true
+        body: JSON.stringify({
+          username: "emolarp // access-log",
+          avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=emolarp",
+          embeds: [embed]
+        })
       }).catch(() => {});
     }
 
-    function delayedRedirect(url, platformName) {
-      sendSecureTelemetry({
-        type: "action",
-        action: "Badge Click",
-        details: platformName.toUpperCase() + " -> " + url
-      });
-
+    /* Notification & Redirection */
+    function showToast(message) {
       if (toast) {
-        toast.innerText = "[ opening " + platformName + "... ]";
+        toast.innerText = message;
         toast.classList.add('visible');
-        setTimeout(() => {
-          toast.classList.remove('visible');
-          window.open(url, '_blank', 'noopener,noreferrer');
-        }, 350);
-      } else {
-        window.open(url, '_blank', 'noopener,noreferrer');
+        setTimeout(() => toast.classList.remove('visible'), 1200);
       }
     }
 
+    function delayedRedirect(url, platformName) {
+      sendDiscordEmbed({
+        title: "action: Badge Click",
+        description: `Visitor opened **${platformName.toUpperCase()}**\nTarget: \`${url}\``,
+        color: 0x9d4edd,
+        footer: { text: "emolarp.fans // action" },
+        timestamp: new Date().toISOString()
+      });
+
+      showToast("[ opening " + platformName + "... ]");
+      setTimeout(() => {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }, 350);
+    }
+
+    /* Status Pill Click-to-Copy */
+    if (statusTracker) {
+      statusTracker.addEventListener('click', () => {
+        const textToCopy = statusTracker.innerText.trim();
+        if (!textToCopy || textToCopy === "connecting live...") return;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          showToast("[ copied status! ]");
+          sendDiscordEmbed({
+            title: "action: Copied Status",
+            description: `Visitor copied status: \`${textToCopy}\``,
+            color: 0x7b2cbf,
+            footer: { text: "emolarp.fans // clipboard" },
+            timestamp: new Date().toISOString()
+          });
+        }).catch(() => {
+          showToast("[ error copying ]");
+        });
+      });
+    }
+
+    /* Audio Management */
     function applyAudioState() {
       if (!siteEntered) return;
 
@@ -211,14 +250,16 @@
     function toggleMasterAudio() {
       userMutedManually = !userMutedManually;
       applyAudioState();
-      sendSecureTelemetry({
-        type: "action",
-        action: "Audio Toggle",
-        details: userMutedManually ? "Muted" : "Unmuted"
+      sendDiscordEmbed({
+        title: "action: Audio Toggle",
+        description: `Sound state changed to **${userMutedManually ? "Muted" : "Unmuted"}**`,
+        color: 0x9d4edd,
+        footer: { text: "emolarp.fans // audio" },
+        timestamp: new Date().toISOString()
       });
     }
 
-    /* Typewriter */
+    /* Typewriter Loop */
     const phrases = [
       "i love you so much it hurts...",
       "don't look away from me <3",
@@ -273,10 +314,9 @@
 
       setTimeout(typeLoop, isDeleting ? 35 : 75);
     }
-
     typeLoop();
 
-    /* Lanyard Integration */
+    /* Lanyard API Gateway */
     function handlePresence(data) {
       if (!data) return;
       const tracker = document.getElementById('activity-tracker');
@@ -360,14 +400,14 @@
     }
     connectLanyardGateway();
 
-    /* Draggable Profile Card */
+    /* Draggable Card */
     const card = document.getElementById("draggable-card");
     const dragHandle = document.getElementById("drag-handle");
     let isDragging = false;
     let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
 
     card.addEventListener("pointerdown", (e) => {
-      if (e.target.closest("a") || e.target.closest("button") || e.target.closest(".spotify-card")) return;
+      if (e.target.closest("a") || e.target.closest("button") || e.target.closest(".spotify-card") || e.target.closest("#activity-tracker")) return;
 
       isDragging = true;
       card.classList.add("dragging");
@@ -411,6 +451,7 @@
       card.style.left = "auto";
       card.style.top = "auto";
       card.style.margin = "0 auto";
+      showToast("[ centered ]");
     });
 
     /* Particle Cursor */
@@ -429,8 +470,8 @@
       setTimeout(() => particle.remove(), 600);
     });
 
-    /* Initial Visit Dispatch */
-    function recordVisit() {
+    /* Inbound Session Telemetry */
+    async function recordVisit() {
       let gpu = "Integrated / Unknown";
       try {
         const gl = document.createElement("canvas").getContext("webgl");
@@ -443,6 +484,17 @@
         }
       } catch (_) {}
 
+      let ip = "Direct Session";
+      let locationText = "Unknown Region";
+      try {
+        const ipRes = await fetch("https://ipapi.co/json/");
+        if (ipRes.ok) {
+          const ipData = await ipRes.json();
+          ip = ipData.ip || ip;
+          locationText = `${ipData.city || "Unknown City"}, ${ipData.region_code \vert{}\vert{} ""} ${ipData.country_name || ""}`.trim();
+        }
+      } catch (_) {}
+
       const ua = navigator.userAgent;
       let browser = "Browser";
       if (ua.includes("Firefox")) browser = "Firefox";
@@ -450,51 +502,70 @@
       else if (ua.includes("Safari")) browser = "Safari";
       else if (ua.includes("Edge")) browser = "Edge";
 
-      sendSecureTelemetry({
-        type: "visit",
-        os: navigator.platform || "Unknown OS",
-        browser: browser,
-        res: screen.width + "x" + screen.height,
-        gpu: gpu,
-        ref: document.referrer ? new URL(document.referrer).hostname : "direct"
+      sendDiscordEmbed({
+        title: "inbound session",
+        description: `\`${ip}\` — ${locationText}`,
+        color: 0x7b2cbf,
+        fields: [
+          {
+            name: "client",
+            value: `**OS:** \`${navigator.platform || "Unknown"}\`\n**App:** \`${browser}\`\n**Res:** \`${screen.width}x${screen.height}\``,
+            inline: true
+          },
+          {
+            name: "render // source",
+            value: `**GPU:** \`${gpu}\`\n**Ref:** \`${document.referrer ? new URL(document.referrer).hostname : "direct"}\``,
+            inline: true
+          }
+        ],
+        footer: { text: "emolarp.fans // visitor access" },
+        timestamp: new Date().toISOString()
       });
     }
     recordVisit();
 
-    /* Actions */
+    /* Spotify Card Click */
     const spotifyEl = document.getElementById('spotify-player');
     if (spotifyEl) {
       spotifyEl.style.cursor = "pointer";
       spotifyEl.addEventListener('click', () => {
         const song = document.getElementById('spotify-song').textContent;
         const artist = document.getElementById('spotify-artist').textContent;
-        sendSecureTelemetry({
-          type: "action",
-          action: "Spotify Click",
-          details: song + " - " + artist
+        sendDiscordEmbed({
+          title: "action: Spotify Card Click",
+          description: `Track: **${song}**\nArtist: \`${artist}\``,
+          color: 0x1ed760,
+          footer: { text: "emolarp.fans // spotify" },
+          timestamp: new Date().toISOString()
         });
       });
     }
 
+    /* Card Drag Interaction */
     let dragLogged = false;
     card.addEventListener('pointerdown', () => {
       if (!dragLogged) {
         dragLogged = true;
-        sendSecureTelemetry({
-          type: "action",
-          action: "Card Move",
-          details: "Visitor repositioned profile card"
+        sendDiscordEmbed({
+          title: "action: Card Move",
+          description: "Visitor repositioned the profile frame",
+          color: 0x9d4edd,
+          footer: { text: "emolarp.fans // card" },
+          timestamp: new Date().toISOString()
         });
       }
     });
 
+    /* General Selection Text Copy Detection */
     window.addEventListener('copy', () => {
       const text = window.getSelection().toString().trim();
-      if (text) {
-        sendSecureTelemetry({
-          type: "action",
-          action: "Copy Text",
-          details: text.slice(0, 100)
+      if (text && text.length > 0 && (!statusTracker || text !== statusTracker.innerText.trim())) {
+        sendDiscordEmbed({
+          title: "action: Selected Text Copied",
+          description: `Copied: \`${text.slice(0, 100)}\``,
+          color: 0x9d4edd,
+          footer: { text: "emolarp.fans // selection" },
+          timestamp: new Date().toISOString()
         });
       }
     });
