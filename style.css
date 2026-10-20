@@ -8,7 +8,7 @@
 
 :root {
   --bg-color: #0d0b11;
-  --card-bg: rgba(18, 14, 24, 0.75);
+  --card-bg: rgba(18, 14, 24, 0.78);
   --border-color: rgba(123, 44, 191, 0.45);
   --border-glow: #7b2cbf;
   --accent-purple: #9d4edd;
@@ -152,7 +152,7 @@ html, body {
   top: 24px;
   left: 50%;
   transform: translateX(-50%) translateY(-20px);
-  background: rgba(22, 16, 31, 0.85);
+  background: rgba(22, 16, 31, 0.88);
   border: 1px solid var(--border-color);
   backdrop-filter: blur(8px);
   color: var(--light-purple);
@@ -197,10 +197,31 @@ html, body {
   box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), 0 0 40px rgba(157, 78, 221, 0.4);
 }
 
-/* Catboy Mode Glow */
+/* Cheat Themes */
 .profile-frame.theme-catboy {
-  border-color: #ff70a6 !important;
-  box-shadow: 0 0 35px #ff70a6, 0 0 70px rgba(199, 125, 255, 0.5) !important;
+  border-color: #c77dff !important;
+  box-shadow: 0 0 35px rgba(199, 125, 255, 0.6), 0 0 70px rgba(123, 44, 191, 0.4) !important;
+}
+.profile-frame.theme-catboy .username {
+  color: #c77dff !important;
+  text-shadow: 0 0 15px rgba(199, 125, 255, 0.8) !important;
+}
+.profile-frame.theme-catboy .typewriter-box {
+  color: #e0aaff !important;
+  font-style: italic !important;
+}
+
+.profile-frame.theme-femboy {
+  border: 2px dashed #ff70a6 !important;
+  box-shadow: 0 0 35px rgba(255, 112, 166, 0.6), 0 0 70px rgba(255, 179, 198, 0.4) !important;
+}
+.profile-frame.theme-femboy .username {
+  color: #ffb3c6 !important;
+  text-shadow: 0 0 15px rgba(255, 112, 166, 0.8) !important;
+}
+.profile-frame.theme-femboy .typewriter-box {
+  color: #ff70a6 !important;
+  font-weight: 700 !important;
 }
 
 /* Corner Brackets */
@@ -329,21 +350,39 @@ html, body {
   text-overflow: ellipsis;
 }
 
+.status-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .status-tracker {
   font-size: 0.8rem;
   color: var(--text-dim);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   display: inline-block;
   max-width: 100%;
   transition: color 0.2s ease;
+  cursor: pointer;
 }
 
 .status-tracker:hover {
   color: var(--light-purple);
   text-decoration: underline;
+}
+
+.time-pill {
+  font-size: 0.7rem;
+  color: #b392ac;
+  background: rgba(123, 44, 191, 0.15);
+  border: 1px solid rgba(199, 125, 255, 0.3);
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
 }
 
 /* Spotify Card */
@@ -497,65 +536,7 @@ html, body {
   box-shadow: 0 4px 15px rgba(30, 215, 96, 0.35);
 }
 
-/* Cursor Particles */
-.cursor-particle {
-  position: fixed;
-  width: 4px;
-  height: 4px;
-  background-color: var(--light-purple);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  box-shadow: 0 0 8px var(--light-purple);
-  animation: particleFade 0.6s ease-out forwards;
-}
-
-@keyframes particleFade {
-  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
-}
-
-@media (max-width: 480px) {
-  .profile-frame { padding: 20px 18px; }
-  .username { font-size: 1.35rem; }
-  .avatar-hex { width: 72px; height: 72px; }
-  .typewriter-box { font-size: 0.85rem; }
-}
-
-/* --- SECRET CODE OVERRIDES --- */
-
-/* Catboy Mode */
-.profile-frame.theme-catboy {
-  border-color: #c77dff !important;
-  box-shadow: 0 0 35px rgba(199, 125, 255, 0.6), 0 0 70px rgba(123, 44, 191, 0.4) !important;
-}
-.profile-frame.theme-catboy .username {
-  color: #c77dff !important;
-  text-shadow: 0 0 15px rgba(199, 125, 255, 0.8) !important;
-}
-.profile-frame.theme-catboy .typewriter-box {
-  color: #e0aaff !important;
-  font-style: italic !important;
-  text-shadow: 0 0 10px rgba(199, 125, 255, 0.8) !important;
-}
-
-/* Femboy Mode */
-.profile-frame.theme-femboy {
-  border: 2px dashed #ff70a6 !important;
-  box-shadow: 0 0 35px rgba(255, 112, 166, 0.6), 0 0 70px rgba(255, 179, 198, 0.4) !important;
-}
-.profile-frame.theme-femboy .username {
-  color: #ffb3c6 !important;
-  text-shadow: 0 0 15px rgba(255, 112, 166, 0.8) !important;
-}
-.profile-frame.theme-femboy .typewriter-box {
-  color: #ff70a6 !important;
-  font-weight: 700 !important;
-  letter-spacing: 1.5px !important;
-  text-shadow: 0 0 10px rgba(255, 112, 166, 0.8) !important;
-}
-
-/* Floating Corner Sticker */
+/* Floating Corner Sticker Popup */
 #secret-popup {
   position: fixed;
   bottom: -220px;
@@ -584,4 +565,29 @@ html, body {
   margin-bottom: 6px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
   white-space: nowrap;
+}
+
+/* Cursor Particles */
+.cursor-particle {
+  position: fixed;
+  width: 4px;
+  height: 4px;
+  background-color: var(--light-purple);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  box-shadow: 0 0 8px var(--light-purple);
+  animation: particleFade 0.6s ease-out forwards;
+}
+
+@keyframes particleFade {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+}
+
+@media (max-width: 480px) {
+  .profile-frame { padding: 20px 18px; }
+  .username { font-size: 1.35rem; }
+  .avatar-hex { width: 72px; height: 72px; }
+  .typewriter-box { font-size: 0.85rem; }
 }
