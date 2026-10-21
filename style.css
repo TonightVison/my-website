@@ -18,7 +18,9 @@
   --spotify-green: #1ed760;
   --font-display: 'Cinzel', serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --font-typewriter: 'Special Elite', monospace;
+  --font-cute: 'Gloria Hallelujah', cursive;
+  --font-catboy: 'Itim', cursive;
+  --font-femboy: 'Gaegu', cursive;
 }
 
 /* --- THEME OVERRIDES --- */
@@ -32,7 +34,9 @@ body.theme-catboy .profile-frame {
   box-shadow: 0 0 35px rgba(199, 125, 255, 0.6), 0 0 70px rgba(123, 44, 191, 0.4) !important;
 }
 body.theme-catboy .typewriter-box {
-  font-style: italic !important;
+  font-family: var(--font-catboy) !important;
+  font-size: 0.98rem !important;
+  color: #e0aaff !important;
 }
 
 body.theme-femboy {
@@ -46,8 +50,10 @@ body.theme-femboy .profile-frame {
   box-shadow: 0 0 35px rgba(255, 112, 166, 0.6), 0 0 70px rgba(255, 179, 198, 0.35) !important;
 }
 body.theme-femboy .typewriter-box {
+  font-family: var(--font-femboy) !important;
+  font-size: 1.15rem !important;
   font-weight: 700 !important;
-  letter-spacing: 1px !important;
+  color: #ffb3c6 !important;
 }
 
 html, body {
@@ -80,8 +86,8 @@ html, body {
 }
 
 .glitch-enter {
-  font-family: var(--font-mono);
-  font-size: 1rem;
+  font-family: var(--font-cute);
+  font-size: 1.15rem;
   letter-spacing: 2px;
   color: var(--light-purple);
   text-shadow: 0 0 10px var(--light-purple);
@@ -202,7 +208,7 @@ html, body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Compact Profile Frame (380px) */
+/* Compact Profile Frame */
 .profile-frame {
   position: relative;
   margin: 0 auto;
@@ -264,16 +270,21 @@ html, body {
   transition: background 0.3s ease;
 }
 
-/* Typewriter */
+/* Cute Handwritten Typewriter Box */
 .typewriter-box {
-  min-height: 20px;
+  min-height: 24px;
   margin-bottom: 12px;
   text-align: center;
-  font-family: var(--font-typewriter);
-  font-size: 0.85rem;
+  font-family: var(--font-cute);
+  font-size: 0.88rem;
   color: var(--light-purple);
   text-shadow: 0 0 8px var(--light-purple);
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, font-family 0.3s ease;
+  cursor: pointer;
+}
+
+.typewriter-box:hover {
+  filter: brightness(1.2);
 }
 
 .cursor {
@@ -526,8 +537,8 @@ html, body {
   background: rgba(22, 16, 31, 0.95);
   border: 1px solid var(--border-color);
   color: var(--light-purple);
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-family: var(--font-cute);
+  font-size: 0.72rem;
   padding: 3px 8px;
   border-radius: 10px;
   margin-bottom: 4px;
