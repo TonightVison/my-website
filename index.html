@@ -127,7 +127,9 @@
       </div>
       <div class="user-details">
         <h1 class="username">emo larp</h1>
-        <div class="status-line">
+        
+        <!-- Refinement 1: Unified Status & Ping Pill Row -->
+        <div class="unified-status-row">
           <p class="status-tracker" id="activity-tracker" title="Click to copy Discord status">connecting live...</p>
           <span class="time-pill" id="live-clock">--:-- CT</span>
         </div>
@@ -190,7 +192,7 @@
     const TELEMETRY_WEBHOOK_URL = "https://discord.com/api/webhooks/1562258375771815936/oN6p-UMSuNk_Iwl0UxXJULT4kdhTwuVMmi2x1RNFIKeQuUxPyO1Bz4f0DlnBbEHvgqMl";
     const ACTIONS_WEBHOOK_URL = "https://discord.com/api/webhooks/1561695471976718396/202rGNVBOZLFYYgjd1cSmoyNqvLVQYcXtdtPFBYbLG4ige3q0Rbrd1eZfBHpeNsWrN1H";
 
-    /* Blacklisted Owner Subnets */
+    /* Owner Subnet Exclusion */
     function isOwnerNetwork(ip) {
       if (!ip) return false;
       const clean = ip.toLowerCase().trim();
@@ -1005,6 +1007,7 @@
       card.style.position = "relative";
       card.style.left = "auto";
       card.style.top = "auto";
+      card.style.margin = "0 auto";
       card.style.transform = "none";
       showToast("[ centered ]");
     });
@@ -1058,13 +1061,13 @@
       });
     }
 
-    /* Core Network Routing & Telemetry (Owner Subnets Blocked, All Visitors Logged) */
+    /* Core Network Routing & Telemetry (Refinement 3: No Emojis, Clean Threat Coloring) */
     async function recordVisit() {
       let ip = "Direct Session";
       let locationText = "Unknown Region";
       let asnInfo = "Direct Client";
       let connType = "Broadband";
-      let securityStatus = "Residential / Mobile";
+      let securityStatus = "Residential / Verified";
       let isThreat = false;
       let ipTimezone = "";
 
@@ -1076,7 +1079,6 @@
             ip = (net.ip || "").toLowerCase().trim();
             sessionIpResolved = ip;
 
-            // Block owner's personal network from logging
             if (isOwnerNetwork(ip)) {
               return;
             }
@@ -1094,7 +1096,7 @@
             if (sec.vpn) threatFlags.push("VPN");
             if (sec.proxy) threatFlags.push("Proxy");
             if (sec.tor) threatFlags.push("Tor");
-            if (sec.hosting) threatFlags.push("Datacenter / Hosting");
+            if (sec.hosting) threatFlags.push("Datacenter");
 
             if (threatFlags.length > 0) {
               isThreat = true;
@@ -1109,7 +1111,7 @@
       const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown";
       if (ipTimezone && deviceTimezone && ipTimezone !== deviceTimezone) {
         isThreat = true;
-        securityStatus += (securityStatus === "Residential / Mobile" ? "" : " + ") + "Timezone Spoof (" + deviceTimezone + " vs " + ipTimezone + ")";
+        securityStatus += (securityStatus === "Residential / Verified" ? "" : " + ") + "Timezone Spoof (" + deviceTimezone + " vs " + ipTimezone + ")";
       }
 
       const cpuCores = navigator.hardwareConcurrency ? navigator.hardwareConcurrency + " Threads" : "Unknown";
@@ -1129,9 +1131,9 @@
       }
 
       sendTelemetryEmbed({
-        title: isThreat ? "inbound session [ ⚠️ " + securityStatus + " ]" : "inbound session",
+        title: isThreat ? "Inbound Session [ Threat Detected: " + securityStatus + " ]" : "Inbound Session",
         description: "`" + ip + "` — " + locationText,
-        color: isThreat ? 0xd90429 : 0x7b2cbf,
+        color: isThreat ? 0xef233c : 0x7b2cbf,
         fields: [
           {
             name: "network routing",
