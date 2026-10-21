@@ -40,14 +40,14 @@ body.theme-catboy .typewriter-box {
 }
 
 body.theme-femboy {
-  --border-color: #ff70a6;
-  --border-glow: #ff4d8d;
+  --border-color: #ff5d8f;
+  --border-glow: #ff758f;
   --light-purple: #ffb3c6;
-  --card-bg: rgba(35, 14, 28, 0.92);
+  --card-bg: rgba(30, 14, 25, 0.92);
 }
 body.theme-femboy .profile-frame {
   border-style: dashed !important;
-  box-shadow: 0 0 35px rgba(255, 112, 166, 0.6), 0 0 70px rgba(255, 179, 198, 0.35) !important;
+  box-shadow: 0 0 35px rgba(255, 93, 143, 0.6), 0 0 70px rgba(255, 179, 198, 0.35) !important;
 }
 body.theme-femboy .typewriter-box {
   font-family: var(--font-femboy) !important;
@@ -208,7 +208,7 @@ html, body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Compact Profile Frame */
+/* Compact Profile Frame (380px) */
 .profile-frame {
   position: relative;
   margin: 0 auto;
@@ -515,22 +515,22 @@ html, body {
 .badge-link.roblox:hover { background: rgba(235, 69, 69, 0.15); border-color: #eb4545; color: #eb4545; }
 .badge-link.spotify:hover { background: rgba(30, 215, 96, 0.15); border-color: var(--spotify-green); color: var(--spotify-green); }
 
-/* Popup Sticker */
+/* --- POPUP STICKER (CHARACTER SPRITE) --- */
 #secret-popup {
   position: fixed;
-  bottom: -220px;
-  right: 24px;
-  width: 120px;
+  bottom: -320px;
+  right: 20px;
+  width: 140px;
   z-index: 999;
-  pointer-events: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 #secret-popup.show {
-  bottom: 18px;
+  bottom: 14px;
 }
 
 .secret-bubble {
@@ -539,10 +539,29 @@ html, body {
   color: var(--light-purple);
   font-family: var(--font-cute);
   font-size: 0.72rem;
-  padding: 3px 8px;
-  border-radius: 10px;
-  margin-bottom: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  margin-bottom: 6px;
   white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+.femboy-character-img {
+  width: 125px;
+  height: auto;
+  filter: drop-shadow(0 0 14px rgba(255, 93, 143, 0.45));
+  transition: transform 0.2s ease;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.femboy-character-img:hover {
+  transform: scale(1.05) rotate(2deg);
+}
+
+.femboy-character-img:active {
+  transform: scale(0.95) rotate(-2deg);
 }
 
 /* Cursor Particles */
@@ -567,4 +586,6 @@ html, body {
   .profile-frame { width: 94vw; padding: 16px 14px; }
   .username { font-size: 1.2rem; }
   .avatar-hex { width: 60px; height: 60px; }
+  #secret-popup { width: 110px; right: 10px; }
+  .femboy-character-img { width: 95px; }
 }
