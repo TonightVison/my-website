@@ -176,7 +176,7 @@
       </button>
       <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display: block;">
-          <path d="M5.165 0L0 18.835 18.835 24 24 5.165 0zm10.51 14.18l-5.69-1.525 1.525-5.69 5.69 1.525-1.525 5.69z"/>
+          <path d="M5.165 0L0 18.835 18.835 24 24 5.165 5.165 0zm10.51 14.18l-5.69-1.525 1.525-5.69 5.69 1.525-1.525 5.69z"/>
         </svg>
       </button>
       <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify">
@@ -216,6 +216,63 @@
     let lastClickTime = 0;
     let avatarPatCombo = 0;
     let lastPatTime = 0;
+
+    /* Dynamic Tab Title Loop */
+    const activeTitles = [
+      "hi :3",
+      "emo larp",
+      "o_O",
+      "watching u...",
+      "stay here <3",
+      "⛧",
+      "thinking of u...",
+      "(˶ᵔ ᵕ ᵔ˶)"
+    ];
+
+    const awayTitles = [
+      "where did you go...? <3",
+      "come back :3",
+      "miss u already (｡•́︿•̀｡)",
+      "don't leave me >_<",
+      "waiting for u... (*ฅ́˘ฅ̀*)"
+    ];
+
+    let titleIdx = 0;
+    let awayIdx = 0;
+    let tabLeaveTime = 0;
+
+    setInterval(function() {
+      if (document.hidden) {
+        document.title = awayTitles[awayIdx];
+        awayIdx = (awayIdx + 1) % awayTitles.length;
+      } else if (isSpotifyActive && currentSpotifySong) {
+        document.title = "♫ " + currentSpotifySong + " :3";
+      } else {
+        document.title = activeTitles[titleIdx];
+        titleIdx = (titleIdx + 1) % activeTitles.length;
+      }
+    }, 2200);
+
+    window.addEventListener('blur', function() {
+      tabLeaveTime = Date.now();
+      document.title = "where did you go...? <3";
+    });
+
+    window.addEventListener('focus', function() {
+      if (tabLeaveTime > 0) {
+        const awaySeconds = Math.round((Date.now() - tabLeaveTime) / 1000);
+        if (awaySeconds >= 4) {
+          sendActionEmbed({
+            title: "action: Visitor Returned",
+            description: "Visitor was tabbed away for **" + awaySeconds + "s**",
+            color: 0x9d4edd,
+            footer: { text: "emolarp.fans // focus" },
+            timestamp: new Date().toISOString()
+          });
+        }
+      }
+      document.title = isSpotifyActive && currentSpotifySong ? "♫ " + currentSpotifySong + " :3" : "hi :3";
+    });
 
     /* Live Central Time Pill */
     function updateClock() {
