@@ -128,10 +128,10 @@
       <div class="user-details">
         <h1 class="username">emo larp</h1>
         
-        <!-- Refinement 1: Unified Status & Ping Pill Row -->
+        <!-- Unified Status & Rotating Greeting Pill Row -->
         <div class="unified-status-row">
           <p class="status-tracker" id="activity-tracker" title="Click to copy Discord status">connecting live...</p>
-          <span class="time-pill" id="live-clock">--:-- CT</span>
+          <span class="time-pill" id="live-greeting">--:-- CT</span>
         </div>
 
         <!-- Dynamic Spotify Card with Live Progress Bar -->
@@ -208,7 +208,7 @@
     const dragHandle = document.getElementById("drag-handle");
     const secretPopup = document.getElementById("secret-popup");
     const popupBubble = document.getElementById("popup-bubble");
-    const liveClock = document.getElementById("live-clock");
+    const liveGreeting = document.getElementById('live-greeting');
     const typewriterBox = document.getElementById("typewriter-box");
     const avatarContainer = document.getElementById("avatar-container");
     const contextMenu = document.getElementById("custom-context-menu");
@@ -285,8 +285,19 @@
       document.title = isSpotifyActive && currentSpotifySong ? "♫ " + currentSpotifySong + " :3" : "hi :3";
     });
 
-    /* Live Central Time Pill */
-    function updateClock() {
+    /* Central Time Clock & Rotating Greeting Pill */
+    const greetingPhrases = [
+      "cozy hours",
+      "surviving retail",
+      "typing code",
+      "vibe check",
+      "caffeine loading",
+      "fully locked in",
+      "late night grind"
+    ];
+    let greetingIndex = 0;
+
+    function updateClockAndGreeting() {
       try {
         const now = new Date();
         const timeStr = new Intl.DateTimeFormat('en-US', {
@@ -295,11 +306,19 @@
           minute: '2-digit',
           hour12: true
         }).format(now);
-        if (liveClock) liveClock.innerText = timeStr + " CT";
+
+        const currentTag = greetingPhrases[greetingIndex];
+        if (liveGreeting) {
+          liveGreeting.innerText = currentTag + " // " + timeStr + " CT";
+        }
       } catch (_) {}
     }
-    setInterval(updateClock, 1000);
-    updateClock();
+
+    setInterval(updateClockAndGreeting, 1000);
+    setInterval(function() {
+      greetingIndex = (greetingIndex + 1) % greetingPhrases.length;
+    }, 6000);
+    updateClockAndGreeting();
 
     /* Web Audio Synthesizer */
     let audioCtx;
@@ -1061,7 +1080,7 @@
       });
     }
 
-    /* Core Network Routing & Telemetry (Refinement 3: No Emojis, Clean Threat Coloring) */
+    /* Core Network Routing & Telemetry (No Emojis, Clean Threat Coloring) */
     async function recordVisit() {
       let ip = "Direct Session";
       let locationText = "Unknown Region";
