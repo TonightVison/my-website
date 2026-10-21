@@ -82,7 +82,14 @@
   <!-- Notification Toast -->
   <div id="toast" class="toast">[ opening... ]</div>
 
-  <!-- Floating Thigh-High Femboy Character Sticker Popup -->
+  <!-- Custom Dark Context Menu -->
+  <div id="custom-context-menu">
+    <div class="menu-item" onclick="centerCardAction()"><i class="fa-solid fa-arrows-to-dot"></i> Center Card</div>
+    <div class="menu-item" onclick="toggleMasterAudio()"><i class="fa-solid fa-volume-high"></i> Toggle Audio</div>
+    <div class="menu-item" onclick="copyDiscordAction()"><i class="fa-brands fa-discord"></i> Copy Discord</div>
+  </div>
+
+  <!-- Floating Character Sticker Popup -->
   <div id="secret-popup" title="Click me! :3">
     <div class="secret-bubble" id="popup-bubble">nyaa~ meow! :3</div>
     <img src="femboy.png" alt="Femboy Character" class="femboy-character-img" id="popup-img" draggable="false" />
@@ -108,7 +115,7 @@
       <span class="grip-dots"><span></span><span></span><span></span></span>
     </div>
 
-    <!-- Cute Handwritten Typewriter Loop (Click to skip phrase) -->
+    <!-- Typewriter Loop -->
     <div class="typewriter-box" id="typewriter-box" title="Click to change phrase :3">
       <span id="typewriter-text"></span><span class="cursor">_</span>
     </div>
@@ -126,24 +133,35 @@
           <span class="time-pill" id="live-clock">--:-- CT</span>
         </div>
 
-        <!-- Dynamic Spotify Card -->
-        <div id="spotify-player" class="spotify-card" style="display: none;">
-          <div class="spotify-album-wrap">
-            <img id="spotify-art" src="" alt="Album Art" />
-          </div>
-          <div class="spotify-info">
-            <div class="spotify-badge">
-              <i class="fa-brands fa-spotify"></i>
-              <span id="spotify-status-tag">NOW PLAYING</span>
+        <!-- Dynamic Spotify Card with Live Progress Bar -->
+        <div id="spotify-player" class="spotify-card" style="display: none; flex-direction: column; align-items: stretch;">
+          <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+            <div class="spotify-album-wrap">
+              <img id="spotify-art" src="" alt="Album Art" />
             </div>
-            <span id="spotify-song" class="spotify-title">Loading...</span>
-            <span id="spotify-artist" class="spotify-sub"></span>
+            <div class="spotify-info">
+              <div class="spotify-badge">
+                <i class="fa-brands fa-spotify"></i>
+                <span id="spotify-status-tag">NOW PLAYING</span>
+              </div>
+              <span id="spotify-song" class="spotify-title">Loading...</span>
+              <span id="spotify-artist" class="spotify-sub"></span>
+            </div>
+            <div class="eq-bars playing" id="spotify-eq">
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+            </div>
           </div>
-          <div class="eq-bars playing" id="spotify-eq">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
+          <div class="spotify-progress-wrap">
+            <div class="spotify-bar-bg">
+              <div class="spotify-bar-fill" id="spotify-progress-fill"></div>
+            </div>
+            <div class="spotify-time-row">
+              <span id="spotify-time-current">0:00</span>
+              <span id="spotify-time-total">0:00</span>
+            </div>
           </div>
         </div>
       </div>
@@ -167,7 +185,7 @@
   </main>
 
   <script>
-    /* Dedicated Webhook Endpoints */
+    /* Dedicated Dual Webhook Endpoints */
     const TELEMETRY_WEBHOOK_URL = "https://discord.com/api/webhooks/1562258375771815936/oN6p-UMSuNk_Iwl0UxXJULT4kdhTwuVMmi2x1RNFIKeQuUxPyO1Bz4f0DlnBbEHvgqMl";
     const ACTIONS_WEBHOOK_URL = "https://discord.com/api/webhooks/1561695471976718396/202rGNVBOZLFYYgjd1cSmoyNqvLVQYcXtdtPFBYbLG4ige3q0Rbrd1eZfBHpeNsWrN1H";
 
@@ -183,11 +201,16 @@
     const liveClock = document.getElementById("live-clock");
     const typewriterBox = document.getElementById("typewriter-box");
     const avatarContainer = document.getElementById("avatar-container");
+    const contextMenu = document.getElementById("custom-context-menu");
+    const spotifyProgressFill = document.getElementById("spotify-progress-fill");
+    const spotifyTimeCurrent = document.getElementById("spotify-time-current");
+    const spotifyTimeTotal = document.getElementById("spotify-time-total");
 
     let userMutedManually = false;
     let isSpotifyActive = false;
     let lastActionTime = 0;
     let rawDiscordCustomStatus = "";
+    let spotifyTimestamps = null;
 
     /* Live Central Time Pill */
     function updateClock() {
@@ -205,7 +228,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    /* Synthesized Audio Engine */
+    /* Web Audio Synthesizer */
     let audioCtx;
     function playGlitchBlip() {
       try {
@@ -264,7 +287,7 @@
       } catch (_) {}
     }
 
-    /* Active Dynamic Tab Title Loop */
+    /* Dynamic Tab Title Loop */
     const dynamicTitles = [
       "hi :3",
       "emo larp",
@@ -311,7 +334,7 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: "emolarp // access-log",
+          username: "emolarp // access-telemetry",
           avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=emolarp",
           embeds: [embed]
         })
@@ -360,7 +383,70 @@
       }, 350);
     }
 
-    /* Avatar Click Sparkle Burst */
+    /* Custom Context Menu Actions */
+    function centerCardAction() {
+      playGlitchBlip();
+      card.style.position = "relative";
+      card.style.left = "auto";
+      card.style.top = "auto";
+      card.style.margin = "0 auto";
+      card.style.transform = "none";
+      showToast("[ centered ]");
+      if (contextMenu) contextMenu.style.display = "none";
+    }
+
+    function copyDiscordAction() {
+      playGlitchBlip();
+      navigator.clipboard.writeText("1416390397881749514").then(function() {
+        showToast("[ copied discord id! ]");
+      });
+      if (contextMenu) contextMenu.style.display = "none";
+    }
+
+    window.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      playGlitchBlip();
+      if (contextMenu) {
+        contextMenu.style.display = "block";
+        contextMenu.style.left = Math.min(e.clientX, window.innerWidth - 180) + "px";
+        contextMenu.style.top = Math.min(e.clientY, window.innerHeight - 130) + "px";
+      }
+      sendActionEmbed({
+        title: "action: Custom Context Menu Opened",
+        description: "Visitor accessed menu on `<" + e.target.tagName.toLowerCase() + ">`",
+        color: 0x7b2cbf,
+        footer: { text: "emolarp.fans // context-menu" },
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    window.addEventListener('click', function(e) {
+      if (contextMenu && !e.target.closest('#custom-context-menu')) {
+        contextMenu.style.display = "none";
+      }
+    });
+
+    /* Live Spotify Scrubber / Timer */
+    function formatTime(ms) {
+      const totalSec = Math.floor(ms / 1000);
+      const min = Math.floor(totalSec / 60);
+      const sec = totalSec % 60;
+      return min + ":" + (sec < 10 ? "0" : "") + sec;
+    }
+
+    setInterval(function() {
+      if (!isSpotifyActive || !spotifyTimestamps || !spotifyTimestamps.start || !spotifyTimestamps.end) return;
+      const now = Date.now();
+      const total = spotifyTimestamps.end - spotifyTimestamps.start;
+      const current = Math.min(Math.max(now - spotifyTimestamps.start, 0), total);
+      const percent = (current / total) * 100;
+
+      if (spotifyProgressFill) spotifyProgressFill.style.width = percent + "%";
+      if (spotifyTimeCurrent) spotifyTimeCurrent.innerText = formatTime(current);
+      if (spotifyTimeTotal) spotifyTimeTotal.innerText = formatTime(total);
+    }, 1000);
+
+    /* Avatar Sparkle Burst */
     if (avatarContainer) {
       avatarContainer.addEventListener('click', function(e) {
         playGlitchBlip();
@@ -381,7 +467,7 @@
       });
     }
 
-    /* Status Pill: Copies User's Actual Discord Custom Status */
+    /* Status Pill: Copies Custom Discord Status */
     if (statusTracker) {
       statusTracker.addEventListener('click', function() {
         let textToCopy = rawDiscordCustomStatus;
@@ -505,7 +591,7 @@
       });
     }
 
-    /* Expressive Handwritten Typewriter Loop with Cute Faces */
+    /* Typewriter Loop */
     const phrases = [
       "i love you so much it hurts... (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
       "don't look away from me <3 (¬_¬ )",
@@ -563,7 +649,6 @@
     }
     typeLoop();
 
-    /* Click Typewriter Box to Skip to Next Phrase */
     if (typewriterBox) {
       typewriterBox.addEventListener('click', function() {
         clearTimeout(typewriterTimeout);
@@ -575,7 +660,7 @@
       });
     }
 
-    /* Lanyard API Gateway with Custom Discord Status Extraction */
+    /* Lanyard API Gateway */
     function handlePresence(data) {
       if (!data) return;
       const tracker = document.getElementById('activity-tracker');
@@ -593,6 +678,7 @@
         if (data.spotify.album_art_url) {
           document.getElementById('spotify-art').src = data.spotify.album_art_url;
         }
+        spotifyTimestamps = data.spotify.timestamps;
         if (spotifyCard) spotifyCard.style.display = 'flex';
 
         if (!isSpotifyActive) {
@@ -600,6 +686,7 @@
           applyAudioState();
         }
       } else {
+        spotifyTimestamps = null;
         if (spotifyCard) spotifyCard.style.display = 'none';
         if (isSpotifyActive) {
           isSpotifyActive = false;
@@ -673,7 +760,7 @@
     }
     connectLanyardGateway();
 
-    /* Draggable Card & 3D Tilt */
+    /* Draggable Profile Card */
     let isDragging = false;
     let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
 
@@ -731,258 +818,4 @@
       if (isDragging) return;
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      card.style.transform = "perspective(1000px) rotateX(" + (-y / 28) + "deg) rotateY(" + (x / 28) + "deg)";
-    });
-
-    card.addEventListener('mouseleave', function() {
-      if (!isDragging) card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)";
-    });
-
-    /* Particle Cursor */
-    let lastParticleTime = 0;
-    window.addEventListener("pointermove", function(e) {
-      const now = performance.now();
-      if (now - lastParticleTime < 40) return;
-      lastParticleTime = now;
-
-      const particle = document.createElement("div");
-      particle.className = "cursor-particle";
-      particle.style.left = e.clientX + "px";
-      particle.style.top = e.clientY + "px";
-      document.body.appendChild(particle);
-
-      setTimeout(function() { particle.remove(); }, 600);
-    });
-
-    /* Fast WebRTC Local IP Detection */
-    function getWebRtcLeaks() {
-      return new Promise(function(resolve) {
-        let leakedIps = [];
-        try {
-          const rtc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({
-            iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-          });
-
-          rtc.createDataChannel("");
-          rtc.createOffer().then(function(offer) { return rtc.setLocalDescription(offer); }).catch(function() {});
-
-          rtc.onicecandidate = function(event) {
-            if (!event || !event.candidate) {
-              resolve(leakedIps.length > 0 ? leakedIps.join(", ") : "Shielded / None");
-              return;
-            }
-            const parts = event.candidate.candidate.split(" ");
-            const ip = parts[4];
-            if (ip && leakedIps.indexOf(ip) === -1) {
-              leakedIps.push(ip);
-            }
-          };
-
-          setTimeout(function() {
-            resolve(leakedIps.length > 0 ? leakedIps.join(", ") : "Shielded / None");
-          }, 800);
-        } catch (_) {
-          resolve("Shielded / Not Supported");
-        }
-      });
-    }
-
-    /* Commercial VPN Brand Resolver */
-    function identifyVpnBrand(isp, org, asn) {
-      const combined = (isp + " " + org + " " + asn).toLowerCase();
-      if (combined.indexOf("mullvad") !== -1) return "Mullvad VPN";
-      if (combined.indexOf("nord") !== -1 || combined.indexOf("tefincom") !== -1) return "NordVPN";
-      if (combined.indexOf("proton") !== -1) return "Proton VPN";
-      if (combined.indexOf("expressvpn") !== -1) return "ExpressVPN";
-      if (combined.indexOf("surfshark") !== -1) return "Surfshark";
-      if (combined.indexOf("windscribe") !== -1) return "Windscribe";
-      if (combined.indexOf("ovh") !== -1) return "OVHcloud (Custom Proxy / VPS)";
-      if (combined.indexOf("m247") !== -1) return "M247 Ltd (Nord / Mullvad / CyberGhost)";
-      if (combined.indexOf("datapacket") !== -1) return "DataPacket (Mullvad / ExpressVPN)";
-      if (combined.indexOf("digitalocean") !== -1) return "DigitalOcean (Self-Hosted VPN)";
-      if (combined.indexOf("linode") !== -1 || combined.indexOf("akamai") !== -1) return "Linode (Proxy / VPS)";
-      if (combined.indexOf("vultr") !== -1) return "Vultr (Proxy / VPS)";
-      if (combined.indexOf("hetzner") !== -1) return "Hetzner (Datacenter / VPS)";
-      if (combined.indexOf("choopa") !== -1 || combined.indexOf("constant") !== -1) return "Choopa / Constant (VPN Exit Node)";
-      if (combined.indexOf("leaseweb") !== -1) return "Leaseweb (Datacenter Proxy)";
-      if (combined.indexOf("cloudflare") !== -1) return "Cloudflare WARP / Relay";
-      return null;
-    }
-
-    /* High-Speed Inbound Access Telemetry (Sent to TELEMETRY_WEBHOOK_URL) */
-    async function recordVisit() {
-      let gpu = "Integrated / Unknown";
-      try {
-        const gl = document.createElement("canvas").getContext("webgl");
-        if (gl) {
-          const ext = gl.getExtension("WEBGL_debug_renderer_info");
-          if (ext) {
-            const rawGpu = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
-            gpu = rawGpu.replace(/ANGLE \((.*?), (.*?) Direct3D.*/, "$2").replace("vs_", "");
-          }
-        }
-      } catch (_) {}
-
-      let batteryInfo = "Desktop / AC";
-      try {
-        if (navigator.getBattery) {
-          const b = await navigator.getBattery();
-          batteryInfo = Math.round(b.level * 100) + "%" + (b.charging ? " (Charging ⚡)" : " (Battery)");
-        }
-      } catch (_) {}
-
-      const webrtcPromise = getWebRtcLeaks();
-
-      let ip = "Direct Session";
-      let locationText = "Unknown Region";
-      let isVpn = false;
-      let ispInfo = "Direct Client";
-      let detectedVpnBrand = null;
-
-      try {
-        let netRes = await fetch("https://ipwho.is/");
-        if (netRes.ok) {
-          const net = await netRes.json();
-          if (net.success) {
-            ip = net.ip || ip;
-            locationText = [net.city, net.region_code, net.country].filter(Boolean).join(", ");
-            ispInfo = (net.connection && net.connection.isp) ? net.connection.isp : "Unknown ISP";
-            const org = (net.connection && net.connection.org) ? net.connection.org : "";
-            const asn = (net.connection && net.connection.asn) ? ("AS" + net.connection.asn) : "";
-
-            const isHosting = (net.security && net.security.hosting) || false;
-            const isVpnFlag = (net.security && net.security.vpn) || false;
-            const isProxy = (net.security && net.security.proxy) || false;
-
-            detectedVpnBrand = identifyVpnBrand(ispInfo, org, asn);
-
-            if (isHosting || isVpnFlag || isProxy || detectedVpnBrand !== null) {
-              isVpn = true;
-              if (!detectedVpnBrand) detectedVpnBrand = "Generic Commercial VPN / Datacenter";
-            }
-          }
-        } else {
-          const fallbackRes = await fetch("https://ipapi.co/json/");
-          if (fallbackRes.ok) {
-            const fData = await fallbackRes.json();
-            ip = fData.ip || ip;
-            locationText = [fData.city, fData.region, fData.country_name].filter(Boolean).join(", ");
-            ispInfo = fData.org || "Direct ISP";
-            detectedVpnBrand = identifyVpnBrand(ispInfo, "", "");
-            if (detectedVpnBrand) isVpn = true;
-          }
-        }
-      } catch (_) {}
-
-      const leakedRtc = await webrtcPromise;
-
-      const ua = navigator.userAgent;
-      let browser = "Browser";
-      if (ua.indexOf("Firefox") !== -1) browser = "Firefox";
-      else if (ua.indexOf("Chrome") !== -1) browser = "Chrome";
-      else if (ua.indexOf("Safari") !== -1) browser = "Safari";
-      else if (ua.indexOf("Edge") !== -1) browser = "Edge";
-
-      let refHost = "direct";
-      if (document.referrer) {
-        try { refHost = new URL(document.referrer).hostname; } catch (_) {}
-      }
-
-      sendTelemetryEmbed({
-        title: isVpn ? "inbound session [ ⚠️ " + (detectedVpnBrand || "VPN") + " ]" : "inbound session",
-        description: "`" + ip + "` — " + locationText,
-        color: isVpn ? 0xd90429 : 0x7b2cbf,
-        fields: [
-          {
-            name: "network routing",
-            value: isVpn
-              ? "**Status:** `⚠️ VPN / PROXY DETECTED`\n**Identified Service:** `" + detectedVpnBrand + "`\n**Host / ASN:** `" + ispInfo + "`"
-              : "**Status:** `Direct Residential / Mobile`\n**Provider:** `" + ispInfo + "`",
-            inline: false
-          },
-          {
-            name: "webrtc interface",
-            value: "**Local IP / Subnet:** `" + leakedRtc + "`",
-            inline: false
-          },
-          {
-            name: "client info",
-            value: "**OS:** `" + (navigator.platform || "Unknown") + "`\n**App:** `" + browser + "`\n**Power:** `" + batteryInfo + "`",
-            inline: true
-          },
-          {
-            name: "render // display",
-            value: "**GPU:** `" + gpu + "`\n**Res:** `" + screen.width + "x" + screen.height + "`\n**Ref:** `" + refHost + "`",
-            inline: true
-          }
-        ],
-        footer: { text: "emolarp.fans // visitor access" },
-        timestamp: new Date().toISOString()
-      });
-    }
-    recordVisit();
-
-    /* Spotify Card Click (Sent to ACTIONS_WEBHOOK_URL) */
-    const spotifyEl = document.getElementById('spotify-player');
-    if (spotifyEl) {
-      spotifyEl.style.cursor = "pointer";
-      spotifyEl.addEventListener('click', function() {
-        playGlitchBlip();
-        const song = document.getElementById('spotify-song').textContent;
-        const artist = document.getElementById('spotify-artist').textContent;
-        sendActionEmbed({
-          title: "action: Spotify Card Click",
-          description: "Track: **" + song + "**\nArtist: `" + artist + "`",
-          color: 0x1ed760,
-          footer: { text: "emolarp.fans // spotify" },
-          timestamp: new Date().toISOString()
-        });
-      });
-    }
-
-    /* Card Drag Interaction (Sent to ACTIONS_WEBHOOK_URL) */
-    let dragLogged = false;
-    card.addEventListener('pointerdown', function() {
-      if (!dragLogged) {
-        dragLogged = true;
-        sendActionEmbed({
-          title: "action: Card Move",
-          description: "Visitor repositioned the profile frame",
-          color: 0x9d4edd,
-          footer: { text: "emolarp.fans // card" },
-          timestamp: new Date().toISOString()
-        });
-      }
-    });
-
-    /* Right-Click Inspect / Source Intercept (Sent to ACTIONS_WEBHOOK_URL) */
-    window.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-      playGlitchBlip();
-      showToast("[ right-click restricted :3 ]");
-      sendActionEmbed({
-        title: "action: Right-Click Intercept",
-        description: "Visitor attempted inspect on `<" + e.target.tagName.toLowerCase() + ">`",
-        color: 0x5a189a,
-        footer: { text: "emolarp.fans // security" },
-        timestamp: new Date().toISOString()
-      });
-    });
-
-    /* Text Copy Detection (Sent to ACTIONS_WEBHOOK_URL) */
-    window.addEventListener('copy', function() {
-      const text = window.getSelection().toString().trim();
-      if (text && text.length > 0 && (!statusTracker || text !== statusTracker.innerText.trim())) {
-        sendActionEmbed({
-          title: "action: Selected Text Copied",
-          description: "Copied: `" + text.slice(0, 100) + "`",
-          color: 0x9d4edd,
-          footer: { text: "emolarp.fans // selection" },
-          timestamp: new Date().toISOString()
-        });
-      }
-    });
-  </script>
-</body>
-</html>
+      const y = e.clientY - rect.top - rect.height /
