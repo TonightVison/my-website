@@ -21,6 +21,35 @@
   --font-typewriter: 'Special Elite', monospace;
 }
 
+/* --- THEME OVERRIDES --- */
+body.theme-catboy {
+  --border-color: #c77dff;
+  --border-glow: #9d4edd;
+  --light-purple: #e0aaff;
+  --card-bg: rgba(26, 16, 38, 0.9);
+}
+body.theme-catboy .profile-frame {
+  box-shadow: 0 0 35px rgba(199, 125, 255, 0.6), 0 0 70px rgba(123, 44, 191, 0.4) !important;
+}
+body.theme-catboy .typewriter-box {
+  font-style: italic !important;
+}
+
+body.theme-femboy {
+  --border-color: #ff70a6;
+  --border-glow: #ff4d8d;
+  --light-purple: #ffb3c6;
+  --card-bg: rgba(35, 14, 28, 0.92);
+}
+body.theme-femboy .profile-frame {
+  border-style: dashed !important;
+  box-shadow: 0 0 35px rgba(255, 112, 166, 0.6), 0 0 70px rgba(255, 179, 198, 0.35) !important;
+}
+body.theme-femboy .typewriter-box {
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+}
+
 html, body {
   width: 100%;
   height: 100%;
@@ -29,6 +58,7 @@ html, body {
   font-family: var(--font-mono);
   color: var(--text-main);
   position: relative;
+  transition: background-color 0.4s ease;
 }
 
 /* Entry Overlay */
@@ -54,7 +84,7 @@ html, body {
   font-size: 1rem;
   letter-spacing: 2px;
   color: var(--light-purple);
-  text-shadow: 0 0 10px rgba(199, 125, 255, 0.7);
+  text-shadow: 0 0 10px var(--light-purple);
   animation: pulseGlitch 2s infinite ease-in-out;
 }
 
@@ -118,7 +148,7 @@ html, body {
 
 #sound-toggle:hover {
   border-color: var(--light-purple);
-  box-shadow: 0 0 12px rgba(199, 125, 255, 0.3);
+  box-shadow: 0 0 12px var(--light-purple);
 }
 
 .audio-vis {
@@ -186,39 +216,14 @@ html, body {
   border-radius: 10px;
   padding: 18px 20px 16px;
   z-index: 10;
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7), 0 0 25px rgba(123, 44, 191, 0.25);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7), 0 0 25px var(--border-glow);
   touch-action: none;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 }
 
 .profile-frame.dragging {
   cursor: grabbing !important;
-  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.85), 0 0 35px rgba(157, 78, 221, 0.4);
-}
-
-/* Secret Themes */
-.profile-frame.theme-catboy {
-  border-color: #c77dff !important;
-  box-shadow: 0 0 30px rgba(199, 125, 255, 0.6) !important;
-}
-.profile-frame.theme-catboy .username {
-  color: #c77dff !important;
-}
-.profile-frame.theme-catboy .typewriter-box {
-  color: #e0aaff !important;
-  font-style: italic !important;
-}
-
-.profile-frame.theme-femboy {
-  border: 2px dashed #ff70a6 !important;
-  box-shadow: 0 0 30px rgba(255, 112, 166, 0.6) !important;
-}
-.profile-frame.theme-femboy .username {
-  color: #ffb3c6 !important;
-}
-.profile-frame.theme-femboy .typewriter-box {
-  color: #ff70a6 !important;
-  font-weight: 700 !important;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.85), 0 0 35px var(--border-glow);
 }
 
 /* Corner Brackets */
@@ -227,6 +232,7 @@ html, body {
   width: 8px;
   height: 8px;
   pointer-events: none;
+  transition: border-color 0.3s ease;
 }
 
 .corner-bracket.top-left { top: -1px; left: -1px; border-top: 2px solid var(--light-purple); border-left: 2px solid var(--light-purple); }
@@ -255,6 +261,7 @@ html, body {
   background: var(--light-purple);
   opacity: 0.6;
   border-radius: 50%;
+  transition: background 0.3s ease;
 }
 
 /* Typewriter */
@@ -265,7 +272,8 @@ html, body {
   font-family: var(--font-typewriter);
   font-size: 0.85rem;
   color: var(--light-purple);
-  text-shadow: 0 0 8px rgba(199, 125, 255, 0.4);
+  text-shadow: 0 0 8px var(--light-purple);
+  transition: color 0.3s ease;
 }
 
 .cursor {
@@ -295,6 +303,7 @@ html, body {
   border-radius: 50%;
   padding: 2.5px;
   background: linear-gradient(135deg, var(--light-purple), var(--border-glow));
+  transition: background 0.3s ease;
 }
 
 .avatar-hex img {
@@ -332,11 +341,12 @@ html, body {
   font-size: 1.35rem;
   letter-spacing: 1.5px;
   color: #fff;
-  text-shadow: 0 0 10px rgba(199, 125, 255, 0.5);
+  text-shadow: 0 0 10px var(--light-purple);
   margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.3s ease;
 }
 
 .status-line {
@@ -355,6 +365,7 @@ html, body {
   text-overflow: ellipsis;
   cursor: pointer;
   max-width: 180px;
+  transition: color 0.2s ease;
 }
 
 .status-tracker:hover {
@@ -364,12 +375,13 @@ html, body {
 
 .time-pill {
   font-size: 0.65rem;
-  color: #b392ac;
+  color: var(--light-purple);
   background: rgba(123, 44, 191, 0.2);
-  border: 1px solid rgba(199, 125, 255, 0.3);
+  border: 1px solid var(--border-color);
   padding: 1px 5px;
   border-radius: 4px;
   letter-spacing: 0.4px;
+  transition: all 0.3s ease;
 }
 
 /* Spotify Card */
@@ -513,7 +525,7 @@ html, body {
 .secret-bubble {
   background: rgba(22, 16, 31, 0.95);
   border: 1px solid var(--border-color);
-  color: #ff70a6;
+  color: var(--light-purple);
   font-family: var(--font-mono);
   font-size: 0.68rem;
   padding: 3px 8px;
