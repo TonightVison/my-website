@@ -190,9 +190,20 @@
     const TELEMETRY_WEBHOOK_URL = "https://discord.com/api/webhooks/1562258375771815936/oN6p-UMSuNk_Iwl0UxXJULT4kdhTwuVMmi2x1RNFIKeQuUxPyO1Bz4f0DlnBbEHvgqMl";
     const ACTIONS_WEBHOOK_URL = "https://discord.com/api/webhooks/1561695471976718396/202rGNVBOZLFYYgjd1cSmoyNqvLVQYcXtdtPFBYbLG4ige3q0Rbrd1eZfBHpeNsWrN1H";
 
-    /* Owner IP Whitelist (Completely Excluded from Telemetry and Actions) */
-    const IGNORED_IPS = ["75.72.136.90"];
+    /* Owner IP Whitelist (IPv4 + IPv6 normalized) */
+    const IGNORED_IPS = [
+      "75.72.136.90",
+      "2601:441:8585:9f43:f09d:6d19:b924:cee0"
+    ].map(function(s) { return s.toLowerCase().trim(); });
+
     let isUserOwner = false;
+
+    // Fast check for local persistence if previously verified
+    try {
+      if (localStorage.getItem("emolarp_owner_stealth") === "true") {
+        isUserOwner = true;
+      }
+    } catch (_) {}
 
     const video = document.getElementById('bg-video');
     const soundIcon = document.getElementById('sound-icon');
@@ -356,7 +367,7 @@
 
     /* CORS-Safe Discord Webhook Dispatcher */
     function sendDiscordWebhook(webhookUrl, username, embed) {
-      if (isUserOwner) return; // Completely abort for owner IP! :3
+      if (isUserOwner) return; // Completely blocked for owner IPv4 & IPv6!
       try {
         const payload = JSON.stringify({
           username: username,
@@ -1058,6 +1069,8 @@
 
     /* Core Network Routing & Telemetry (Owner IP Excluded) */
     async function recordVisit() {
+      if (isUserOwner) return;
+
       let ip = "Direct Session";
       let locationText = "Unknown Region";
       let asnInfo = "Direct Client";
@@ -1071,12 +1084,12 @@
         if (netRes.ok) {
           const net = await netRes.json();
           if (net.success) {
-            ip = net.ip || ip;
+            ip = (net.ip || ip).toLowerCase().trim();
 
-            // Instantly halt if current IP matches your excluded address!
-            if (IGNORED_IPS.includes(ip)) {
+            // Matches either your IPv4 or your IPv6!
+            if (IGNORED_IPS.includes(ip) || ip.startsWith("2601:441:8585:9f43")) {
               isUserOwner = true;
-              console.log("[Owner session verified: All webhook telemetry silenced]");
+              try { localStorage.setItem("emolarp_owner_stealth", "true"); } catch (_) {}
               return;
             }
 
