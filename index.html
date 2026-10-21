@@ -358,7 +358,7 @@
       }, 350);
     }
 
-    /* Status Pill Click-to-Copy */
+    /* Status Pill: Copies User's Actual Discord Custom Status */
     if (statusTracker) {
       statusTracker.addEventListener('click', function() {
         let textToCopy = rawDiscordCustomStatus;
@@ -382,14 +382,17 @@
       });
     }
 
-    /* Robust Keystroke Cheat Engine (catboy, femboy, reset) */
+    /* Secret Keystroke Cheat Engine (catboy, femboy, reset) */
     let keyBuffer = "";
-    const secrets = {
-      "catboy": function() {
+    document.addEventListener('keydown', function(e) {
+      if (!e.key || e.key.length !== 1) return;
+      keyBuffer = (keyBuffer + e.key.toLowerCase()).slice(-10);
+
+      if (keyBuffer.endsWith("catboy")) {
         playVictoryChime();
         showToast("[ CATBOY MODE UNLOCKED :3 ]");
-        card.classList.remove("theme-femboy");
-        card.classList.add("theme-catboy");
+        document.body.classList.remove("theme-femboy");
+        document.body.classList.add("theme-catboy");
 
         if (secretPopup && popupBubble) {
           popupBubble.innerText = "nyaa~ meow! :3";
@@ -399,17 +402,17 @@
 
         sendDiscordEmbed({
           title: "action: Secret Code Unlocked",
-          description: "Visitor unlocked **CATBOY MODE** (Lavender Glow + Catboy Sticker) uwu :3!",
+          description: "Visitor unlocked **CATBOY MODE** (Lavender Theme + Catboy Sticker) uwu :3!",
           color: 0xc77dff,
           footer: { text: "emolarp.fans // secret" },
           timestamp: new Date().toISOString()
         });
-      },
-      "femboy": function() {
+        keyBuffer = "";
+      } else if (keyBuffer.endsWith("femboy")) {
         playBrightChime();
         showToast("[ FEMBOY MODE UNLOCKED 🎀 ]");
-        card.classList.remove("theme-catboy");
-        card.classList.add("theme-femboy");
+        document.body.classList.remove("theme-catboy");
+        document.body.classList.add("theme-femboy");
 
         if (secretPopup && popupBubble) {
           popupBubble.innerText = "femboy hours! 🎀";
@@ -419,30 +422,18 @@
 
         sendDiscordEmbed({
           title: "action: Secret Code Unlocked",
-          description: "Visitor unlocked **FEMBOY MODE** (Dashed Pink Frame + Custom Typography) <3",
+          description: "Visitor unlocked **FEMBOY MODE** (Candy Pink Theme + Custom Typography) <3",
           color: 0xff70a6,
           footer: { text: "emolarp.fans // secret" },
           timestamp: new Date().toISOString()
         });
-      },
-      "reset": function() {
+        keyBuffer = "";
+      } else if (keyBuffer.endsWith("reset")) {
         playGlitchBlip();
         showToast("[ DEFAULT THEME RESTORED ]");
-        card.classList.remove("theme-catboy", "theme-femboy");
+        document.body.classList.remove("theme-catboy", "theme-femboy");
         if (secretPopup) secretPopup.classList.remove("show");
-      }
-    };
-
-    window.addEventListener('keydown', function(e) {
-      if (e.key && e.key.length === 1) {
-        keyBuffer = (keyBuffer + e.key.toLowerCase()).slice(-10);
-        for (let code in secrets) {
-          if (keyBuffer.endsWith(code)) {
-            secrets[code]();
-            keyBuffer = "";
-            break;
-          }
-        }
+        keyBuffer = "";
       }
     }, true);
 
@@ -902,41 +893,4 @@
         dragLogged = true;
         sendDiscordEmbed({
           title: "action: Card Move",
-          description: "Visitor repositioned the profile frame",
-          color: 0x9d4edd,
-          footer: { text: "emolarp.fans // card" },
-          timestamp: new Date().toISOString()
-        });
-      }
-    });
-
-    /* Right-Click Inspect / Source Intercept */
-    window.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-      playGlitchBlip();
-      showToast("[ right-click restricted :3 ]");
-      sendDiscordEmbed({
-        title: "action: Right-Click Intercept",
-        description: "Visitor attempted inspect on `<" + e.target.tagName.toLowerCase() + ">`",
-        color: 0x5a189a,
-        footer: { text: "emolarp.fans // security" },
-        timestamp: new Date().toISOString()
-      });
-    });
-
-    /* Text Copy Detection */
-    window.addEventListener('copy', function() {
-      const text = window.getSelection().toString().trim();
-      if (text && text.length > 0 && (!statusTracker || text !== statusTracker.innerText.trim())) {
-        sendDiscordEmbed({
-          title: "action: Selected Text Copied",
-          description: "Copied: `" + text.slice(0, 100) + "`",
-          color: 0x9d4edd,
-          footer: { text: "emolarp.fans // selection" },
-          timestamp: new Date().toISOString()
-        });
-      }
-    });
-  </script>
-</body>
-</html>
+          description: "
