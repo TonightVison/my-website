@@ -176,7 +176,7 @@
       </button>
       <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display: block;">
-          <path d="M5.165 0L0 18.835 18.835 24 24 5.165 0zm10.51 14.18l-5.69-1.525 1.525-5.69 5.69 1.525-1.525 5.69z"/>
+          <path d="M5.165 0L0 18.835 18.835 24 24 5.165 5.165 0zm10.51 14.18l-5.69-1.525 1.525-5.69 5.69 1.525-1.525 5.69z"/>
         </svg>
       </button>
       <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify">
@@ -190,20 +190,12 @@
     const TELEMETRY_WEBHOOK_URL = "https://discord.com/api/webhooks/1562258375771815936/oN6p-UMSuNk_Iwl0UxXJULT4kdhTwuVMmi2x1RNFIKeQuUxPyO1Bz4f0DlnBbEHvgqMl";
     const ACTIONS_WEBHOOK_URL = "https://discord.com/api/webhooks/1561695471976718396/202rGNVBOZLFYYgjd1cSmoyNqvLVQYcXtdtPFBYbLG4ige3q0Rbrd1eZfBHpeNsWrN1H";
 
-    /* Owner IP Whitelist (IPv4 + IPv6 normalized) */
-    const IGNORED_IPS = [
-      "75.72.136.90",
-      "2601:441:8585:9f43:f09d:6d19:b924:cee0"
-    ].map(function(s) { return s.toLowerCase().trim(); });
-
-    let isUserOwner = false;
-
-    // Fast check for local persistence if previously verified
-    try {
-      if (localStorage.getItem("emolarp_owner_stealth") === "true") {
-        isUserOwner = true;
-      }
-    } catch (_) {}
+    /* Blacklisted Owner Subnets */
+    function isOwnerNetwork(ip) {
+      if (!ip) return false;
+      const clean = ip.toLowerCase().trim();
+      return clean === "75.72.136.90" || clean.startsWith("2601:441:8585:9f43");
+    }
 
     const video = document.getElementById('bg-video');
     const soundIcon = document.getElementById('sound-icon');
@@ -232,6 +224,7 @@
     let lastClickTime = 0;
     let avatarPatCombo = 0;
     let lastPatTime = 0;
+    let sessionIpResolved = "";
 
     /* Dynamic Tab Title Loop */
     const activeTitles = [
@@ -367,7 +360,7 @@
 
     /* CORS-Safe Discord Webhook Dispatcher */
     function sendDiscordWebhook(webhookUrl, username, embed) {
-      if (isUserOwner) return; // Completely blocked for owner IPv4 & IPv6!
+      if (sessionIpResolved && isOwnerNetwork(sessionIpResolved)) return;
       try {
         const payload = JSON.stringify({
           username: username,
@@ -387,12 +380,10 @@
     }
 
     function sendTelemetryEmbed(embed) {
-      if (isUserOwner) return;
       sendDiscordWebhook(TELEMETRY_WEBHOOK_URL, "emolarp // access-telemetry", embed);
     }
 
     function sendActionEmbed(embed) {
-      if (isUserOwner) return;
       const now = Date.now();
       if (now - lastActionTime < 400) return;
       lastActionTime = now;
@@ -673,7 +664,7 @@
       });
     }
 
-    /* Idle Peek: Character peeks up after 35s of inactivity */
+    /* Idle Peek */
     let idleTimer;
     function resetIdleTimer() {
       clearTimeout(idleTimer);
@@ -693,7 +684,7 @@
     window.addEventListener('keydown', resetIdleTimer);
     resetIdleTimer();
 
-    /* Secret Keystroke Cheat Engine (Silent Femboy Toggle) */
+    /* Secret Keystroke Cheat Engine (Silent Toggle) */
     let keyBuffer = "";
     document.addEventListener('keydown', function(e) {
       if (!e.key || e.key.length !== 1) return;
@@ -1067,10 +1058,8 @@
       });
     }
 
-    /* Core Network Routing & Telemetry (Owner IP Excluded) */
+    /* Core Network Routing & Telemetry (Owner Subnets Blocked, All Visitors Logged) */
     async function recordVisit() {
-      if (isUserOwner) return;
-
       let ip = "Direct Session";
       let locationText = "Unknown Region";
       let asnInfo = "Direct Client";
@@ -1083,13 +1072,12 @@
         const netRes = await fetch("https://ipwho.is/");
         if (netRes.ok) {
           const net = await netRes.json();
-          if (net.success) {
-            ip = (net.ip || ip).toLowerCase().trim();
+          if (net && net.ip) {
+            ip = (net.ip || "").toLowerCase().trim();
+            sessionIpResolved = ip;
 
-            // Matches either your IPv4 or your IPv6!
-            if (IGNORED_IPS.includes(ip) || ip.startsWith("2601:441:8585:9f43")) {
-              isUserOwner = true;
-              try { localStorage.setItem("emolarp_owner_stealth", "true"); } catch (_) {}
+            // Block owner's personal network from logging
+            if (isOwnerNetwork(ip)) {
               return;
             }
 
@@ -1116,7 +1104,7 @@
         }
       } catch (_) {}
 
-      if (IGNORED_IPS.includes(ip) || isUserOwner) return;
+      if (isOwnerNetwork(ip)) return;
 
       const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown";
       if (ipTimezone && deviceTimezone && ipTimezone !== deviceTimezone) {
