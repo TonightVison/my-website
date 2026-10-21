@@ -16,7 +16,7 @@
   --text-main: #f8f9fa;
   --text-dim: #9a8c98;
   --spotify-green: #1ed760;
-  --font-display: 'Cinzel', serif;
+  --font-username: 'Shantell Sans', cursive;
   --font-mono: 'JetBrains Mono', monospace;
   --font-cute: 'Gloria Hallelujah', cursive;
   --font-catboy: 'Itim', cursive;
@@ -38,6 +38,10 @@ body.theme-catboy .typewriter-box {
   font-size: 0.98rem !important;
   color: #e0aaff !important;
 }
+body.theme-catboy .username {
+  color: #e0aaff !important;
+  text-shadow: 0 0 12px rgba(199, 125, 255, 0.8) !important;
+}
 
 body.theme-femboy {
   --border-color: #ff5d8f;
@@ -54,6 +58,11 @@ body.theme-femboy .typewriter-box {
   font-size: 1.15rem !important;
   font-weight: 700 !important;
   color: #ffb3c6 !important;
+}
+body.theme-femboy .username {
+  color: #ffb3c6 !important;
+  text-shadow: 0 0 12px rgba(255, 93, 143, 0.8) !important;
+  transform: rotate(-1.5deg);
 }
 
 html, body {
@@ -208,7 +217,7 @@ html, body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Compact Profile Frame (380px) */
+/* Compact Profile Frame */
 .profile-frame {
   position: relative;
   margin: 0 auto;
@@ -314,7 +323,12 @@ html, body {
   border-radius: 50%;
   padding: 2.5px;
   background: linear-gradient(135deg, var(--light-purple), var(--border-glow));
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.avatar-hex:active {
+  transform: scale(0.92);
 }
 
 .avatar-hex img {
@@ -347,17 +361,19 @@ html, body {
   min-width: 0;
 }
 
+/* Cute Bubbly Username */
 .username {
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  letter-spacing: 1.5px;
+  font-family: var(--font-username);
+  font-weight: 700;
+  font-size: 1.45rem;
+  letter-spacing: 0.5px;
   color: #fff;
   text-shadow: 0 0 10px var(--light-purple);
   margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .status-line {
@@ -564,6 +580,22 @@ html, body {
   transform: scale(0.95) rotate(-2deg);
 }
 
+/* Floating Avatar Sparkles */
+.heart-burst {
+  position: fixed;
+  pointer-events: none;
+  font-family: var(--font-cute);
+  font-size: 16px;
+  color: var(--light-purple);
+  z-index: 99999;
+  animation: burstFloat 0.9s ease-out forwards;
+}
+
+@keyframes burstFloat {
+  0% { opacity: 1; transform: translate(0, 0) scale(0.8); }
+  100% { opacity: 0; transform: translate(var(--bx), var(--by)) scale(1.3); }
+}
+
 /* Cursor Particles */
 .cursor-particle {
   position: fixed;
@@ -584,7 +616,7 @@ html, body {
 
 @media (max-width: 480px) {
   .profile-frame { width: 94vw; padding: 16px 14px; }
-  .username { font-size: 1.2rem; }
+  .username { font-size: 1.3rem; }
   .avatar-hex { width: 60px; height: 60px; }
   #secret-popup { width: 110px; right: 10px; }
   .femboy-character-img { width: 95px; }
