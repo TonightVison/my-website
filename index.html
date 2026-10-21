@@ -82,25 +82,10 @@
   <!-- Notification Toast -->
   <div id="toast" class="toast">[ opening... ]</div>
 
-  <!-- Floating Corner Sticker Popup -->
-  <div id="secret-popup">
+  <!-- Floating Thigh-High Femboy Character Sticker Popup -->
+  <div id="secret-popup" title="Click me! :3">
     <div class="secret-bubble" id="popup-bubble">nyaa~ meow! :3</div>
-    <svg width="80" height="90" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="18,36 8,8 34,22" fill="#1b1522" stroke="#ff70a6" stroke-width="2.5" />
-      <polygon points="18,32 12,14 30,22" fill="#ff70a6" />
-      <polygon points="82,36 92,8 66,22" fill="#1b1522" stroke="#ff70a6" stroke-width="2.5" />
-      <polygon points="82,32 88,14 70,22" fill="#ff70a6" />
-      <circle cx="50" cy="50" r="32" fill="#15101c" stroke="#ff70a6" stroke-width="2.5" />
-      <ellipse cx="37" cy="52" rx="4.5" ry="6" fill="#ff70a6" />
-      <circle cx="35.5" cy="50" r="1.8" fill="#ffffff" />
-      <ellipse cx="63" cy="52" rx="4.5" ry="6" fill="#ff70a6" />
-      <circle cx="61.5" cy="50" r="1.8" fill="#ffffff" />
-      <ellipse cx="28" cy="58" rx="4" ry="1.8" fill="#ff4d8d" opacity="0.6"/>
-      <ellipse cx="72" cy="58" rx="4" ry="1.8" fill="#ff4d8d" opacity="0.6"/>
-      <path d="M 45 58 Q 48 62 50 58 Q 52 62 55 58" fill="transparent" stroke="#ff70a6" stroke-width="1.8" stroke-linecap="round"/>
-      <path d="M 30 76 Q 50 83 70 76" stroke="#0d0b11" stroke-width="5" stroke-linecap="round" />
-      <circle cx="50" cy="80" r="4" fill="#ffd166" />
-    </svg>
+    <img src="femboy.png" alt="Femboy Character" class="femboy-character-img" id="popup-img" draggable="false" />
   </div>
 
   <!-- Background Video -->
@@ -399,12 +384,12 @@
         if (secretPopup && popupBubble) {
           popupBubble.innerText = "nyaa~ meow! :3";
           secretPopup.classList.add("show");
-          setTimeout(function() { secretPopup.classList.remove("show"); }, 5000);
+          setTimeout(function() { secretPopup.classList.remove("show"); }, 5500);
         }
 
         sendDiscordEmbed({
           title: "action: Secret Code Unlocked",
-          description: "Visitor unlocked **CATBOY MODE** (Lavender Theme + Catboy Sticker) uwu :3!",
+          description: "Visitor unlocked **CATBOY MODE** (Lavender Theme + Sticker) uwu :3!",
           color: 0xc77dff,
           footer: { text: "emolarp.fans // secret" },
           timestamp: new Date().toISOString()
@@ -419,13 +404,13 @@
         if (secretPopup && popupBubble) {
           popupBubble.innerText = "femboy hours! 🎀";
           secretPopup.classList.add("show");
-          setTimeout(function() { secretPopup.classList.remove("show"); }, 5000);
+          setTimeout(function() { secretPopup.classList.remove("show"); }, 5500);
         }
 
         sendDiscordEmbed({
           title: "action: Secret Code Unlocked",
-          description: "Visitor unlocked **FEMBOY MODE** (Candy Pink Theme + Custom Typography) <3",
-          color: 0xff70a6,
+          description: "Visitor unlocked **FEMBOY MODE** (Candy Pink + Thigh-High Sprite) <3",
+          color: 0xff5d8f,
           footer: { text: "emolarp.fans // secret" },
           timestamp: new Date().toISOString()
         });
@@ -438,6 +423,15 @@
         keyBuffer = "";
       }
     }, true);
+
+    /* Click Sticker to React */
+    if (secretPopup) {
+      secretPopup.addEventListener('click', function() {
+        playGlitchBlip();
+        const cuteReactions = ["mreow! :3", "(⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)", "purrrr~ ♡", "headpats? (˶ᵔ ᵕ ᵔ˶)"];
+        popupBubble.innerText = cuteReactions[Math.floor(Math.random() * cuteReactions.length)];
+      });
+    }
 
     /* Audio Management */
     function applyAudioState() {
