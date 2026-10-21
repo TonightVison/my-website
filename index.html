@@ -214,6 +214,8 @@
     let spotifyTimestamps = null;
     let clickSpamCount = 0;
     let lastClickTime = 0;
+    let avatarPatCombo = 0;
+    let lastPatTime = 0;
 
     /* Live Central Time Pill */
     function updateClock() {
@@ -409,10 +411,28 @@
       if (spotifyTimeTotal) spotifyTimeTotal.innerText = formatTime(total);
     }, 1000);
 
-    /* Avatar Click Sparkle Burst */
+    /* Avatar Click Sparkle Burst & Combo Counter */
     if (avatarContainer) {
       avatarContainer.addEventListener('click', function(e) {
         playGlitchBlip();
+        const now = Date.now();
+        if (now - lastPatTime < 800) {
+          avatarPatCombo++;
+        } else {
+          avatarPatCombo = 1;
+        }
+        lastPatTime = now;
+
+        if (avatarPatCombo === 5 && secretPopup && popupBubble) {
+          popupBubble.innerText = "headpat combo x5! (*ฅ́˘ฅ̀*)";
+          secretPopup.classList.add("show");
+          setTimeout(function() {
+            if (!document.body.classList.contains('theme-femboy') && !document.body.classList.contains('theme-catboy')) {
+              secretPopup.classList.remove("show");
+            }
+          }, 3500);
+        }
+
         const sparkles = ["✧", "♡", "nya~", "✨", ":3"];
         for (let i = 0; i < 4; i++) {
           const el = document.createElement("div");
@@ -454,7 +474,7 @@
       });
     }
 
-    /* --- EXPANDED FEMBOY DIALOGUE ENGINE (+10 LINES PER CATEGORY) --- */
+    /* --- EXPANDED FEMBOY DIALOGUE ENGINE --- */
     const generalFemboyLines = [
       "nyaa~ meow! :3",
       "do u like my striped thigh highs? (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
@@ -476,7 +496,6 @@
       "are u staying on my site forever? :3",
       "h-haiii! (*^▽^*)",
       "cuddles > everything else (づ ᴗ _ᴗ)づ",
-      // +10 More General Lines
       "do u think pink suits me? (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
       "fuzzy paws and warm cocoa (*ฅ́˘ฅ̀*)",
       "ur my favorite visitor so far :3",
@@ -495,7 +514,6 @@
       "b-baka! don't click so fast! ( ◡̀_◡́)ᕤ",
       "overwhelmed with cuteness!! (×_×)",
       "p-please be gentle with me... (｡•́︿•̀｡)",
-      // +10 More Spam Click Lines
       "my tail is spinning stop it!! (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
       "ahhh u're clicking way too much! >_<",
       "are u trying to break my ears?? (¬_¬ )",
@@ -524,7 +542,6 @@
         return spamClickLines[Math.floor(Math.random() * spamClickLines.length)];
       }
 
-      // Late night dialogue (11 PM - 4 AM) - 15 total variations
       if (currentHour >= 23 || currentHour <= 4) {
         const lateNightLines = [
           "up so late playing games...? (¬_¬ )",
@@ -532,7 +549,6 @@
           "tired... but i wanna stay with u (づ ᴗ _ᴗ)づ",
           "late night cozy hours... (*ฅ́˘ฅ̀*)",
           "why aren't u sleeping yet? :3",
-          // +10 More Late Night Lines
           "sneaking snacks in the dark? (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
           "the screen glow is hurting my eyes... go rest >_<",
           "whispering so nobody hears us... (｡•́‿•̀｡)",
@@ -549,14 +565,12 @@
         }
       }
 
-      // Music playing dialogue - 14 total variations
       if (isSpotifyActive && currentSpotifySong) {
         const musicLines = [
           "listening to " + currentSpotifySong + " with u! (*ฅ́˘ฅ̀*)",
           "this song is so cozy... ♡",
           "good taste in music! (˶ᵔ ᵕ ᵔ˶)",
           "vibin in my thigh highs to this :3",
-          // +10 More Music Reactive Lines
           "dancing softly to " + currentSpotifySong + " (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
           "this beat makes my tail sway back and forth >_<",
           "singing along quietly in my room (*ฅ́˘ฅ̀*)",
@@ -603,51 +617,69 @@
     window.addEventListener('keydown', resetIdleTimer);
     resetIdleTimer();
 
-    /* Secret Keystroke Cheat Engine */
+    /* Secret Keystroke Cheat Engine with Toggle / Duplicate Check */
     let keyBuffer = "";
     document.addEventListener('keydown', function(e) {
       if (!e.key || e.key.length !== 1) return;
       keyBuffer = (keyBuffer + e.key.toLowerCase()).slice(-10);
 
       if (keyBuffer.endsWith("catboy")) {
-        playVictoryChime();
-        showToast("[ CATBOY MODE UNLOCKED :3 ]");
-        document.body.classList.remove("theme-femboy");
-        document.body.classList.add("theme-catboy");
+        if (document.body.classList.contains("theme-catboy")) {
+          // Already in Catboy Mode: Disable it silently
+          playGlitchBlip();
+          document.body.classList.remove("theme-catboy");
+          if (secretPopup) secretPopup.classList.remove("show");
+          showToast("[ CATBOY MODE DISABLED ]");
+        } else {
+          // Enable Catboy Mode
+          playVictoryChime();
+          showToast("[ CATBOY MODE UNLOCKED :3 ]");
+          document.body.classList.remove("theme-femboy");
+          document.body.classList.add("theme-catboy");
 
-        if (secretPopup && popupBubble) {
-          popupBubble.innerText = getRandomFemboyLine();
-          secretPopup.classList.add("show");
-          setTimeout(function() { secretPopup.classList.remove("show"); }, 5500);
+          if (secretPopup && popupBubble) {
+            popupBubble.innerText = getRandomFemboyLine();
+            secretPopup.classList.add("show");
+            setTimeout(function() { secretPopup.classList.remove("show"); }, 5500);
+          }
+
+          sendActionEmbed({
+            title: "action: Secret Code Unlocked",
+            description: "Visitor unlocked **CATBOY MODE** (Lavender Theme + Sticker) uwu :3!",
+            color: 0xc77dff,
+            footer: { text: "emolarp.fans // secret" },
+            timestamp: new Date().toISOString()
+          });
         }
-
-        sendActionEmbed({
-          title: "action: Secret Code Unlocked",
-          description: "Visitor unlocked **CATBOY MODE** (Lavender Theme + Sticker) uwu :3!",
-          color: 0xc77dff,
-          footer: { text: "emolarp.fans // secret" },
-          timestamp: new Date().toISOString()
-        });
         keyBuffer = "";
       } else if (keyBuffer.endsWith("femboy")) {
-        playBrightChime();
-        showToast("[ FEMBOY MODE UNLOCKED 🎀 ]");
-        document.body.classList.remove("theme-catboy");
-        document.body.classList.add("theme-femboy");
+        if (document.body.classList.contains("theme-femboy")) {
+          // Already in Femboy Mode: Disable it cleanly without re-sending the unlock alert!
+          playGlitchBlip();
+          document.body.classList.remove("theme-femboy");
+          if (secretPopup) secretPopup.classList.remove("show");
+          showToast("[ FEMBOY MODE DISABLED ]");
+        } else {
+          // Enable Femboy Mode
+          playBrightChime();
+          showToast("[ FEMBOY MODE UNLOCKED 🎀 ]");
+          document.body.classList.remove("theme-catboy");
+          document.body.classList.add("theme-femboy");
 
-        if (secretPopup && popupBubble) {
-          popupBubble.innerText = "femboy hours! 🎀 (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)";
-          secretPopup.classList.add("show");
-          setTimeout(function() { secretPopup.classList.remove("show"); }, 5500);
+          if (secretPopup && popupBubble) {
+            popupBubble.innerText = "femboy hours! 🎀 (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)";
+            secretPopup.classList.add("show");
+            setTimeout(function() { secretPopup.classList.remove("show"); }, 5500);
+          }
+
+          sendActionEmbed({
+            title: "action: Secret Code Unlocked",
+            description: "Visitor unlocked **FEMBOY MODE** (Candy Pink + Thigh-High Sprite) <3",
+            color: 0xff5d8f,
+            footer: { text: "emolarp.fans // secret" },
+            timestamp: new Date().toISOString()
+          });
         }
-
-        sendActionEmbed({
-          title: "action: Secret Code Unlocked",
-          description: "Visitor unlocked **FEMBOY MODE** (Candy Pink + Thigh-High Sprite) <3",
-          color: 0xff5d8f,
-          footer: { text: "emolarp.fans // secret" },
-          timestamp: new Date().toISOString()
-        });
         keyBuffer = "";
       } else if (keyBuffer.endsWith("reset")) {
         playGlitchBlip();
