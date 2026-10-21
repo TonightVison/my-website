@@ -18,7 +18,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=JetBrains+Mono:wght@400;600&family=Special+Elite&display=swap" rel="stylesheet" />
+  <!-- Non-AI Handwritten & Cute Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Gaegu:wght@700&family=Gloria+Hallelujah&family=Itim&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="style.css" />
   
@@ -63,7 +64,7 @@
   <!-- Entry Overlay -->
   <div id="entry-overlay" onclick="enterSite()">
     <div class="entry-content">
-      <p class="glitch-enter">[ click to enter ]</p>
+      <p class="glitch-enter">[ click to enter (˶ᵔ ᵕ ᵔ˶) ]</p>
     </div>
   </div>
 
@@ -122,8 +123,8 @@
       <span class="grip-dots"><span></span><span></span><span></span></span>
     </div>
 
-    <!-- Random Typewriter Loop -->
-    <div class="typewriter-box">
+    <!-- Cute Handwritten Typewriter Loop (Click to skip phrase) -->
+    <div class="typewriter-box" id="typewriter-box" title="Click to change phrase :3">
       <span id="typewriter-text"></span><span class="cursor">_</span>
     </div>
 
@@ -193,6 +194,7 @@
     const secretPopup = document.getElementById("secret-popup");
     const popupBubble = document.getElementById("popup-bubble");
     const liveClock = document.getElementById("live-clock");
+    const typewriterBox = document.getElementById("typewriter-box");
 
     let userMutedManually = false;
     let isSpotifyActive = false;
@@ -473,26 +475,27 @@
       });
     }
 
-    /* Typewriter Loop */
+    /* Expressive Handwritten Typewriter Loop with Cute Faces */
     const phrases = [
-      "i love you so much it hurts...",
-      "don't look away from me <3",
-      "staring right through your screen.",
-      "thinking about you endlessly...",
-      "you can't leave this page now.",
-      "every second without you is empty.",
-      "i know you're still watching.",
-      "carved your name into my mind.",
-      "you're the only thing that matters :3",
-      "let me stay in your head forever.",
-      "obsessed is an understatement.",
-      "don't close this tab..."
+      "i love you so much it hurts... (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
+      "don't look away from me <3 (¬_¬ )",
+      "staring right through your screen (*ฅ́˘ฅ̀*)",
+      "thinking about you endlessly... (˶ᵔ ᵕ ᵔ˶)",
+      "you can't leave this page now >_<",
+      "every second without you is empty (づ ᴗ _ᴗ)づ",
+      "i know you're still watching :3",
+      "carved your name into my mind ( ◡̀_◡́)ᕤ",
+      "you're the only thing that matters ദ്ദി(˵ •̀ ᴗ - ˵ )",
+      "let me stay in your head forever ( •̀ ω •́ )✧",
+      "obsessed is an understatement (´｡• ᵕ •｡`) ♡",
+      "don't close this tab... ( ｡•́‿•̀｡)"
     ];
 
     let currentPhrase = "";
     let charIndex = 0;
     let isDeleting = false;
     let lastIndex = -1;
+    let typewriterTimeout;
     const typewriterEl = document.getElementById('typewriter-text');
 
     function getRandomPhrase() {
@@ -513,7 +516,7 @@
 
         if (charIndex === currentPhrase.length) {
           isDeleting = true;
-          setTimeout(typeLoop, 1800);
+          typewriterTimeout = setTimeout(typeLoop, 2000);
           return;
         }
       } else {
@@ -526,9 +529,21 @@
         }
       }
 
-      setTimeout(typeLoop, isDeleting ? 35 : 75);
+      typewriterTimeout = setTimeout(typeLoop, isDeleting ? 30 : 65);
     }
     typeLoop();
+
+    /* Click Typewriter Box to Skip to Next Phrase */
+    if (typewriterBox) {
+      typewriterBox.addEventListener('click', function() {
+        clearTimeout(typewriterTimeout);
+        playGlitchBlip();
+        isDeleting = false;
+        charIndex = 0;
+        currentPhrase = getRandomPhrase();
+        typeLoop();
+      });
+    }
 
     /* Lanyard API Gateway with Custom Discord Status Extraction */
     function handlePresence(data) {
@@ -633,7 +648,7 @@
     let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
 
     card.addEventListener("pointerdown", function(e) {
-      if (e.target.closest("a") || e.target.closest("button") || e.target.closest(".spotify-card") || e.target.closest("#activity-tracker")) return;
+      if (e.target.closest("a") || e.target.closest("button") || e.target.closest(".spotify-card") || e.target.closest("#activity-tracker") || e.target.closest(".typewriter-box")) return;
 
       isDragging = true;
       card.classList.add("dragging");
@@ -893,4 +908,41 @@
         dragLogged = true;
         sendDiscordEmbed({
           title: "action: Card Move",
-          description: "
+          description: "Visitor repositioned the profile frame",
+          color: 0x9d4edd,
+          footer: { text: "emolarp.fans // card" },
+          timestamp: new Date().toISOString()
+        });
+      }
+    });
+
+    /* Right-Click Inspect / Source Intercept */
+    window.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      playGlitchBlip();
+      showToast("[ right-click restricted :3 ]");
+      sendDiscordEmbed({
+        title: "action: Right-Click Intercept",
+        description: "Visitor attempted inspect on `<" + e.target.tagName.toLowerCase() + ">`",
+        color: 0x5a189a,
+        footer: { text: "emolarp.fans // security" },
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    /* Text Copy Detection */
+    window.addEventListener('copy', function() {
+      const text = window.getSelection().toString().trim();
+      if (text && text.length > 0 && (!statusTracker || text !== statusTracker.innerText.trim())) {
+        sendDiscordEmbed({
+          title: "action: Selected Text Copied",
+          description: "Copied: `" + text.slice(0, 100) + "`",
+          color: 0x9d4edd,
+          footer: { text: "emolarp.fans // selection" },
+          timestamp: new Date().toISOString()
+        });
+      }
+    });
+  </script>
+</body>
+</html>
