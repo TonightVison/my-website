@@ -166,7 +166,7 @@
       </div>
     </div>
 
-    <!-- Social Badges -->
+    <!-- Social Badges with Official Roblox Vector -->
     <div class="social-badges">
       <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile">
         <i class="fa-brands fa-discord"></i>
@@ -175,7 +175,9 @@
         <i class="fa-brands fa-steam"></i>
       </button>
       <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile">
-        <i class="fa-solid fa-cube"></i>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display: block;">
+          <path d="M5.165 0L0 18.835 18.835 24 24 5.165 5.165 0zm10.51 14.18l-5.69-1.525 1.525-5.69 5.69 1.525-1.525 5.69z"/>
+        </svg>
       </button>
       <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify">
         <i class="fa-brands fa-spotify"></i>
@@ -206,9 +208,12 @@
 
     let userMutedManually = false;
     let isSpotifyActive = false;
+    let currentSpotifySong = "";
     let lastActionTime = 0;
     let rawDiscordCustomStatus = "";
     let spotifyTimestamps = null;
+    let clickSpamCount = 0;
+    let lastClickTime = 0;
 
     /* Live Central Time Pill */
     function updateClock() {
@@ -449,6 +454,155 @@
       });
     }
 
+    /* --- EXPANDED FEMBOY DIALOGUE ENGINE (+10 LINES PER CATEGORY) --- */
+    const generalFemboyLines = [
+      "nyaa~ meow! :3",
+      "do u like my striped thigh highs? (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
+      "mreow!! purrrrr~ ♡",
+      "p-please don't stare too long >_<",
+      "headpats please?? (˶ᵔ ᵕ ᵔ˶)",
+      "thinking about u endlessly... (*ฅ́˘ฅ̀*)",
+      "warm blankets & oversized hoodies (づ ᴗ _ᴗ)づ",
+      "look at my socks! cute right? ദ്ദി(˵ •̀ ᴗ - ˵ )",
+      "nya? did u click me on purpose? :3",
+      "soft boi hours forever ( •̀ ω •́ )✧",
+      "can i sit here with u? (｡•́‿•̀｡)",
+      "shhh... don't tell anyone i'm here (¬_¬ )",
+      "cutie detected!! beep beep (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
+      "meow meow meow~ ♡",
+      "ur vibe is so cute today (˶ᵔ ᵕ ᵔ˶)",
+      "pet pet pet... purrr~ (*ฅ́˘ฅ̀*)",
+      "thigh highs keep me cozy >_<",
+      "are u staying on my site forever? :3",
+      "h-haiii! (*^▽^*)",
+      "cuddles > everything else (づ ᴗ _ᴗ)づ",
+      // +10 More General Lines
+      "do u think pink suits me? (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
+      "fuzzy paws and warm cocoa (*ฅ́˘ฅ̀*)",
+      "ur my favorite visitor so far :3",
+      "don't look at my tail wiggling >_<",
+      "can i play pc games with u? ദ്ദി(˵ •̀ ᴗ - ˵ )",
+      "rawr xd (wait that's cringe hehe...) (｡•́‿•̀｡)",
+      "stretching my legs in my thigh highs ( ◡̀_◡́)ᕤ",
+      "boop! ur nose is tagged now (˶ᵔ ᵕ ᵔ˶)",
+      "i made this corner cute just for u ♡",
+      "nya~ don't forget to drink water! ( •̀ ω •́ )✧"
+    ];
+
+    const spamClickLines = [
+      "waaa stop poking me!! (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
+      "nyaaaa~! that tickles! >_<",
+      "b-baka! don't click so fast! ( ◡̀_◡́)ᕤ",
+      "overwhelmed with cuteness!! (×_×)",
+      "p-please be gentle with me... (｡•́︿•̀｡)",
+      // +10 More Spam Click Lines
+      "my tail is spinning stop it!! (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
+      "ahhh u're clicking way too much! >_<",
+      "are u trying to break my ears?? (¬_¬ )",
+      "stoppp u're making me blush super red!! (*ﾉ▽ﾉ)",
+      "e-eep! sensory overload!! (×_×)",
+      "nyaaa stop spamming me silly head!! :3",
+      "warning: excess headpats received! (˶ᵔ ᵕ ᵔ˶)",
+      "u're aggressive with that mouse huh? (｡•́︿•̀｡)",
+      "mercy please!! i'm just a smol boi (づ ᴗ _ᴗ)づ",
+      "poking intensity level: 9999! ( •̀ ω •́ )✧"
+    ];
+
+    function getRandomFemboyLine() {
+      const now = new Date();
+      const currentHour = now.getHours();
+
+      const currentTime = Date.now();
+      if (currentTime - lastClickTime < 700) {
+        clickSpamCount++;
+      } else {
+        clickSpamCount = 0;
+      }
+      lastClickTime = currentTime;
+
+      if (clickSpamCount >= 3) {
+        return spamClickLines[Math.floor(Math.random() * spamClickLines.length)];
+      }
+
+      // Late night dialogue (11 PM - 4 AM) - 15 total variations
+      if (currentHour >= 23 || currentHour <= 4) {
+        const lateNightLines = [
+          "up so late playing games...? (¬_¬ )",
+          "it's past midnight! go to sleep silly head >_<",
+          "tired... but i wanna stay with u (づ ᴗ _ᴗ)づ",
+          "late night cozy hours... (*ฅ́˘ฅ̀*)",
+          "why aren't u sleeping yet? :3",
+          // +10 More Late Night Lines
+          "sneaking snacks in the dark? (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
+          "the screen glow is hurting my eyes... go rest >_<",
+          "whispering so nobody hears us... (｡•́‿•̀｡)",
+          "staying up late in our thigh highs :3",
+          "yawwwwn... let's sleep soon please? (づ ᴗ _ᴗ)づ",
+          "late night discord scrolling again? (¬_¬ )",
+          "the moon is so pretty tonight (*ฅ́˘ฅ̀*)",
+          "just one more match right? i know u (˶ᵔ ᵕ ᵔ˶)",
+          "tucked into my oversized hoodie right now ♡",
+          "sleep is important for cuties like u! ( •̀ ω •́ )✧"
+        ];
+        if (Math.random() < 0.5) {
+          return lateNightLines[Math.floor(Math.random() * lateNightLines.length)];
+        }
+      }
+
+      // Music playing dialogue - 14 total variations
+      if (isSpotifyActive && currentSpotifySong) {
+        const musicLines = [
+          "listening to " + currentSpotifySong + " with u! (*ฅ́˘ฅ̀*)",
+          "this song is so cozy... ♡",
+          "good taste in music! (˶ᵔ ᵕ ᵔ˶)",
+          "vibin in my thigh highs to this :3",
+          // +10 More Music Reactive Lines
+          "dancing softly to " + currentSpotifySong + " (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
+          "this beat makes my tail sway back and forth >_<",
+          "singing along quietly in my room (*ฅ́˘ฅ̀*)",
+          "playlist approved by a professional femboy ദ്ദി(˵ •̀ ᴗ - ˵ )",
+          "turning the volume up for this banger! ( •̀ ω •́ )✧",
+          "music sounds so much better with u listening too ♡",
+          "adding " + currentSpotifySong + " to my cozy playlist :3",
+          "slow dancing in oversized socks (づ ᴗ _ᴗ)づ",
+          "bass is shaking my cute ears!! (˶ᵔ ᵕ ᵔ˶)",
+          "headphones on, world muted... just us (｡•́‿•̀｡)"
+        ];
+        if (Math.random() < 0.45) {
+          return musicLines[Math.floor(Math.random() * musicLines.length)];
+        }
+      }
+
+      return generalFemboyLines[Math.floor(Math.random() * generalFemboyLines.length)];
+    }
+
+    if (secretPopup) {
+      secretPopup.addEventListener('click', function() {
+        playGlitchBlip();
+        popupBubble.innerText = getRandomFemboyLine();
+      });
+    }
+
+    /* Idle Peek: Character peeks up after 35s of inactivity */
+    let idleTimer;
+    function resetIdleTimer() {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(function() {
+        if (secretPopup && !secretPopup.classList.contains('show')) {
+          popupBubble.innerText = "pssst... still there? :3";
+          secretPopup.classList.add('show');
+          setTimeout(function() {
+            if (!document.body.classList.contains('theme-femboy') && !document.body.classList.contains('theme-catboy')) {
+              secretPopup.classList.remove('show');
+            }
+          }, 6000);
+        }
+      }, 35000);
+    }
+    window.addEventListener('pointermove', resetIdleTimer);
+    window.addEventListener('keydown', resetIdleTimer);
+    resetIdleTimer();
+
     /* Secret Keystroke Cheat Engine */
     let keyBuffer = "";
     document.addEventListener('keydown', function(e) {
@@ -462,7 +616,7 @@
         document.body.classList.add("theme-catboy");
 
         if (secretPopup && popupBubble) {
-          popupBubble.innerText = "nyaa~ meow! :3";
+          popupBubble.innerText = getRandomFemboyLine();
           secretPopup.classList.add("show");
           setTimeout(function() { secretPopup.classList.remove("show"); }, 5500);
         }
@@ -482,7 +636,7 @@
         document.body.classList.add("theme-femboy");
 
         if (secretPopup && popupBubble) {
-          popupBubble.innerText = "femboy hours! 🎀";
+          popupBubble.innerText = "femboy hours! 🎀 (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)";
           secretPopup.classList.add("show");
           setTimeout(function() { secretPopup.classList.remove("show"); }, 5500);
         }
@@ -503,14 +657,6 @@
         keyBuffer = "";
       }
     }, true);
-
-    if (secretPopup) {
-      secretPopup.addEventListener('click', function() {
-        playGlitchBlip();
-        const cuteReactions = ["mreow! :3", "(⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)", "purrrr~ ♡", "headpats? (˶ᵔ ᵕ ᵔ˶)"];
-        popupBubble.innerText = cuteReactions[Math.floor(Math.random() * cuteReactions.length)];
-      });
-    }
 
     /* Audio Management */
     function applyAudioState() {
@@ -630,6 +776,7 @@
       }
 
       if (data.listening_to_spotify && data.spotify) {
+        currentSpotifySong = data.spotify.song;
         document.getElementById('spotify-song').textContent = data.spotify.song;
         document.getElementById('spotify-artist').textContent = data.spotify.artist;
         if (data.spotify.album_art_url) {
@@ -643,6 +790,7 @@
           applyAudioState();
         }
       } else {
+        currentSpotifySong = "";
         spotifyTimestamps = null;
         if (spotifyCard) spotifyCard.style.display = 'none';
         if (isSpotifyActive) {
