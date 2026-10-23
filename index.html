@@ -6,7 +6,6 @@
   <title>emo larp :3</title>
   
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛧</text></svg>" />
-  
   <meta property="og:type" content="website" />
   <meta property="og:title" content="emo larp ⛧" />
   <meta property="og:description" content="live status // real-time dynamic presence" />
@@ -17,7 +16,6 @@
   <link rel="preconnect" href="https://cdn.discordapp.com" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  
   <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Gloria+Hallelujah&family=Itim&family=JetBrains+Mono:wght@400;600&family=Shantell+Sans:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="style.css" />
@@ -29,72 +27,49 @@
     function enterSite() {
       const overlay = document.getElementById('entry-overlay');
       const video = document.getElementById('bg-video');
-
       if (overlay) {
         overlay.classList.add('fade-out');
         overlay.style.pointerEvents = 'none';
-        setTimeout(function() {
-          overlay.style.display = 'none';
-        }, 400);
+        setTimeout(() => overlay.style.display = 'none', 400);
       }
-
       siteEntered = true;
-
       if (video) {
         video.muted = false;
         video.volume = 1;
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(function() {
-            video.muted = true;
-            video.play().catch(function() {});
-          });
-        }
+        video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
       }
-
-      if (typeof applyAudioState === "function") {
-        try { applyAudioState(); } catch (_) {}
-      }
+      if (typeof applyAudioState === "function") try { applyAudioState(); } catch (_) {}
     }
   </script>
 </head>
 <body>
 
-  <!-- Entry Overlay -->
   <div id="entry-overlay" onclick="enterSite()">
     <div class="entry-content">
       <p class="glitch-enter">[ click to enter (˶ᵔ ᵕ ᵔ˶) ]</p>
     </div>
   </div>
 
-  <!-- Audio Volume Button & Visualizer -->
   <button id="sound-toggle" onclick="toggleMasterAudio()" title="Mute/Unmute Audio">
     <div class="audio-vis" id="audio-vis">
-      <span class="v-bar"></span>
-      <span class="v-bar"></span>
-      <span class="v-bar"></span>
-      <span class="v-bar"></span>
+      <span class="v-bar"></span><span class="v-bar"></span><span class="v-bar"></span><span class="v-bar"></span>
     </div>
     <i class="fa-solid fa-volume-high" id="sound-icon"></i>
   </button>
 
-  <!-- Notification Toast -->
   <div id="toast" class="toast">[ opening... ]</div>
 
-  <!-- Custom Dark Context Menu -->
   <div id="custom-context-menu">
     <div class="menu-item" onclick="centerCardAction()"><i class="fa-solid fa-arrows-to-dot"></i> Center Card</div>
     <div class="menu-item" onclick="toggleMasterAudio()"><i class="fa-solid fa-volume-high"></i> Toggle Audio</div>
     <div class="menu-item" onclick="copyDiscordAction()"><i class="fa-brands fa-discord"></i> Copy Discord</div>
   </div>
 
-  <!-- Floating Character Sticker Popup -->
   <div id="secret-popup" title="Click me! :3">
     <div class="secret-bubble" id="popup-bubble">nyaa~ meow! :3</div>
     <img src="femboy.png" alt="Femboy Character" class="femboy-character-img" id="popup-img" draggable="false" />
   </div>
 
-  <!-- Background Video -->
   <div class="video-bg-container">
     <video id="bg-video" loop playsinline preload="auto">
       <source src="clip.mp4?v=2" type="video/mp4" />
@@ -103,7 +78,6 @@
     <div class="vignette"></div>
   </div>
 
-  <!-- Compact Centered Profile Frame -->
   <main class="profile-frame" id="draggable-card">
     <div class="corner-bracket top-left"></div>
     <div class="corner-bracket top-right"></div>
@@ -114,12 +88,10 @@
       <span class="grip-dots"><span></span><span></span><span></span></span>
     </div>
 
-    <!-- Typewriter Loop -->
     <div class="typewriter-box" id="typewriter-box" title="Click to change phrase :3">
       <span id="typewriter-text"></span><span class="cursor">_</span>
     </div>
 
-    <!-- Avatar Box -->
     <div class="avatar-box">
       <div class="avatar-hex" id="avatar-container" title="Click to pat :3">
         <img id="avatar-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=emolarp" draggable="false" alt="avatar" />
@@ -128,13 +100,11 @@
       <div class="user-details">
         <h1 class="username">emo larp</h1>
         
-        <!-- Unified Status & Rotating Boykisser Pill Row -->
         <div class="unified-status-row">
           <p class="status-tracker" id="activity-tracker" title="Click to copy Discord status">connecting live...</p>
           <span class="time-pill" id="live-greeting">--:-- CT</span>
         </div>
 
-        <!-- Dynamic Spotify Card with Live Progress Bar -->
         <div id="spotify-player" class="spotify-card" style="display: none; flex-direction: column; align-items: stretch;">
           <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
             <div class="spotify-album-wrap">
@@ -149,10 +119,7 @@
               <span id="spotify-artist" class="spotify-sub"></span>
             </div>
             <div class="eq-bars playing" id="spotify-eq">
-              <span class="bar"></span>
-              <span class="bar"></span>
-              <span class="bar"></span>
-              <span class="bar"></span>
+              <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
             </div>
           </div>
           <div class="spotify-progress-wrap">
@@ -168,8 +135,7 @@
       </div>
     </div>
 
-    <!-- Social Badges & Secret Whisper Toggle -->
-    <div class="social-badges-container" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
       <div class="social-badges" style="display: flex; justify-content: center; gap: 10px;">
         <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile">
           <i class="fa-brands fa-discord"></i>
@@ -187,1094 +153,322 @@
         </button>
       </div>
 
-      <!-- Secret Whisper / DM Box Trigger -->
       <button id="dm-toggle-btn" class="dm-toggle-btn" onclick="toggleDmBox()" title="Send a private note">
         <i class="fa-solid fa-envelope"></i> send a whisper ♡
       </button>
 
-      <!-- Whisper Modal Box -->
       <div id="dm-modal" class="dm-modal" style="display: none; flex-direction: column; gap: 6px;">
         <textarea id="dm-input" placeholder="leave a cute note or message... :3" maxlength="250" rows="3" style="width: 100%; resize: none; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 6px; padding: 8px; font-family: inherit; font-size: 0.8rem;"></textarea>
-        <div class="dm-btn-row" style="display: flex; gap: 6px;">
-          <button onclick="sendWhisper()" class="dm-send-btn" style="flex: 1; background: rgba(123, 44, 191, 0.3); border: 1px solid var(--border-color); color: var(--light-purple); border-radius: 4px; padding: 4px; cursor: pointer; font-size: 0.75rem;">send ✈</button>
-          <button onclick="toggleDmBox()" class="dm-cancel-btn" style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-dim); border-radius: 4px; padding: 4px; cursor: pointer; font-size: 0.75rem;">cancel</button>
+        <div style="display: flex; gap: 6px;">
+          <button onclick="sendWhisper()" style="flex: 1; background: rgba(123, 44, 191, 0.3); border: 1px solid var(--border-color); color: var(--light-purple); border-radius: 4px; padding: 4px; cursor: pointer; font-size: 0.75rem;">send ✈</button>
+          <button onclick="toggleDmBox()" style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-dim); border-radius: 4px; padding: 4px; cursor: pointer; font-size: 0.75rem;">cancel</button>
         </div>
       </div>
     </div>
   </main>
 
   <script>
-    /* Dedicated Dual Webhook Endpoints */
-    const TELEMETRY_WEBHOOK_URL = "https://discord.com/api/webhooks/1562258375771815936/oN6p-UMSuNk_Iwl0UxXJULT4kdhTwuVMmi2x1RNFIKeQuUxPyO1Bz4f0DlnBbEHvgqMl";
-    const ACTIONS_WEBHOOK_URL = "https://discord.com/api/webhooks/1561695471976718396/202rGNVBOZLFYYgjd1cSmoyNqvLVQYcXtdtPFBYbLG4ige3q0Rbrd1eZfBHpeNsWrN1H";
+    const TELEMETRY_URL = "https://discord.com/api/webhooks/1562258375771815936/oN6p-UMSuNk_Iwl0UxXJULT4kdhTwuVMmi2x1RNFIKeQuUxPyO1Bz4f0DlnBbEHvgqMl";
+    const ACTIONS_URL = "https://discord.com/api/webhooks/1561695471976718396/202rGNVBOZLFYYgjd1cSmoyNqvLVQYcXtdtPFBYbLG4ige3q0Rbrd1eZfBHpeNsWrN1H";
+    const WORKER_URL = "https://emolarp-logger.insanesservices.workers.dev";
 
-    /* Owner Subnet Exclusion */
-    function isOwnerNetwork(ip) {
-      if (!ip) return false;
-      const clean = ip.toLowerCase().trim();
-      return clean === "75.72.136.90" || clean.startsWith("2601:441:8585:9f43");
-    }
+    const isOwner = (ip) => ip && (ip.toLowerCase().trim() === "75.72.136.90" || ip.toLowerCase().trim().startsWith("2601:441:8585:9f43"));
 
-    const video = document.getElementById('bg-video');
-    const soundIcon = document.getElementById('sound-icon');
-    const audioVis = document.getElementById('audio-vis');
-    const toast = document.getElementById('toast');
-    const statusTracker = document.getElementById('activity-tracker');
-    const card = document.getElementById("draggable-card");
-    const dragHandle = document.getElementById("drag-handle");
-    const secretPopup = document.getElementById("secret-popup");
-    const popupBubble = document.getElementById("popup-bubble");
-    const liveGreeting = document.getElementById('live-greeting');
-    const typewriterBox = document.getElementById("typewriter-box");
-    const avatarContainer = document.getElementById("avatar-container");
-    const contextMenu = document.getElementById("custom-context-menu");
-    const spotifyProgressFill = document.getElementById("spotify-progress-fill");
-    const spotifyTimeCurrent = document.getElementById("spotify-time-current");
-    const spotifyTimeTotal = document.getElementById("spotify-time-total");
+    const el = (id) => document.getElementById(id);
+    let userMuted = false, isSpotify = false, currSong = "", lastAction = 0, rawStatus = "", spotifyTs = null, patCount = 0, lastPat = 0, resolvedIp = "";
 
-    let userMutedManually = false;
-    let isSpotifyActive = false;
-    let currentSpotifySong = "";
-    let lastActionTime = 0;
-    let rawDiscordCustomStatus = "";
-    let spotifyTimestamps = null;
-    let clickSpamCount = 0;
-    let lastClickTime = 0;
-    let avatarPatCombo = 0;
-    let lastPatTime = 0;
-    let sessionIpResolved = "";
+    /* Title Loops */
+    const activeT = ["hi :3", "emo larp", "o_O", "watching u...", "stay here <3", "⛧", "thinking of u...", "(˶ᵔ ᵕ ᵔ˶)"];
+    const awayT = ["where did you go...? <3", "come back :3", "miss u already (｡•́︿•̀｡)", "don't leave me >_<", "waiting for u... (*ฅ́˘ฅ̀*)"];
+    let tIdx = 0, aIdx = 0, leaveTime = 0;
 
-    /* Dynamic Tab Title Loop */
-    const activeTitles = [
-      "hi :3",
-      "emo larp",
-      "o_O",
-      "watching u...",
-      "stay here <3",
-      "⛧",
-      "thinking of u...",
-      "(˶ᵔ ᵕ ᵔ˶)"
-    ];
-
-    const awayTitles = [
-      "where did you go...? <3",
-      "come back :3",
-      "miss u already (｡•́︿•̀｡)",
-      "don't leave me >_<",
-      "waiting for u... (*ฅ́˘ฅ̀*)"
-    ];
-
-    let titleIdx = 0;
-    let awayIdx = 0;
-    let tabLeaveTime = 0;
-
-    setInterval(function() {
-      if (document.hidden) {
-        document.title = awayTitles[awayIdx];
-        awayIdx = (awayIdx + 1) % awayTitles.length;
-      } else if (isSpotifyActive && currentSpotifySong) {
-        document.title = "♫ " + currentSpotifySong + " :3";
-      } else {
-        document.title = activeTitles[titleIdx];
-        titleIdx = (titleIdx + 1) % activeTitles.length;
-      }
+    setInterval(() => {
+      document.title = document.hidden ? awayT[aIdx++ % awayT.length] : (isSpotify && currSong ? `♫ ${currSong} :3` : activeT[tIdx++ % activeT.length]);
     }, 2200);
 
-    window.addEventListener('blur', function() {
-      tabLeaveTime = Date.now();
-      document.title = "where did you go...? <3";
+    window.addEventListener('blur', () => { leaveTime = Date.now(); document.title = "where did you go...? <3"; });
+    window.addEventListener('focus', () => {
+      if (leaveTime && Date.now() - leaveTime >= 4000) sendAction({ title: "action: Visitor Returned", description: `Away for **${Math.round((Date.now() - leaveTime) / 1000)}s**`, color: 0x9d4edd });
+      document.title = isSpotify && currSong ? `♫ ${currSong} :3` : "hi :3";
     });
 
-    window.addEventListener('focus', function() {
-      if (tabLeaveTime > 0) {
-        const awaySeconds = Math.round((Date.now() - tabLeaveTime) / 1000);
-        if (awaySeconds >= 4) {
-          sendActionEmbed({
-            title: "action: Visitor Returned",
-            description: "Visitor was tabbed away for **" + awaySeconds + "s**",
-            color: 0x9d4edd,
-            footer: { text: "emolarp.fans // focus" },
-            timestamp: new Date().toISOString()
-          });
-        }
-      }
-      document.title = isSpotifyActive && currentSpotifySong ? "♫ " + currentSpotifySong + " :3" : "hi :3";
-    });
-
-    /* Central Time Clock & Silly Boykisser Rotating Pill */
-    const greetingPhrases = [
-      "boykisser mode",
-      "thigh high socks",
-      "headpat receiver",
-      "cozy blanket fort",
-      "midnight cuddles",
-      "cute tail wiggles",
-      "extreme silliness"
-    ];
-    let greetingIndex = 0;
-
-    function updateClockAndGreeting() {
+    /* Clock & Pill */
+    const greetings = ["boykisser mode", "thigh high socks", "headpat receiver", "cozy blanket fort", "midnight cuddles", "cute tail wiggles", "extreme silliness"];
+    let gIdx = 0;
+    setInterval(() => {
       try {
-        const now = new Date();
-        const timeStr = new Intl.DateTimeFormat('en-US', {
-          timeZone: 'America/Chicago',
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true
-        }).format(now);
-
-        const currentTag = greetingPhrases[greetingIndex];
-        if (liveGreeting) {
-          liveGreeting.innerText = currentTag + " // " + timeStr + " CT";
-        }
+        const timeStr = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit', hour12: true }).format(new Date());
+        if (el('live-greeting')) el('live-greeting').innerText = `${greetings[gIdx]} // ${timeStr} CT`;
       } catch (_) {}
-    }
+    }, 1000);
+    setInterval(() => gIdx = (gIdx + 1) % greetings.length, 6000);
 
-    setInterval(updateClockAndGreeting, 1000);
-    setInterval(function() {
-      greetingIndex = (greetingIndex + 1) % greetingPhrases.length;
-    }, 6000);
-    updateClockAndGreeting();
-
-    /* Secret Whisper Modal Logic */
+    /* Whisper Modal */
     function toggleDmBox() {
-      playGlitchBlip();
-      const modal = document.getElementById('dm-modal');
-      const btn = document.getElementById('dm-toggle-btn');
+      playTone([820, 140]);
+      const modal = el('dm-modal'), btn = el('dm-toggle-btn');
       if (modal) {
-        const isHidden = modal.style.display === 'none';
-        modal.style.display = isHidden ? 'flex' : 'none';
-        if (btn) btn.style.display = isHidden ? 'none' : 'block';
+        const hide = modal.style.display === 'none';
+        modal.style.display = hide ? 'flex' : 'none';
+        if (btn) btn.style.display = hide ? 'none' : 'block';
       }
     }
 
     async function sendWhisper() {
-      const input = document.getElementById('dm-input');
-      if (!input || !input.value.trim()) {
-        showToast("[ type something first! >_< ]");
-        return;
-      }
-
-      const messageText = input.value.trim();
-      playGlitchBlip();
+      const input = el('dm-input');
+      if (!input || !input.value.trim()) { showToast("[ type something first! >_< ]"); return; }
+      const msg = input.value.trim();
+      playTone([820, 140]);
       showToast("[ sending whisper... ]");
 
       try {
-        const res = await fetch("", {
+        const res = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: "whisper",
-            message: messageText,
-            os: navigator.platform || "Unknown"
-          })
+          body: JSON.stringify({ type: "whisper", message: msg, os: navigator.platform || "Unknown" })
         });
-
         if (res.ok) {
           showToast("[ sent successfully! ♡ ]");
           input.value = "";
           toggleDmBox();
-        } else {
-          showToast("[ error sending >_< ]");
-        }
-      } catch (err) {
-        showToast("[ connection error ]");
-      }
+        } else { showToast("[ error sending >_< ]"); }
+      } catch (_) { showToast("[ connection error ]"); }
     }
 
-    /* Web Audio Synthesizer */
+    /* Audio */
     let audioCtx;
-    function playGlitchBlip() {
+    function playTone(freqs) {
       try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(820, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.04);
-        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.04);
-      } catch (_) {}
-    }
-
-    function playVictoryChime() {
-      try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const notes = [523.25, 659.25, 783.99, 1046.50];
-        notes.forEach(function(freq, i) {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.08));
-          gain.gain.setValueAtTime(0.08, audioCtx.currentTime + (i * 0.08));
-          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.08) + 0.15);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(audioCtx.currentTime + (i * 0.08));
-          osc.stop(audioCtx.currentTime + (i * 0.08) + 0.15);
+        freqs.forEach((f, i) => {
+          const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+          osc.frequency.setValueAtTime(f, audioCtx.currentTime + i * 0.07);
+          gain.gain.setValueAtTime(0.07, audioCtx.currentTime + i * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.07 + 0.08);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(audioCtx.currentTime + i * 0.07);
+          osc.stop(audioCtx.currentTime + i * 0.07 + 0.08);
         });
       } catch (_) {}
     }
 
-    function playBrightChime() {
+    function sendWebhook(url, username, embed) {
+      if (resolvedIp && isOwner(resolvedIp)) return;
       try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const notes = [659.25, 880, 987.77, 1318.51];
-        notes.forEach(function(freq, i) {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = "sine";
-          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.07));
-          gain.gain.setValueAtTime(0.07, audioCtx.currentTime + (i * 0.07));
-          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.07) + 0.12);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(audioCtx.currentTime + (i * 0.07));
-          osc.stop(audioCtx.currentTime + (i * 0.07) + 0.12);
-        });
+        const fd = new FormData();
+        fd.append("payload_json", JSON.stringify({ username, avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=emolarp", embeds: [embed] }));
+        fetch(url, { method: "POST", mode: "no-cors", body: fd }).catch(() => {});
       } catch (_) {}
     }
+    const sendTelemetry = (embed) => sendWebhook(TELEMETRY_URL, "emolarp // telemetry", embed);
+    const sendAction = (embed) => {
+      if (Date.now() - lastAction < 400) return;
+      lastAction = Date.now();
+      sendWebhook(ACTIONS_URL, "emolarp // actions", embed);
+    };
 
-    /* CORS-Safe Discord Webhook Dispatcher */
-    function sendDiscordWebhook(webhookUrl, username, embed) {
-      if (sessionIpResolved && isOwnerNetwork(sessionIpResolved)) return;
-      try {
-        const payload = JSON.stringify({
-          username: username,
-          avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=emolarp",
-          embeds: [embed]
-        });
-
-        const formData = new FormData();
-        formData.append("payload_json", payload);
-
-        fetch(webhookUrl, {
-          method: "POST",
-          mode: "no-cors",
-          body: formData
-        }).catch(function() {});
-      } catch (_) {}
+    function showToast(msg) {
+      if (el('toast')) { el('toast').innerText = msg; el('toast').classList.add('visible'); setTimeout(() => el('toast').classList.remove('visible'), 1400); }
     }
 
-    function sendTelemetryEmbed(embed) {
-      sendDiscordWebhook(TELEMETRY_WEBHOOK_URL, "emolarp // access-telemetry", embed);
+    function delayedRedirect(url, name) {
+      playTone([820, 140]);
+      sendAction({ title: "action: Badge Click", description: `Opened **${name.toUpperCase()}**`, color: 0x9d4edd });
+      showToast(`[ opening ${name}... ]`);
+      setTimeout(() => window.open(url, '_blank', 'noopener,noreferrer'), 350);
     }
 
-    function sendActionEmbed(embed) {
-      const now = Date.now();
-      if (now - lastActionTime < 400) return;
-      lastActionTime = now;
-      sendDiscordWebhook(ACTIONS_WEBHOOK_URL, "emolarp // user-actions", embed);
-    }
-
-    function showToast(message) {
-      if (toast) {
-        toast.innerText = message;
-        toast.classList.add('visible');
-        setTimeout(function() {
-          toast.classList.remove('visible');
-        }, 1400);
-      }
-    }
-
-    function delayedRedirect(url, platformName) {
-      playGlitchBlip();
-      sendActionEmbed({
-        title: "action: Badge Click",
-        description: "Visitor opened **" + platformName.toUpperCase() + "**\nTarget: `" + url + "`",
-        color: 0x9d4edd,
-        footer: { text: "emolarp.fans // action" },
-        timestamp: new Date().toISOString()
-      });
-
-      showToast("[ opening " + platformName + "... ]");
-      setTimeout(function() {
-        window.open(url, '_blank', 'noopener,noreferrer');
-      }, 350);
-    }
-
-    /* Context Menu Actions */
     function centerCardAction() {
-      playGlitchBlip();
-      card.style.position = "relative";
-      card.style.left = "auto";
-      card.style.top = "auto";
-      card.style.transform = "none";
+      playTone([820, 140]);
+      Object.assign(el('draggable-card').style, { position: "relative", left: "auto", top: "auto", transform: "none" });
       showToast("[ centered ]");
-      if (contextMenu) contextMenu.style.display = "none";
+      if (el('custom-context-menu')) el('custom-context-menu').style.display = "none";
     }
 
     function copyDiscordAction() {
-      playGlitchBlip();
-      navigator.clipboard.writeText("1416390397881749514").then(function() {
-        showToast("[ copied discord id! ]");
-      });
-      if (contextMenu) contextMenu.style.display = "none";
+      playTone([820, 140]);
+      navigator.clipboard.writeText(DISCORD_USER_ID).then(() => showToast("[ copied discord id! ]"));
+      if (el('custom-context-menu')) el('custom-context-menu').style.display = "none";
     }
 
-    window.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-      playGlitchBlip();
-      if (contextMenu) {
-        contextMenu.style.display = "block";
-        contextMenu.style.left = Math.min(e.clientX, window.innerWidth - 160) + "px";
-        contextMenu.style.top = Math.min(e.clientY, window.innerHeight - 120) + "px";
-      }
-      sendActionEmbed({
-        title: "action: Custom Context Menu Opened",
-        description: "Visitor accessed menu on `<" + e.target.tagName.toLowerCase() + ">`",
-        color: 0x7b2cbf,
-        footer: { text: "emolarp.fans // context-menu" },
-        timestamp: new Date().toISOString()
-      });
-    });
-
-    window.addEventListener('click', function(e) {
-      if (contextMenu && !e.target.closest('#custom-context-menu')) {
-        contextMenu.style.display = "none";
+    window.addEventListener('contextmenu', (e) => {
+      e.preventDefault(); playTone([820, 140]);
+      const menu = el('custom-context-menu');
+      if (menu) {
+        menu.style.display = "block";
+        menu.style.left = `${Math.min(e.clientX, window.innerWidth - 160)}px`;
+        menu.style.top = `${Math.min(e.clientY, window.innerHeight - 120)}px`;
       }
     });
+    window.addEventListener('click', (e) => { if (!e.target.closest('#custom-context-menu') && el('custom-context-menu')) el('custom-context-menu').style.display = "none"; });
 
-    /* Live Spotify Scrubber / Timer */
-    function formatTime(ms) {
-      const totalSec = Math.floor(ms / 1000);
-      const min = Math.floor(totalSec / 60);
-      const sec = totalSec % 60;
-      return min + ":" + (sec < 10 ? "0" : "") + sec;
-    }
-
-    setInterval(function() {
-      if (!isSpotifyActive || !spotifyTimestamps || !spotifyTimestamps.start || !spotifyTimestamps.end) return;
-      const now = Date.now();
-      const total = spotifyTimestamps.end - spotifyTimestamps.start;
-      const current = Math.min(Math.max(now - spotifyTimestamps.start, 0), total);
-      const percent = (current / total) * 100;
-
-      if (spotifyProgressFill) spotifyProgressFill.style.width = percent + "%";
-      if (spotifyTimeCurrent) spotifyTimeCurrent.innerText = formatTime(current);
-      if (spotifyTimeTotal) spotifyTimeTotal.innerText = formatTime(total);
+    /* Spotify Progress */
+    setInterval(() => {
+      if (!isSpotify || !spotifyTs?.start || !spotifyTs?.end) return;
+      const total = spotifyTs.end - spotifyTs.start, cur = Math.min(Math.max(Date.now() - spotifyTs.start, 0), total);
+      if (el('spotify-progress-fill')) el('spotify-progress-fill').style.width = `${(cur / total) * 100}%`;
+      if (el('spotify-time-current')) el('spotify-time-current').innerText = `${Math.floor(cur/1000/60)}:${Math.floor((cur/1000)%60).toString().padStart(2,'0')}`;
+      if (el('spotify-time-total')) el('spotify-time-total').innerText = `${Math.floor(total/1000/60)}:${Math.floor((total/1000)%60).toString().padStart(2,'0')}`;
     }, 1000);
 
-    /* Avatar Click Sparkle Burst & Combo Counter */
-    if (avatarContainer) {
-      avatarContainer.addEventListener('click', function(e) {
-        playGlitchBlip();
-        const now = Date.now();
-        if (now - lastPatTime < 800) {
-          avatarPatCombo++;
-        } else {
-          avatarPatCombo = 1;
-        }
-        lastPatTime = now;
-
-        if (avatarPatCombo === 5 && secretPopup && popupBubble) {
-          popupBubble.innerText = "headpat combo x5! (*ฅ́˘ฅ̀*)";
-          secretPopup.classList.add("show");
-          setTimeout(function() {
-            if (!document.body.classList.contains('theme-femboy') && !document.body.classList.contains('theme-catboy')) {
-              secretPopup.classList.remove("show");
-            }
-          }, 3500);
-        }
-
-        const sparkles = ["✧", "♡", "nya~", "✨", ":3"];
-        for (let i = 0; i < 4; i++) {
-          const el = document.createElement("div");
-          el.className = "heart-burst";
-          el.innerText = sparkles[Math.floor(Math.random() * sparkles.length)];
-          el.style.left = e.clientX + "px";
-          el.style.top = e.clientY + "px";
-          const angle = Math.random() * Math.PI * 2;
-          const dist = 25 + Math.random() * 35;
-          el.style.setProperty("--bx", Math.cos(angle) * dist + "px");
-          el.style.setProperty("--by", (Math.sin(angle) * dist - 25) + "px");
-          document.body.appendChild(el);
-          setTimeout(function() { el.remove(); }, 900);
+    /* Avatar Clicks */
+    if (el('avatar-container')) {
+      el('avatar-container').addEventListener('click', (e) => {
+        playTone([820, 140]);
+        patCount = (Date.now() - lastPat < 800) ? patCount + 1 : 1;
+        lastPat = Date.now();
+        if (patCount === 5 && el('secret-popup') && el('popup-bubble')) {
+          el('popup-bubble').innerText = "headpat combo x5! (*ฅ́˘ฅ̀*)";
+          el('secret-popup').classList.add("show");
+          setTimeout(() => el('secret-popup').classList.remove("show"), 3500);
         }
       });
     }
 
-    /* Status Pill: Copies User's Actual Discord Custom Status */
-    if (statusTracker) {
-      statusTracker.addEventListener('click', function() {
-        let textToCopy = rawDiscordCustomStatus;
-        if (!textToCopy || textToCopy.trim() === "" || textToCopy === "connecting live...") {
-          textToCopy = statusTracker.innerText.trim();
-        }
-        playGlitchBlip();
-
-        navigator.clipboard.writeText(textToCopy).then(function() {
-          showToast("[ copied status! ]");
-          sendActionEmbed({
-            title: "action: Copied Status",
-            description: "Visitor copied Discord status: `" + textToCopy + "`",
-            color: 0x7b2cbf,
-            footer: { text: "emolarp.fans // clipboard" },
-            timestamp: new Date().toISOString()
-          });
-        }).catch(function() {
-          showToast("[ error copying ]");
-        });
+    if (el('activity-tracker')) {
+      el('activity-tracker').addEventListener('click', () => {
+        playTone([820, 140]);
+        navigator.clipboard.writeText(rawStatus || el('activity-tracker').innerText.trim()).then(() => showToast("[ copied status! ]"));
       });
     }
 
-    /* --- EXPANDED BOYKISSER DIALOGUE ENGINE --- */
-    const generalFemboyLines = [
-      "nyaa~ meow! :3",
-      "do u like my striped thigh highs? (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
-      "mreow!! purrrrr~ ♡",
-      "p-please don't stare too long >_<",
-      "headpats please?? (˶ᵔ ᵕ ᵔ˶)",
-      "thinking about u endlessly... (*ฅ́˘ฅ̀*)",
-      "warm blankets & oversized hoodies (づ ᴗ _ᴗ)づ",
-      "look at my socks! cute right? ദ്ദി(˵ •̀ ᴗ - ˵ )",
-      "nya? did u click me on purpose? :3",
-      "soft boi hours forever ( •̀ ω •́ )✧",
-      "can i sit here with u? (｡•́‿•̀｡)",
-      "shhh... don't tell anyone i'm here (¬_¬ )",
-      "cutie detected!! beep beep (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
-      "meow meow meow~ ♡",
-      "ur vibe is so cute today (˶ᵔ ᵕ ᵔ˶)",
-      "pet pet pet... purrr~ (*ฅ́˘ฅ̀*)",
-      "thigh highs keep me cozy >_<",
-      "are u staying on my site forever? :3",
-      "h-haiii! (*^▽^*)",
-      "cuddles > everything else (づ ᴗ _ᴗ)づ",
-      "do u think pink suits me? (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
-      "fuzzy paws and warm cocoa (*ฅ́˘ฅ̀*)",
-      "ur my favorite visitor so far :3",
-      "don't look at my tail wiggling >_<",
-      "can i play pc games with u? ദ്ദി(˵ •̀ ᴗ - ˵ )",
-      "rawr xd (wait that's cringe hehe...) (｡•́‿•̀｡)",
-      "stretching my legs in my thigh highs ( ◡̀_◡́)ᕤ",
-      "boop! ur nose is tagged now (˶ᵔ ᵕ ᵔ˶)",
-      "i made this corner cute just for u ♡",
-      "nya~ don't forget to drink water! ( •̀ ω •́ )✧"
-    ];
-
-    const spamClickLines = [
-      "waaa stop poking me!! (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
-      "nyaaaa~! that tickles! >_<",
-      "b-baka! don't click so fast! ( ◡̀_◡́)ᕤ",
-      "overwhelmed with cuteness!! (×_×)",
-      "p-please be gentle with me... (｡•́︿•̀｡)",
-      "my tail is spinning stop it!! (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
-      "ahhh u're clicking way too much! >_<",
-      "are u trying to break my ears?? (¬_¬ )",
-      "stoppp u're making me blush super red!! (*ﾉ▽ﾉ)",
-      "e-eep! sensory overload!! (×_×)",
-      "nyaaa stop spamming me silly head!! :3",
-      "warning: excess headpats received! (˶ᵔ ᵕ ᵔ˶)",
-      "u're aggressive with that mouse huh? (｡•́︿•̀｡)",
-      "mercy please!! i'm just a smol boi (づ ᴗ _ᴗ)づ",
-      "poking intensity level: 9999! ( •̀ ω •́ )✧"
-    ];
-
-    function getRandomFemboyLine() {
-      const now = new Date();
-      const currentHour = now.getHours();
-
-      const currentTime = Date.now();
-      if (currentTime - lastClickTime < 700) {
-        clickSpamCount++;
-      } else {
-        clickSpamCount = 0;
-      }
-      lastClickTime = currentTime;
-
-      if (clickSpamCount >= 3) {
-        return spamClickLines[Math.floor(Math.random() * spamClickLines.length)];
-      }
-
-      if (currentHour >= 23 || currentHour <= 4) {
-        const lateNightLines = [
-          "up so late playing games...? (¬_¬ )",
-          "it's past midnight! go to sleep silly head >_<",
-          "tired... but i wanna stay with u (づ ᴗ _ᴗ)づ",
-          "late night cozy hours... (*ฅ́˘ฅ̀*)",
-          "why aren't u sleeping yet? :3",
-          "sneaking snacks in the dark? (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
-          "the screen glow is hurting my eyes... go rest >_<",
-          "whispering so nobody hears us... (｡•́‿•̀｡)",
-          "staying up late in our thigh highs :3",
-          "yawwwwn... let's sleep soon please? (づ ᴗ _ᴗ)づ",
-          "late night discord scrolling again? (¬_¬ )",
-          "the moon is so pretty tonight (*ฅ́˘ฅ̀*)",
-          "just one more match right? i know u (˶ᵔ ᵕ ᵔ˶)",
-          "tucked into my oversized hoodie right now ♡",
-          "sleep is important for cuties like u! ( •̀ ω •́ )✧"
-        ];
-        if (Math.random() < 0.5) {
-          return lateNightLines[Math.floor(Math.random() * lateNightLines.length)];
-        }
-      }
-
-      if (isSpotifyActive && currentSpotifySong) {
-        const musicLines = [
-          "listening to " + currentSpotifySong + " with u! (*ฅ́˘ฅ̀*)",
-          "this song is so cozy... ♡",
-          "good taste in music! (˶ᵔ ᵕ ᵔ˶)",
-          "vibin in my thigh highs to this :3",
-          "dancing softly to " + currentSpotifySong + " (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
-          "this beat makes my tail sway back and forth >_<",
-          "singing along quietly in my room (*ฅ́˘ฅ̀*)",
-          "playlist approved by a professional boykisser ദ്ദി(˵ •̀ ᴗ - ˵ )",
-          "turning the volume up for this banger! ( •̀ ω •́ )✧",
-          "music sounds so much better with u listening too ♡",
-          "adding " + currentSpotifySong + " to my cozy playlist :3",
-          "slow dancing in oversized socks (づ ᴗ _ᴗ)づ",
-          "bass is shaking my cute ears!! (˶ᵔ ᵕ ᵔ˶)",
-          "headphones on, world muted... just us (｡•́‿•̀｡)"
-        ];
-        if (Math.random() < 0.45) {
-          return musicLines[Math.floor(Math.random() * musicLines.length)];
-        }
-      }
-
-      return generalFemboyLines[Math.floor(Math.random() * generalFemboyLines.length)];
-    }
-
-    if (secretPopup) {
-      secretPopup.addEventListener('click', function() {
-        playGlitchBlip();
-        popupBubble.innerText = getRandomFemboyLine();
+    /* Secret Popup Dialogue */
+    const lines = ["nyaa~ meow! :3", "do u like my striped thigh highs? (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)", "headpats please?? (˶ᵔ ᵕ ᵔ˶)", "ur my favorite visitor so far :3"];
+    if (el('secret-popup')) {
+      el('secret-popup').addEventListener('click', () => {
+        playTone([820, 140]);
+        if (el('popup-bubble')) el('popup-bubble').innerText = lines[Math.floor(Math.random() * lines.length)];
       });
     }
 
-    /* Idle Peek */
-    let idleTimer;
-    function resetIdleTimer() {
-      clearTimeout(idleTimer);
-      idleTimer = setTimeout(function() {
-        if (secretPopup && !secretPopup.classList.contains('show')) {
-          popupBubble.innerText = "pssst... still there? :3";
-          secretPopup.classList.add('show');
-          setTimeout(function() {
-            if (!document.body.classList.contains('theme-femboy') && !document.body.classList.contains('theme-catboy')) {
-              secretPopup.classList.remove('show');
-            }
-          }, 6000);
-        }
-      }, 35000);
-    }
-    window.addEventListener('pointermove', resetIdleTimer);
-    window.addEventListener('keydown', resetIdleTimer);
-    resetIdleTimer();
-
-    /* Secret Keystroke Cheat Engine (Silent Toggle) */
-    let keyBuffer = "";
-    document.addEventListener('keydown', function(e) {
+    /* Keystrokes */
+    let kBuf = "";
+    document.addEventListener('keydown', (e) => {
       if (!e.key || e.key.length !== 1) return;
-      keyBuffer = (keyBuffer + e.key.toLowerCase()).slice(-10);
-
-      if (keyBuffer.endsWith("catboy")) {
-        if (document.body.classList.contains("theme-catboy")) {
-          playGlitchBlip();
-          document.body.classList.remove("theme-catboy");
-          if (secretPopup) secretPopup.classList.remove("show");
-        } else {
-          playVictoryChime();
-          document.body.classList.remove("theme-femboy");
-          document.body.classList.add("theme-catboy");
-
-          if (secretPopup && popupBubble) {
-            popupBubble.innerText = getRandomFemboyLine();
-            secretPopup.classList.add("show");
-            setTimeout(function() { secretPopup.classList.remove("show"); }, 5500);
-          }
-
-          sendActionEmbed({
-            title: "action: Secret Code Unlocked",
-            description: "Visitor unlocked **CATBOY MODE** (Lavender Theme + Sticker) uwu :3!",
-            color: 0xc77dff,
-            footer: { text: "emolarp.fans // secret" },
-            timestamp: new Date().toISOString()
-          });
-        }
-        keyBuffer = "";
-      } else if (keyBuffer.endsWith("femboy")) {
-        if (document.body.classList.contains("theme-femboy")) {
-          playGlitchBlip();
-          document.body.classList.remove("theme-femboy");
-          if (secretPopup) secretPopup.classList.remove("show");
-        } else {
-          playBrightChime();
-          document.body.classList.remove("theme-catboy");
-          document.body.classList.add("theme-femboy");
-
-          if (secretPopup && popupBubble) {
-            popupBubble.innerText = "boykisser hours! 🎀 (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)";
-            secretPopup.classList.add("show");
-            setTimeout(function() { secretPopup.classList.remove("show"); }, 5500);
-          }
-
-          sendActionEmbed({
-            title: "action: Secret Code Unlocked",
-            description: "Visitor unlocked **BOYKISSER MODE** (Candy Pink + Thigh-High Sprite) <3",
-            color: 0xff5d8f,
-            footer: { text: "emolarp.fans // secret" },
-            timestamp: new Date().toISOString()
-          });
-        }
-        keyBuffer = "";
-      } else if (keyBuffer.endsWith("reset")) {
-        playGlitchBlip();
-        showToast("[ DEFAULT THEME RESTORED ]");
-        document.body.classList.remove("theme-catboy", "theme-femboy");
-        if (secretPopup) secretPopup.classList.remove("show");
-        keyBuffer = "";
-      }
+      kBuf = (kBuf + e.key.toLowerCase()).slice(-10);
+      if (kBuf.endsWith("catboy")) { playTone([523, 659, 783, 1046]); document.body.classList.toggle("theme-catboy"); kBuf = ""; }
+      else if (kBuf.endsWith("femboy")) { playTone([659, 880, 987, 1318]); document.body.classList.toggle("theme-femboy"); kBuf = ""; }
     }, true);
 
-    /* Audio Management */
     function applyAudioState() {
       if (!siteEntered) return;
-
-      if (userMutedManually) {
-        if (video) { video.muted = true; video.volume = 0; }
-        if (soundIcon) { soundIcon.className = "fa-solid fa-volume-xmark"; soundIcon.style.color = "#c77dff"; }
-        if (audioVis) audioVis.classList.remove('playing');
+      const v = el('bg-video'), sIcon = el('sound-icon'), aVis = el('audio-vis');
+      if (userMuted) {
+        if (v) { v.muted = true; v.volume = 0; }
+        if (sIcon) sIcon.className = "fa-solid fa-volume-xmark";
+        if (aVis) aVis.classList.remove('playing');
         return;
       }
-
-      if (isSpotifyActive) {
-        if (video) { video.muted = true; video.volume = 0; }
-        if (soundIcon) { soundIcon.className = "fa-brands fa-spotify"; soundIcon.style.color = "#1ed760"; }
-        if (audioVis) audioVis.classList.add('playing');
-        document.title = "♫ " + document.getElementById('spotify-song').textContent + " :3";
+      if (isSpotify) {
+        if (v) { v.muted = true; v.volume = 0; }
+        if (sIcon) sIcon.className = "fa-brands fa-spotify";
+        if (aVis) aVis.classList.add('playing');
       } else {
-        if (video) { video.muted = false; video.volume = 1; video.play().catch(function() {}); }
-        if (soundIcon) { soundIcon.className = "fa-solid fa-volume-high"; soundIcon.style.color = "#c77dff"; }
-        if (audioVis) audioVis.classList.add('playing');
+        if (v) { v.muted = false; v.volume = 1; v.play().catch(() => {}); }
+        if (sIcon) sIcon.className = "fa-solid fa-volume-high";
+        if (aVis) aVis.classList.add('playing');
       }
     }
+    const toggleMasterAudio = () => { playTone([820, 140]); userMuted = !userMuted; applyAudioState(); };
 
-    function toggleMasterAudio() {
-      playGlitchBlip();
-      userMutedManually = !userMutedManually;
-      applyAudioState();
-      sendActionEmbed({
-        title: "action: Audio Toggle",
-        description: "Sound state changed to **" + (userMutedManually ? "Muted" : "Unmuted") + "**",
-        color: 0x9d4edd,
-        footer: { text: "emolarp.fans // audio" },
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    /* Typewriter Loop */
-    const phrases = [
-      "i love you so much it hurts... (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
-      "don't look away from me <3 (¬_¬ )",
-      "staring right through your screen (*ฅ́˘ฅ̀*)",
-      "thinking about you endlessly... (˶ᵔ ᵕ ᵔ˶)",
-      "you can't leave this page now >_<",
-      "every second without you is empty (づ ᴗ _ᴗ)づ",
-      "i know you're still watching :3",
-      "carved your name into my mind ( ◡̀_◡́)ᕤ",
-      "you're the only thing that matters ദ്ദി(˵ •̀ ᴗ - ˵ )",
-      "let me stay in your head forever ( •̀ ω •́ )✧",
-      "obsessed is an understatement (´｡• ᵕ •｡`) ♡",
-      "don't close this tab... ( ｡•́‿•̀｡)"
-    ];
-
-    let currentPhrase = "";
-    let charIndex = 0;
-    let isDeleting = false;
-    let lastIndex = -1;
-    let typewriterTimeout;
-    const typewriterEl = document.getElementById('typewriter-text');
-
-    function getRandomPhrase() {
-      let nextIndex;
-      do {
-        nextIndex = Math.floor(Math.random() * phrases.length);
-      } while (nextIndex === lastIndex && phrases.length > 1);
-      lastIndex = nextIndex;
-      return phrases[nextIndex];
-    }
-
+    /* Typewriter */
+    const phrases = ["i love you so much it hurts... (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)", "don't look away from me <3 (¬_¬ )", "staring right through your screen (*ฅ́˘ฅ̀*)"];
+    let currP = "", cIdx = 0, isDel = false;
     function typeLoop() {
-      if (!currentPhrase) currentPhrase = getRandomPhrase();
-
-      if (!isDeleting) {
-        typewriterEl.textContent = currentPhrase.substring(0, charIndex + 1);
-        charIndex++;
-
-        if (charIndex === currentPhrase.length) {
-          isDeleting = true;
-          typewriterTimeout = setTimeout(typeLoop, 2000);
-          return;
-        }
+      if (!currP) currP = phrases[Math.floor(Math.random() * phrases.length)];
+      if (!isDel) {
+        if (el('typewriter-text')) el('typewriter-text').textContent = currP.substring(0, ++cIdx);
+        if (cIdx === currP.length) { isDel = true; setTimeout(typeLoop, 2000); return; }
       } else {
-        typewriterEl.textContent = currentPhrase.substring(0, charIndex - 1);
-        charIndex--;
-
-        if (charIndex === 0) {
-          isDeleting = false;
-          currentPhrase = getRandomPhrase();
-        }
+        if (el('typewriter-text')) el('typewriter-text').textContent = currP.substring(0, --cIdx);
+        if (cIdx === 0) { isDel = false; currP = ""; }
       }
-
-      typewriterTimeout = setTimeout(typeLoop, isDeleting ? 30 : 65);
+      setTimeout(typeLoop, isDel ? 30 : 65);
     }
     typeLoop();
 
-    if (typewriterBox) {
-      typewriterBox.addEventListener('click', function() {
-        clearTimeout(typewriterTimeout);
-        playGlitchBlip();
-        isDeleting = false;
-        charIndex = 0;
-        currentPhrase = getRandomPhrase();
-        typeLoop();
-      });
-    }
-
-    /* Lanyard API Gateway */
+    /* Lanyard */
     function handlePresence(data) {
       if (!data) return;
-      const tracker = document.getElementById('activity-tracker');
-      const dot = document.getElementById('status-dot');
-      const avatarImg = document.getElementById('avatar-img');
-      const spotifyCard = document.getElementById('spotify-player');
-
-      if (data.discord_user && data.discord_user.avatar && avatarImg) {
-        avatarImg.src = "https://cdn.discordapp.com/avatars/" + DISCORD_USER_ID + "/" + data.discord_user.avatar + ".png?size=256";
-      }
+      const tracker = el('activity-tracker'), dot = el('status-dot'), avatarImg = el('avatar-img'), spotifyCard = el('spotify-player');
+      if (data.discord_user?.avatar && avatarImg) avatarImg.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${data.discord_user.avatar}.png?size=256`;
 
       if (data.listening_to_spotify && data.spotify) {
-        currentSpotifySong = data.spotify.song;
-        document.getElementById('spotify-song').textContent = data.spotify.song;
-        document.getElementById('spotify-artist').textContent = data.spotify.artist;
-        if (data.spotify.album_art_url) {
-          document.getElementById('spotify-art').src = data.spotify.album_art_url;
-        }
-        spotifyTimestamps = data.spotify.timestamps;
+        currSong = data.spotify.song;
+        if (el('spotify-song')) el('spotify-song').textContent = currSong;
+        if (el('spotify-artist')) el('spotify-artist').textContent = data.spotify.artist;
+        if (data.spotify.album_art_url && el('spotify-art')) el('spotify-art').src = data.spotify.album_art_url;
+        spotifyTs = data.spotify.timestamps;
         if (spotifyCard) spotifyCard.style.display = 'flex';
-
-        if (!isSpotifyActive) {
-          isSpotifyActive = true;
-          applyAudioState();
-        }
+        if (!isSpotify) { isSpotify = true; applyAudioState(); }
       } else {
-        currentSpotifySong = "";
-        spotifyTimestamps = null;
+        currSong = ""; spotifyTs = null;
         if (spotifyCard) spotifyCard.style.display = 'none';
-        if (isSpotifyActive) {
-          isSpotifyActive = false;
-          applyAudioState();
-        }
+        if (isSpotify) { isSpotify = false; applyAudioState(); }
       }
 
-      const customStatus = data.activities ? data.activities.find(function(a) { return a.type === 4; }) : null;
-      const game = data.activities ? data.activities.find(function(a) { return a.type === 0; }) : null;
+      const status = data.activities?.find(a => a.type === 4), game = data.activities?.find(a => a.type === 0);
+      rawStatus = game ? `Playing ${game.name}` : (status?.state ? `${status.emoji?.name || ""} ${status.state}` : data.discord_status || "online");
 
-      if (customStatus && customStatus.state) {
-        rawDiscordCustomStatus = (customStatus.emoji ? customStatus.emoji.name + " " : "") + customStatus.state;
-      } else if (game) {
-        rawDiscordCustomStatus = "Playing " + game.name;
-      } else {
-        rawDiscordCustomStatus = data.discord_status || "online";
-      }
-
-      if (game) {
-        if (dot) dot.className = "status-ingame";
-        if (tracker) tracker.innerText = rawDiscordCustomStatus;
-      } else if (customStatus && customStatus.state) {
-        if (dot) dot.className = "status-" + (data.discord_status || "online");
-        if (tracker) tracker.innerText = rawDiscordCustomStatus;
-      } else if (data.discord_status && data.discord_status !== 'offline') {
-        if (dot) dot.className = "status-" + data.discord_status;
-        if (tracker) tracker.innerText = "online (" + data.discord_status + ")";
-      } else {
-        if (dot) dot.className = "status-offline";
-        if (tracker) tracker.innerText = "offline";
-      }
+      if (game) { dot.className = "status-ingame"; tracker.innerText = rawStatus; }
+      else if (status?.state) { dot.className = `status-${data.discord_status || "online"}`; tracker.innerText = rawStatus; }
+      else { dot.className = `status-${data.discord_status || "offline"}`; tracker.innerText = data.discord_status || "offline"; }
     }
 
-    async function initialLanyardCheck() {
+    async function initLanyard() {
+      try { const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`); const json = await res.json(); if (json.success) handlePresence(json.data); } catch (_) {}
+    }
+    initLanyard();
+
+    function connectWs() {
       try {
-        const res = await fetch("https://api.lanyard.rest/v1/users/" + DISCORD_USER_ID);
-        const json = await res.json();
-        if (json.success && json.data) {
-          handlePresence(json.data);
-        }
+        const ws = new WebSocket("wss://api.lanyard.rest/socket");
+        ws.onopen = () => ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: DISCORD_USER_ID } }));
+        ws.onmessage = (e) => { const d = JSON.parse(e.data); if (d.t === "INIT_STATE" || d.t === "PRESENCE_UPDATE") handlePresence(d.d); };
+        ws.onclose = () => setTimeout(connectWs, 3000);
       } catch (_) {}
     }
-    initialLanyardCheck();
+    connectWs();
 
-    function connectLanyardGateway() {
-      try {
-        const socket = new WebSocket("wss://api.lanyard.rest/socket");
-
-        socket.onopen = function() {
-          socket.send(JSON.stringify({
-            op: 2,
-            d: { subscribe_to_id: DISCORD_USER_ID }
-          }));
-        };
-
-        socket.onmessage = function(event) {
-          try {
-            const payload = JSON.parse(event.data);
-            const t = payload.t;
-            const d = payload.d;
-            if (t === "INIT_STATE" || t === "PRESENCE_UPDATE") {
-              handlePresence(d);
-            }
-          } catch (_) {}
-        };
-
-        socket.onclose = function() {
-          setTimeout(connectLanyardGateway, 3000);
-        };
-      } catch (_) {}
-    }
-    connectLanyardGateway();
-
-    /* Draggable Profile Card */
-    let isDragging = false;
-    let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
-
-    card.addEventListener("pointerdown", function(e) {
-      if (e.target.closest("a") || e.target.closest("button") || e.target.closest(".spotify-card") || e.target.closest("#activity-tracker") || e.target.closest(".typewriter-box") || e.target.closest("#avatar-container") || e.target.closest("#dm-modal") || e.target.closest("#dm-input")) return;
-
-      isDragging = true;
-      card.classList.add("dragging");
-      card.setPointerCapture(e.pointerId);
-
+    /* Dragging */
+    let isDrag = false, startX = 0, startY = 0, initL = 0, initT = 0;
+    const card = el('draggable-card');
+    card.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("a, button, .spotify-card, #activity-tracker, .typewriter-box, #avatar-container, #dm-modal, textarea")) return;
+      isDrag = true; card.classList.add("dragging"); card.setPointerCapture(e.pointerId);
       const rect = card.getBoundingClientRect();
-      startX = e.clientX;
-      startY = e.clientY;
-      initialLeft = rect.left;
-      initialTop = rect.top;
-
-      card.style.position = "fixed";
-      card.style.left = initialLeft + "px";
-      card.style.top = initialTop + "px";
-      card.style.margin = "0";
-      card.style.transform = "none";
+      startX = e.clientX; startY = e.clientY; initL = rect.left; initT = rect.top;
+      Object.assign(card.style, { position: "fixed", left: `${initL}px`, top: `${initT}px`, margin: "0", transform: "none" });
     });
+    card.addEventListener("pointermove", (e) => { if (isDrag) { card.style.left = `${initL + (e.clientX - startX)}px`; card.style.top = `${initT + (e.clientY - startY)}px`; } });
+    const stopDrag = (e) => { if (isDrag) { isDrag = false; card.classList.remove("dragging"); try { card.releasePointerCapture(e.pointerId); } catch (_) {} } };
+    card.addEventListener("pointerup", stopDrag); card.addEventListener("pointercancel", stopDrag);
 
-    card.addEventListener("pointermove", function(e) {
-      if (!isDragging) return;
-      card.style.left = (initialLeft + (e.clientX - startX)) + "px";
-      card.style.top = (initialTop + (e.clientY - startY)) + "px";
-    });
-
-    function stopDragging(e) {
-      if (isDragging) {
-        isDragging = false;
-        card.classList.remove("dragging");
-        try {
-          if (e && e.pointerId) card.releasePointerCapture(e.pointerId);
-        } catch (_) {}
-      }
-    }
-
-    card.addEventListener("pointerup", stopDragging);
-    card.addEventListener("pointercancel", stopDragging);
-    window.addEventListener("blur", stopDragging);
-
-    dragHandle.addEventListener("dblclick", function() {
-      playGlitchBlip();
-      card.style.position = "relative";
-      card.style.left = "auto";
-      card.style.top = "auto";
-      card.style.margin = "0 auto";
-      card.style.transform = "none";
-      showToast("[ centered ]");
-    });
-
-    /* Particle Cursor */
-    let lastParticleTime = 0;
-    window.addEventListener("pointermove", function(e) {
-      const now = performance.now();
-      if (now - lastParticleTime < 40) return;
-      lastParticleTime = now;
-
-      const particle = document.createElement("div");
-      particle.className = "cursor-particle";
-      particle.style.left = e.clientX + "px";
-      particle.style.top = e.clientY + "px";
-      document.body.appendChild(particle);
-
-      setTimeout(function() { particle.remove(); }, 600);
-    });
-
-    /* WebRTC Local Subnet Detection */
-    function getWebRtcLeaks() {
-      return new Promise(function(resolve) {
-        let leakedIps = [];
-        try {
-          const rtc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({
-            iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-          });
-
-          rtc.createDataChannel("");
-          rtc.createOffer().then(function(offer) { return rtc.setLocalDescription(offer); }).catch(function() {});
-
-          rtc.onicecandidate = function(event) {
-            if (!event || !event.candidate) {
-              resolve(leakedIps.length > 0 ? leakedIps.join(", ") : "Shielded / None");
-              return;
-            }
-            const parts = event.candidate.candidate.split(" ");
-            const ip = parts[4];
-            if (ip && leakedIps.indexOf(ip) === -1) {
-              leakedIps.push(ip);
-            }
-          };
-
-          setTimeout(function() {
-            resolve(leakedIps.length > 0 ? leakedIps.join(", ") : "Shielded / None");
-          }, 800);
-        } catch (_) {
-          resolve("Shielded / Not Supported");
-        }
-      });
-    }
-
-    /* Core Network Routing & Telemetry (No Emojis, Clean Threat Coloring) */
+    /* Telemetry */
     async function recordVisit() {
-      let ip = "Direct Session";
-      let locationText = "Unknown Region";
-      let asnInfo = "Direct Client";
-      let connType = "Broadband";
-      let securityStatus = "Residential / Verified";
-      let isThreat = false;
-      let ipTimezone = "";
-
       try {
-        const netRes = await fetch("https://ipwho.is/");
-        if (netRes.ok) {
-          const net = await netRes.json();
-          if (net && net.ip) {
-            ip = (net.ip || "").toLowerCase().trim();
-            sessionIpResolved = ip;
+        const res = await fetch("https://ipwho.is/");
+        if (!res.ok) return;
+        const net = await res.json();
+        const ip = (net.ip || "").toLowerCase().trim();
+        resolvedIp = ip;
+        if (isOwner(ip)) return;
 
-            if (isOwnerNetwork(ip)) {
-              return;
-            }
-
-            locationText = [net.city, net.region_code, net.country].filter(Boolean).join(", ");
-            ipTimezone = net.timezone ? net.timezone.id : "";
-            
-            const asn = net.connection && net.connection.asn ? ("AS" + net.connection.asn) : "";
-            const org = net.connection && net.connection.org ? net.connection.org : (net.connection && net.connection.isp ? net.connection.isp : "");
-            asnInfo = [asn, org].filter(Boolean).join(" ");
-            connType = (net.connection && net.connection.type) ? net.connection.type : "Broadband";
-
-            const sec = net.security || {};
-            let threatFlags = [];
-            if (sec.vpn) threatFlags.push("VPN");
-            if (sec.proxy) threatFlags.push("Proxy");
-            if (sec.tor) threatFlags.push("Tor");
-            if (sec.hosting) threatFlags.push("Datacenter");
-
-            if (threatFlags.length > 0) {
-              isThreat = true;
-              securityStatus = threatFlags.join(" + ");
-            }
-          }
-        }
+        sendTelemetry({
+          title: "Inbound Session",
+          description: `\`${ip}\` — ${[net.city, net.region_code, net.country].filter(Boolean).join(", ")}`,
+          color: 0x7b2cbf,
+          fields: [
+            { name: "network routing", value: `**Provider:** \`${net.connection?.org || net.connection?.isp || "Unknown"}\``, inline: false },
+            { name: "client spec", value: `**OS:** \`${navigator.platform || "Unknown"}\`\n**Res:** \`${screen.width}x${screen.height}\``, inline: true }
+          ],
+          footer: { text: "emolarp.fans // visitor access" },
+          timestamp: new Date().toISOString()
+        });
       } catch (_) {}
-
-      if (isOwnerNetwork(ip)) return;
-
-      const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown";
-      if (ipTimezone && deviceTimezone && ipTimezone !== deviceTimezone) {
-        isThreat = true;
-        securityStatus += (securityStatus === "Residential / Verified" ? "" : " + ") + "Timezone Spoof (" + deviceTimezone + " vs " + ipTimezone + ")";
-      }
-
-      const cpuCores = navigator.hardwareConcurrency ? navigator.hardwareConcurrency + " Threads" : "Unknown";
-      const ramApprox = navigator.deviceMemory ? navigator.deviceMemory + " GB RAM" : "Unknown RAM";
-      const leakedRtc = await getWebRtcLeaks();
-
-      const ua = navigator.userAgent;
-      let browser = "Browser";
-      if (ua.indexOf("Firefox") !== -1) browser = "Firefox";
-      else if (ua.indexOf("Chrome") !== -1) browser = "Chrome";
-      else if (ua.indexOf("Safari") !== -1) browser = "Safari";
-      else if (ua.indexOf("Edge") !== -1) browser = "Edge";
-
-      let refHost = "direct";
-      if (document.referrer) {
-        try { refHost = new URL(document.referrer).hostname; } catch (_) {}
-      }
-
-      sendTelemetryEmbed({
-        title: isThreat ? "Inbound Session [ Threat Detected: " + securityStatus + " ]" : "Inbound Session",
-        description: "`" + ip + "` — " + locationText,
-        color: isThreat ? 0xef233c : 0x7b2cbf,
-        fields: [
-          {
-            name: "network routing",
-            value: "**ASN / Provider:** `" + asnInfo + "`\n**Line Type:** `" + connType + "`\n**Integrity:** `" + securityStatus + "`",
-            inline: false
-          },
-          {
-            name: "webrtc interface",
-            value: "**Local IP / Subnet:** `" + leakedRtc + "`",
-            inline: false
-          },
-          {
-            name: "client device spec",
-            value: "**Hardware:** `" + cpuCores + " / " + ramApprox + "`\n**OS:** `" + (navigator.platform || "Unknown") + "`\n**Browser:** `" + browser + "`",
-            inline: true
-          },
-          {
-            name: "display & timing",
-            value: "**Res:** `" + screen.width + "x" + screen.height + "`\n**Clock:** `" + deviceTimezone + "`\n**Ref:** `" + refHost + "`",
-            inline: true
-          }
-        ],
-        footer: { text: "emolarp.fans // visitor access" },
-        timestamp: new Date().toISOString()
-      });
     }
     recordVisit();
-
-    /* Spotify Card Click */
-    const spotifyEl = document.getElementById('spotify-player');
-    if (spotifyEl) {
-      spotifyEl.style.cursor = "pointer";
-      spotifyEl.addEventListener('click', function(e) {
-        if (e.target.closest('.spotify-progress-wrap')) return;
-        playGlitchBlip();
-        const song = document.getElementById('spotify-song').textContent;
-        const artist = document.getElementById('spotify-artist').textContent;
-        sendActionEmbed({
-          title: "action: Spotify Card Click",
-          description: "Track: **" + song + "**\nArtist: `" + artist + "`",
-          color: 0x1ed760,
-          footer: { text: "emolarp.fans // spotify" },
-          timestamp: new Date().toISOString()
-        });
-      });
-    }
-
-    /* Text Copy Detection */
-    window.addEventListener('copy', function() {
-      const text = window.getSelection().toString().trim();
-      if (text && text.length > 0 && (!statusTracker || text !== statusTracker.innerText.trim())) {
-        sendActionEmbed({
-          title: "action: Selected Text Copied",
-          description: "Copied: `" + text.slice(0, 100) + "`",
-          color: 0x9d4edd,
-          footer: { text: "emolarp.fans // selection" },
-          timestamp: new Date().toISOString()
-        });
-      }
-    });
   </script>
 </body>
 </html>
