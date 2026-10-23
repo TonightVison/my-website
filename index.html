@@ -109,10 +109,13 @@
       <i class="fa-solid fa-eye" id="eye-icon"></i>
     </button>
 
-    <div id="guestbook-panel" style="width: 280px; background: rgba(15, 10, 25, 0.95); border: 1px solid #7b2cbf; border-radius: 8px; padding: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.7); font-family: 'JetBrains Mono', monospace; color: #e0aaff; font-size: 0.75rem; flex-direction: column;">
+    <div id="guestbook-panel" style="width: 290px; background: rgba(15, 10, 25, 0.95); border: 1px solid #7b2cbf; border-radius: 8px; padding: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.7); font-family: 'JetBrains Mono', monospace; color: #e0aaff; font-size: 0.75rem; flex-direction: column;">
       <div id="guestbook-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(123, 44, 191, 0.4); padding-bottom: 6px; margin-bottom: 8px; font-weight: 600; color: #c77dff; cursor: grab;" title="Click & drag to move wall">
-        <span><i class="fa-solid fa-book-open"></i> public guestbook ✥</span>
-        <span id="pat-counter-badge" style="font-size: 0.7rem; color: #ff5d8f;">pats: 0 🐾</span>
+        <span><i class="fa-solid fa-book-open"></i> guestbook ✥</span>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <button onclick="triggerWidgetPat(event)" title="Give headpat :3" style="background: rgba(123,44,191,0.3); border: 1px solid #7b2cbf; color: #ff5d8f; border-radius: 4px; padding: 2px 5px; font-size: 0.65rem; cursor: pointer;">🐾 pat</button>
+          <span id="pat-counter-badge" style="font-size: 0.65rem; color: #ff5d8f;">pats: 0</span>
+        </div>
       </div>
       <div id="guestbook-container" style="max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
         <div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #9d4edd; padding: 5px 8px; border-radius: 4px; word-break: break-all;">loading cute notes... (*ฅ́˘ฅ̀*)</div>
@@ -242,6 +245,20 @@
       setTimeout(() => elPart.remove(), 1000);
     }
 
+    function triggerWidgetPat(e) {
+      e.stopPropagation();
+      playTone([820, 140]);
+      spawnPatParticle(e);
+      patCount = (Date.now() - lastPat < 800) ? patCount + 1 : 1;
+      lastPat = Date.now();
+      if (el('pat-counter-badge')) el('pat-counter-badge').innerText = `pats: ${patCount}`;
+      if (patCount === 5 && el('secret-popup') && el('popup-bubble')) {
+        el('popup-bubble').innerText = "headpat combo x5! (*ฅ́˘ฅ̀*)";
+        el('secret-popup').classList.add("show");
+        setTimeout(() => el('secret-popup').classList.remove("show"), 3500);
+      }
+    }
+
     function toggleGuestbookWall() {
       playTone([820, 140]);
       const panel = el('guestbook-panel');
@@ -262,7 +279,12 @@
         const data = await res.json();
         const container = el('guestbook-container');
         if (container && data.entries && data.entries.length > 0) {
-          container.innerHTML = data.entries.map(e => `<div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #9d4edd; padding: 5px 8px; border-radius: 4px; word-break: break-all;">"${escapeHtml(e.message)}"</div>`).join('');
+          container.innerHTML = data.entries.map((e, idx) => `
+            <div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #9d4edd; padding: 5px 8px; border-radius: 4px; word-break: break-all; display: flex; justify-content: space-between; align-items: center; gap: 6px;">
+              <span style="flex: 1;">"${escapeHtml(e.message)}"</span>
+              <button onclick="deleteWhisper(${idx})" title="Delete entry" style="background: none; border: none; color: #ff5d8f; cursor: pointer; font-size: 0.7rem; padding: 0 2px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#ff5d8f'">[✕]</button>
+            </div>
+          `).join('');
         } else if (container) {
           container.innerHTML = `<div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #9d4edd; padding: 5px 8px; border-radius: 4px; word-break: break-all;">no public whispers yet... leave one! :3</div>`;
         }
@@ -271,6 +293,27 @@
         if (container) container.innerHTML = `<div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #ff5d8f; padding: 5px 8px; border-radius: 4px;">failed to load notes >_<</div>`;
       }
     }
+
+    async function deleteWhisper(index) {
+      playTone([400, 100]);
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ index })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          showToast("[ deleted successfully! ]");
+          loadGuestbook();
+        } else {
+          showToast(`[ ${data.error || "unauthorized >_<"} ]`);
+        }
+      } catch (_) {
+        showToast("[ connection error ]");
+      }
+    }
+
     function escapeHtml(str) {
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
@@ -434,7 +477,7 @@
         spawnPatParticle(e);
         patCount = (Date.now() - lastPat < 800) ? patCount + 1 : 1;
         lastPat = Date.now();
-        if (el('pat-counter-badge')) el('pat-counter-badge').innerText = `pats: ${patCount} 🐾`;
+        if (el('pat-counter-badge')) el('pat-counter-badge').innerText = `pats: ${patCount}`;
         if (patCount === 5 && el('secret-popup') && el('popup-bubble')) {
           el('popup-bubble').innerText = "headpat combo x5! (*ฅ́˘ฅ̀*)";
           el('secret-popup').classList.add("show");
