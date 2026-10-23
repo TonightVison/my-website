@@ -159,11 +159,19 @@
         <i class="fa-solid fa-envelope"></i> send a whisper ♡
       </button>
 
-      <!-- Fully Dark, Non-Blinding Whisper Modal Box -->
+      <!-- Fully Dark Whisper Modal Box with Cooldown & Quick Presets -->
       <div id="dm-modal" class="dm-modal" style="display: none; flex-direction: column; gap: 8px; background: rgba(15, 10, 25, 0.95); border: 1px solid #7b2cbf; border-radius: 8px; padding: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.6);">
         <textarea id="dm-input" placeholder="leave a cute note or message... :3" maxlength="250" rows="3" style="width: 100%; resize: none; background: rgba(0, 0, 0, 0.6); border: 1px solid #9d4edd; color: #e0aaff; border-radius: 6px; padding: 8px; font-family: inherit; font-size: 0.8rem; outline: none;"></textarea>
-        <div style="display: flex; gap: 6px;">
-          <button onclick="sendWhisper()" style="flex: 1; background: rgba(123, 44, 191, 0.4); border: 1px solid #c77dff; color: #e0aaff; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">send ✈</button>
+        
+        <!-- Quick Vibe Presets -->
+        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+          <button onclick="setPreset('headpats delivered 🐾')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">headpats 🐾</button>
+          <button onclick="setPreset('cute profile >_<')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">cute profile >_<</button>
+          <button onclick="setPreset('love the music ♫')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">music ♫</button>
+        </div>
+
+        <div style="display: flex; gap: 6px; margin-top: 4px;">
+          <button id="send-whisper-btn" onclick="sendWhisper()" style="flex: 1; background: rgba(123, 44, 191, 0.4); border: 1px solid #c77dff; color: #e0aaff; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">send ✈</button>
           <button onclick="toggleDmBox()" style="flex: 1; background: rgba(30, 20, 40, 0.6); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.75rem;">cancel</button>
         </div>
       </div>
@@ -178,7 +186,7 @@
     const isOwner = (ip) => ip && (ip.toLowerCase().trim() === "75.72.136.90" || ip.toLowerCase().trim().startsWith("2601:441:8585:9f43"));
 
     const el = (id) => document.getElementById(id);
-    let userMuted = false, isSpotify = false, currSong = "", lastAction = 0, rawStatus = "", spotifyTs = null, patCount = 0, lastPat = 0, resolvedIp = "";
+    let userMuted = false, isSpotify = false, currSong = "", lastAction = 0, rawStatus = "", spotifyTs = null, patCount = 0, lastPat = 0, resolvedIp = "", lastWhisperTime = 0;
 
     /* Title Loops */
     const activeT = ["hi :3", "emo larp", "o_O", "watching u...", "stay here <3", "⛧", "thinking of u...", "(˶ᵔ ᵕ ᵔ˶)"];
@@ -206,7 +214,7 @@
     }, 1000);
     setInterval(() => gIdx = (gIdx + 1) % greetings.length, 6000);
 
-    /* Whisper Modal */
+    /* Whisper Modal & Presets */
     function toggleDmBox() {
       playTone([820, 140]);
       const modal = el('dm-modal'), btn = el('dm-toggle-btn');
@@ -217,9 +225,24 @@
       }
     }
 
+    function setPreset(text) {
+      playTone([820, 140]);
+      const input = el('dm-input');
+      if (input) input.value = text;
+    }
+
     async function sendWhisper() {
       const input = el('dm-input');
       if (!input || !input.value.trim()) { showToast("[ type something first! >_< ]"); return; }
+      
+      const now = Date.now();
+      const cooldownTime = 15000;
+      if (now - lastWhisperTime < cooldownTime) {
+        const remaining = Math.ceil((cooldownTime - (now - lastWhisperTime)) / 1000);
+        showToast(`[ wait ${remaining}s before next whisper! ]`);
+        return;
+      }
+
       const msg = input.value.trim();
       playTone([820, 140]);
       showToast("[ sending whisper... ]");
@@ -231,6 +254,7 @@
           body: JSON.stringify({ type: "whisper", message: msg, os: navigator.platform || "Unknown" })
         });
         if (res.ok) {
+          lastWhisperTime = Date.now();
           showToast("[ sent successfully! ♡ ]");
           input.value = "";
           toggleDmBox();
