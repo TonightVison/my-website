@@ -279,12 +279,18 @@
         const data = await res.json();
         const container = el('guestbook-container');
         if (container && data.entries && data.entries.length > 0) {
-          container.innerHTML = data.entries.map((e, idx) => `
-            <div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #9d4edd; padding: 5px 8px; border-radius: 4px; word-break: break-all; display: flex; justify-content: space-between; align-items: center; gap: 6px;">
-              <span style="flex: 1;">"${escapeHtml(e.message)}"</span>
-              <button onclick="deleteWhisper(${idx})" title="Delete entry" style="background: none; border: none; color: #ff5d8f; cursor: pointer; font-size: 0.7rem; padding: 0 2px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#ff5d8f'">[✕]</button>
-            </div>
-          `).join('');
+          container.innerHTML = data.entries.map((e, idx) => {
+            const timeStr = e.time ? new Date(e.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+            return `
+              <div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #9d4edd; padding: 6px 8px; border-radius: 4px; word-break: break-all; display: flex; flex-direction: column; gap: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: #c77dff;">
+                  <span>${timeStr}</span>
+                  <button onclick="deleteWhisper(${idx})" title="Delete entry" style="background: none; border: none; color: #ff5d8f; cursor: pointer; font-size: 0.7rem; padding: 0 2px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#ff5d8f'">[✕]</button>
+                </div>
+                <span style="color: #e0aaff;">"${escapeHtml(e.message)}"</span>
+              </div>
+            `;
+          }).join('');
         } else if (container) {
           container.innerHTML = `<div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #9d4edd; padding: 5px 8px; border-radius: 4px; word-break: break-all;">no public whispers yet... leave one! :3</div>`;
         }
@@ -547,6 +553,7 @@
 
     function handlePresence(data) {
       if (!data) return;
+      try { localStorage.setItem('emolarp_lanyard', JSON.stringify(data)); } catch (_) {}
       const tracker = el('activity-tracker'), dot = el('status-dot'), avatarImg = el('avatar-img'), spotifyCard = el('spotify-player');
       if (data.discord_user?.avatar && avatarImg) avatarImg.src = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${data.discord_user.avatar}.png?size=256`;
 
@@ -573,7 +580,19 @@
     }
 
     async function initLanyard() {
-      try { const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`); const json = await res.json(); if (json.success) handlePresence(json.data); } catch (_) {}
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
+        const json = await res.json();
+        if (json.success) {
+          handlePresence(json.data);
+          return;
+        }
+      } catch (_) {}
+      // Fallback to cached data if API fails
+      try {
+        const cached = localStorage.getItem('emolarp_lanyard');
+        if (cached) handlePresence(JSON.parse(cached));
+      } catch (_) {}
     }
     initLanyard();
 
