@@ -110,7 +110,7 @@
     </button>
 
     <div id="guestbook-panel" style="width: 290px; background: rgba(15, 10, 25, 0.95); border: 1px solid #7b2cbf; border-radius: 8px; padding: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.7); font-family: 'JetBrains Mono', monospace; color: #e0aaff; font-size: 0.75rem; flex-direction: column;">
-      <div id="guestbook-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(123, 44, 191, 0.4); padding-bottom: 6px; margin-bottom: 8px; font-weight: 600; color: #c77dff; cursor: grab;" title="Click & drag to move wall">
+      <div id="guestbook-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(123, 44, 191, 0.4); padding-bottom: 6px; margin-bottom: 8px; font-weight: 600; color: #c77dff;">
         <span><i class="fa-solid fa-book-open"></i> guestbook ✥</span>
         <div style="display: flex; align-items: center; gap: 6px;">
           <button onclick="triggerWidgetPat(event)" title="Give headpat :3" style="background: rgba(123,44,191,0.3); border: 1px solid #7b2cbf; color: #ff5d8f; border-radius: 4px; padding: 2px 5px; font-size: 0.65rem; cursor: pointer;">🐾 pat</button>
@@ -621,51 +621,6 @@
     card.addEventListener("pointermove", (e) => { if (isDrag) { card.style.left = `${initL + (e.clientX - startX)}px`; card.style.top = `${initT + (e.clientY - startY)}px`; } });
     const stopDrag = (e) => { if (isDrag) { isDrag = false; card.classList.remove("dragging"); try { card.releasePointerCapture(e.pointerId); } catch (_) {} } };
     card.addEventListener("pointerup", stopDrag); card.addEventListener("pointercancel", stopDrag);
-
-    // Optimized Butter-Smooth requestAnimationFrame Drag for Guestbook Panel
-    let isGbDrag = false, gbStartX = 0, gbStartY = 0, gbInitL = 0, gbInitT = 0, gbRafId = null;
-    const gbPanel = el('guestbook-panel');
-    const gbHeader = el('guestbook-header');
-    
-    gbHeader.addEventListener("pointerdown", (e) => {
-      if (e.target.closest("button")) return;
-      isGbDrag = true; 
-      gbPanel.setPointerCapture(e.pointerId);
-      const rect = gbPanel.getBoundingClientRect();
-      gbStartX = e.clientX; 
-      gbStartY = e.clientY; 
-      gbInitL = rect.left; 
-      gbInitT = rect.top;
-      Object.assign(gbPanel.style, { 
-        position: "fixed", 
-        left: `${gbInitL}px`, 
-        top: `${gbInitT}px`, 
-        margin: "0",
-        right: "auto",
-        bottom: "auto"
-      });
-    });
-
-    gbHeader.addEventListener("pointermove", (e) => {
-      if (!isGbDrag) return;
-      const currentX = e.clientX;
-      const currentY = e.clientY;
-      if (gbRafId) cancelAnimationFrame(gbRafId);
-      gbRafId = requestAnimationFrame(() => {
-        gbPanel.style.left = `${gbInitL + (currentX - gbStartX)}px`;
-        gbPanel.style.top = `${gbInitT + (currentY - gbStartY)}px`;
-      });
-    });
-
-    const stopGbDrag = (e) => {
-      if (isGbDrag) {
-        isGbDrag = false;
-        if (gbRafId) cancelAnimationFrame(gbRafId);
-        try { gbHeader.releasePointerCapture(e.pointerId); } catch (_) {}
-      }
-    };
-    gbHeader.addEventListener("pointerup", stopGbDrag); 
-    gbHeader.addEventListener("pointercancel", stopGbDrag);
 
     async function recordVisit() {
       try {
