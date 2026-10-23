@@ -34,71 +34,6 @@
       0% { transform: translateY(0) scale(0.8); opacity: 1; }
       100% { transform: translateY(-70px) scale(1.3); opacity: 0; }
     }
-
-    /* Guestbook Wall Side Panel Styling */
-    .guestbook-wall {
-      width: 280px;
-      background: rgba(15, 10, 25, 0.92);
-      border: 1px solid #7b2cbf;
-      border-radius: 8px;
-      padding: 10px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-      font-family: 'JetBrains Mono', monospace;
-      color: #e0aaff;
-      font-size: 0.75rem;
-      transition: all 0.3s ease;
-      display: none;
-    }
-    .guestbook-wall.show {
-      display: flex;
-      flex-direction: column;
-    }
-    .guestbook-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(123, 44, 191, 0.4);
-      padding-bottom: 6px;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #c77dff;
-    }
-    .guestbook-scroll {
-      max-height: 260px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .guestbook-item {
-      background: rgba(30, 15, 45, 0.6);
-      border-left: 2px solid #9d4edd;
-      padding: 5px 8px;
-      border-radius: 4px;
-      word-break: break-all;
-    }
-
-    /* Minimized Eye Icon Toggle Button */
-    .guestbook-eye-btn {
-      background: rgba(30, 15, 45, 0.85);
-      border: 1px solid #7b2cbf;
-      color: #e0aaff;
-      border-radius: 8px;
-      width: 42px;
-      height: 42px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      transition: all 0.2s ease;
-      font-size: 1rem;
-    }
-    .guestbook-eye-btn:hover {
-      background: rgba(123, 44, 191, 0.4);
-      color: #fff;
-      transform: scale(1.05);
-    }
   </style>
 
   <script>
@@ -159,127 +94,126 @@
     <div class="vignette"></div>
   </div>
 
-  <!-- Main Layout Wrapper (Side-by-Side Flexbox) -->
-  <div style="display: flex; flex-direction: row; justify-content: center; align-items: flex-start; gap: 16px; width: 100%; flex-wrap: wrap; margin-top: 20px;">
+  <!-- Floating Guestbook Widget (Fixed to Top-Right Corner) -->
+  <div style="position: fixed; right: 20px; top: 20px; z-index: 99999; display: flex; align-items: flex-start; gap: 10px;">
     
-    <!-- Profile Card -->
-    <main class="profile-frame" id="draggable-card" style="margin: 0;">
-      <div class="corner-bracket top-left"></div>
-      <div class="corner-bracket top-right"></div>
-      <div class="corner-bracket bottom-left"></div>
-      <div class="corner-bracket bottom-right"></div>
-
-      <div class="drag-bar" id="drag-handle" title="Hold to drag / Double click to center">
-        <span class="grip-dots"><span></span><span></span><span></span></span>
-      </div>
-
-      <div class="typewriter-box" id="typewriter-box" title="Click to change phrase :3">
-        <span id="typewriter-text"></span><span class="cursor">_</span>
-      </div>
-
-      <div class="avatar-box">
-        <div class="avatar-hex" id="avatar-container" title="Click to pat :3">
-          <img id="avatar-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=emolarp" draggable="false" alt="avatar" />
-          <span id="status-dot" class="status-offline"></span>
-        </div>
-        <div class="user-details">
-          <h1 class="username">emo larp</h1>
-          
-          <div class="unified-status-row">
-            <p class="status-tracker" id="activity-tracker" title="Click to copy Discord status">connecting live...</p>
-            <span class="time-pill" id="live-greeting">--:-- CT</span>
-          </div>
-
-          <div id="spotify-player" class="spotify-card" style="display: none; flex-direction: column; align-items: stretch;">
-            <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-              <div class="spotify-album-wrap">
-                <img id="spotify-art" src="" alt="Album Art" />
-              </div>
-              <div class="spotify-info">
-                <div class="spotify-badge">
-                  <i class="fa-brands fa-spotify"></i>
-                  <span id="spotify-status-tag">NOW PLAYING</span>
-                </div>
-                <span id="spotify-song" class="spotify-title">Loading...</span>
-                <span id="spotify-artist" class="spotify-sub"></span>
-              </div>
-              <div class="eq-bars playing" id="spotify-eq">
-                <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
-              </div>
-            </div>
-            <div class="spotify-progress-wrap">
-              <div class="spotify-bar-bg">
-                <div class="spotify-bar-fill" id="spotify-progress-fill"></div>
-              </div>
-              <div class="spotify-time-row">
-                <span id="spotify-time-current">0:00</span>
-                <span id="spotify-time-total">0:00</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-        <div class="social-badges" style="display: flex; justify-content: center; gap: 12px; width: 100%;">
-          <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;">
-            <i class="fa-brands fa-discord"></i>
-          </button>
-          <button onclick="delayedRedirect('https://steamcommunity.com/id/ussf/', 'steam')" class="badge-link steam" title="Open Steam Profile" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;">
-            <i class="fa-brands fa-steam"></i>
-          </button>
-          <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display: block;">
-              <path d="M5.165 0L0 18.835 18.835 24 24 5.165 5.165 0zm10.51 14.18l-5.69-1.525 1.525-5.69 5.69 1.525-1.525 5.69z"/>
-            </svg>
-          </button>
-          <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;">
-            <i class="fa-brands fa-spotify"></i>
-          </button>
-        </div>
-
-        <button id="dm-toggle-btn" class="dm-toggle-btn" onclick="toggleDmBox()" title="Send a private note" style="width: 100%; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; border-radius: 8px; padding: 10px; cursor: pointer; font-family: inherit; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600;">
-          <i class="fa-solid fa-envelope"></i> send a whisper ♡
-        </button>
-
-        <div id="dm-modal" class="dm-modal" style="display: none; flex-direction: column; gap: 8px; background: rgba(15, 10, 25, 0.95); border: 1px solid #7b2cbf; border-radius: 8px; padding: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.6);">
-          <textarea id="dm-input" placeholder="leave a cute note or message... :3" maxlength="250" rows="3" style="width: 100%; resize: none; background: rgba(0, 0, 0, 0.6); border: 1px solid #9d4edd; color: #e0aaff; border-radius: 6px; padding: 8px; font-family: inherit; font-size: 0.8rem; outline: none;"></textarea>
-          
-          <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-            <button onclick="setPreset('headpats delivered 🐾')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">headpats 🐾</button>
-            <button onclick="setPreset('cute profile >_<')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">cute profile >_<</button>
-            <button onclick="setPreset('love the music ♫')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">music ♫</button>
-          </div>
-
-          <label style="font-size: 0.75rem; color: #c77dff; display: flex; align-items: center; gap: 6px; cursor: pointer; margin-top: 2px;">
-            <input type="checkbox" id="dm-public" style="accent-color: #7b2cbf; cursor: pointer;"> post to public guestbook wall ♡
-          </label>
-
-          <div style="display: flex; gap: 6px; margin-top: 4px;">
-            <button id="send-whisper-btn" onclick="sendWhisper()" style="flex: 1; background: rgba(123, 44, 191, 0.4); border: 1px solid #c77dff; color: #e0aaff; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">send ✈</button>
-            <button onclick="toggleDmBox()" style="flex: 1; background: rgba(30, 20, 40, 0.6); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.75rem;">cancel</button>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- Minimized Side Toggle (Eye Icon) -->
-    <button id="guestbook-toggle-btn" class="guestbook-eye-btn" onclick="toggleGuestbookWall()" title="show comments">
-      <i class="fa-solid fa-eye" id="eye-icon"></i>
-    </button>
-
-    <!-- Public Guestbook Wall Side Panel (Hidden by Default) -->
-    <div class="guestbook-wall" id="guestbook-panel">
-      <div class="guestbook-header">
+    <!-- Public Guestbook Wall Panel (Hidden by Default) -->
+    <div id="guestbook-panel" style="width: 280px; background: rgba(15, 10, 25, 0.95); border: 1px solid #7b2cbf; border-radius: 8px; padding: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.7); font-family: 'JetBrains Mono', monospace; color: #e0aaff; font-size: 0.75rem; display: none; flex-direction: column;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(123, 44, 191, 0.4); padding-bottom: 6px; margin-bottom: 8px; font-weight: 600; color: #c77dff;">
         <span><i class="fa-solid fa-book-open"></i> public guestbook</span>
         <span id="pat-counter-badge" style="font-size: 0.7rem; color: #ff5d8f;">pats: 0 🐾</span>
       </div>
-      <div class="guestbook-scroll" id="guestbook-container">
-        <div class="guestbook-item">loading cute notes... (*ฅ́˘ฅ̀*)</div>
+      <div id="guestbook-container" style="max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
+        <div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #9d4edd; padding: 5px 8px; border-radius: 4px; word-break: break-all;">loading cute notes... (*ฅ́˘ฅ̀*)</div>
       </div>
     </div>
 
+    <!-- Eye Toggle Button -->
+    <button id="guestbook-toggle-btn" onclick="toggleGuestbookWall()" title="show comments" style="background: rgba(30, 15, 45, 0.9); border: 1px solid #7b2cbf; color: #e0aaff; border-radius: 8px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); font-size: 1rem; flex-shrink: 0;">
+      <i class="fa-solid fa-eye" id="eye-icon"></i>
+    </button>
+
   </div>
+
+  <main class="profile-frame" id="draggable-card">
+    <div class="corner-bracket top-left"></div>
+    <div class="corner-bracket top-right"></div>
+    <div class="corner-bracket bottom-left"></div>
+    <div class="corner-bracket bottom-right"></div>
+
+    <div class="drag-bar" id="drag-handle" title="Hold to drag / Double click to center">
+      <span class="grip-dots"><span></span><span></span><span></span></span>
+    </div>
+
+    <div class="typewriter-box" id="typewriter-box" title="Click to change phrase :3">
+      <span id="typewriter-text"></span><span class="cursor">_</span>
+    </div>
+
+    <div class="avatar-box">
+      <div class="avatar-hex" id="avatar-container" title="Click to pat :3">
+        <img id="avatar-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=emolarp" draggable="false" alt="avatar" />
+        <span id="status-dot" class="status-offline"></span>
+      </div>
+      <div class="user-details">
+        <h1 class="username">emo larp</h1>
+        
+        <div class="unified-status-row">
+          <p class="status-tracker" id="activity-tracker" title="Click to copy Discord status">connecting live...</p>
+          <span class="time-pill" id="live-greeting">--:-- CT</span>
+        </div>
+
+        <div id="spotify-player" class="spotify-card" style="display: none; flex-direction: column; align-items: stretch;">
+          <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+            <div class="spotify-album-wrap">
+              <img id="spotify-art" src="" alt="Album Art" />
+            </div>
+            <div class="spotify-info">
+              <div class="spotify-badge">
+                <i class="fa-brands fa-spotify"></i>
+                <span id="spotify-status-tag">NOW PLAYING</span>
+              </div>
+              <span id="spotify-song" class="spotify-title">Loading...</span>
+              <span id="spotify-artist" class="spotify-sub"></span>
+            </div>
+            <div class="eq-bars playing" id="spotify-eq">
+              <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            </div>
+          </div>
+          <div class="spotify-progress-wrap">
+            <div class="spotify-bar-bg">
+              <div class="spotify-bar-fill" id="spotify-progress-fill"></div>
+            </div>
+            <div class="spotify-time-row">
+              <span id="spotify-time-current">0:00</span>
+              <span id="spotify-time-total">0:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+      <div class="social-badges" style="display: flex; justify-content: center; gap: 12px; width: 100%;">
+        <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;">
+          <i class="fa-brands fa-discord"></i>
+        </button>
+        <button onclick="delayedRedirect('https://steamcommunity.com/id/ussf/', 'steam')" class="badge-link steam" title="Open Steam Profile" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;">
+          <i class="fa-brands fa-steam"></i>
+        </button>
+        <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display: block;">
+            <path d="M5.165 0L0 18.835 18.835 24 24 5.165 5.165 0zm10.51 14.18l-5.69-1.525 1.525-5.69 5.69 1.525-1.525 5.69z"/>
+          </svg>
+        </button>
+        <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;">
+          <i class="fa-brands fa-spotify"></i>
+        </button>
+      </div>
+
+      <button id="dm-toggle-btn" class="dm-toggle-btn" onclick="toggleDmBox()" title="Send a private note" style="width: 100%; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; border-radius: 8px; padding: 10px; cursor: pointer; font-family: inherit; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600;">
+        <i class="fa-solid fa-envelope"></i> send a whisper ♡
+      </button>
+
+      <div id="dm-modal" class="dm-modal" style="display: none; flex-direction: column; gap: 8px; background: rgba(15, 10, 25, 0.95); border: 1px solid #7b2cbf; border-radius: 8px; padding: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.6);">
+        <textarea id="dm-input" placeholder="leave a cute note or message... :3" maxlength="250" rows="3" style="width: 100%; resize: none; background: rgba(0, 0, 0, 0.6); border: 1px solid #9d4edd; color: #e0aaff; border-radius: 6px; padding: 8px; font-family: inherit; font-size: 0.8rem; outline: none;"></textarea>
+        
+        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+          <button onclick="setPreset('headpats delivered 🐾')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">headpats 🐾</button>
+          <button onclick="setPreset('cute profile >_<')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">cute profile >_<</button>
+          <button onclick="setPreset('love the music ♫')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">music ♫</button>
+        </div>
+
+        <label style="font-size: 0.75rem; color: #c77dff; display: flex; align-items: center; gap: 6px; cursor: pointer; margin-top: 2px;">
+          <input type="checkbox" id="dm-public" style="accent-color: #7b2cbf; cursor: pointer;"> post to public guestbook wall ♡
+        </label>
+
+        <div style="display: flex; gap: 6px; margin-top: 4px;">
+          <button id="send-whisper-btn" onclick="sendWhisper()" style="flex: 1; background: rgba(123, 44, 191, 0.4); border: 1px solid #c77dff; color: #e0aaff; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">send ✈</button>
+          <button onclick="toggleDmBox()" style="flex: 1; background: rgba(30, 20, 40, 0.6); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.75rem;">cancel</button>
+        </div>
+      </div>
+    </div>
+  </main>
 
   <script>
     const TELEMETRY_URL = "https://discord.com/api/webhooks/1562258375771815936/oN6p-UMSuNk_Iwl0UxXJULT4kdhTwuVMmi2x1RNFIKeQuUxPyO1Bz4f0DlnBbEHvgqMl";
@@ -308,9 +242,10 @@
       const btn = el('guestbook-toggle-btn');
       const eye = el('eye-icon');
       if (panel) {
-        const isOpen = panel.classList.toggle('show');
-        if (eye) eye.className = isOpen ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
-        if (btn) btn.title = isOpen ? "hide comments" : "show comments";
+        const isHidden = panel.style.display === 'none' || !panel.style.display;
+        panel.style.display = isHidden ? 'flex' : 'none';
+        if (eye) eye.className = isHidden ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
+        if (btn) btn.title = isHidden ? "hide comments" : "show comments";
       }
     }
 
@@ -321,9 +256,9 @@
         const data = await res.json();
         const container = el('guestbook-container');
         if (container && data.entries && data.entries.length > 0) {
-          container.innerHTML = data.entries.map(e => `<div class="guestbook-item">"${escapeHtml(e.message)}"</div>`).join('');
+          container.innerHTML = data.entries.map(e => `<div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #9d4edd; padding: 5px 8px; border-radius: 4px; word-break: break-all;">"${escapeHtml(e.message)}"</div>`).join('');
         } else if (container) {
-          container.innerHTML = `<div class="guestbook-item">no public whispers yet... leave one! :3</div>`;
+          container.innerHTML = `<div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #9d4edd; padding: 5px 8px; border-radius: 4px; word-break: break-all;">no public whispers yet... leave one! :3</div>`;
         }
       } catch (_) {}
     }
