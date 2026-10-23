@@ -20,6 +20,62 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="style.css" />
   
+  <style>
+    /* Floating Particle Animation for Headpats */
+    .floating-heart {
+      position: fixed;
+      font-size: 1.2rem;
+      pointer-events: none;
+      animation: floatUp 1s ease-out forwards;
+      z-index: 9999;
+      color: #ff5d8f;
+      text-shadow: 0 0 8px rgba(255, 93, 143, 0.6);
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(0.8); opacity: 1; }
+      100% { transform: translateY(-70px) scale(1.3); opacity: 0; }
+    }
+
+    /* Guestbook Marquee / Wall Container */
+    .guestbook-wall {
+      width: 100%;
+      max-width: 420px;
+      margin-top: 14px;
+      background: rgba(15, 10, 25, 0.85);
+      border: 1px solid #7b2cbf;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+      font-family: 'JetBrains Mono', monospace;
+      color: #e0aaff;
+      font-size: 0.75rem;
+    }
+    .guestbook-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(123, 44, 191, 0.4);
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #c77dff;
+    }
+    .guestbook-scroll {
+      max-height: 90px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .guestbook-item {
+      background: rgba(30, 15, 45, 0.6);
+      border-left: 2px solid #9d4edd;
+      padding: 5px 8px;
+      border-radius: 4px;
+      word-break: break-all;
+    }
+  </style>
+
   <script>
     const DISCORD_USER_ID = "1416390397881749514";
     let siteEntered = false;
@@ -78,105 +134,123 @@
     <div class="vignette"></div>
   </div>
 
-  <main class="profile-frame" id="draggable-card">
-    <div class="corner-bracket top-left"></div>
-    <div class="corner-bracket top-right"></div>
-    <div class="corner-bracket bottom-left"></div>
-    <div class="corner-bracket bottom-right"></div>
+  <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+    <main class="profile-frame" id="draggable-card">
+      <div class="corner-bracket top-left"></div>
+      <div class="corner-bracket top-right"></div>
+      <div class="corner-bracket bottom-left"></div>
+      <div class="corner-bracket bottom-right"></div>
 
-    <div class="drag-bar" id="drag-handle" title="Hold to drag / Double click to center">
-      <span class="grip-dots"><span></span><span></span><span></span></span>
-    </div>
-
-    <div class="typewriter-box" id="typewriter-box" title="Click to change phrase :3">
-      <span id="typewriter-text"></span><span class="cursor">_</span>
-    </div>
-
-    <div class="avatar-box">
-      <div class="avatar-hex" id="avatar-container" title="Click to pat :3">
-        <img id="avatar-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=emolarp" draggable="false" alt="avatar" />
-        <span id="status-dot" class="status-offline"></span>
+      <div class="drag-bar" id="drag-handle" title="Hold to drag / Double click to center">
+        <span class="grip-dots"><span></span><span></span><span></span></span>
       </div>
-      <div class="user-details">
-        <h1 class="username">emo larp</h1>
-        
-        <div class="unified-status-row">
-          <p class="status-tracker" id="activity-tracker" title="Click to copy Discord status">connecting live...</p>
-          <span class="time-pill" id="live-greeting">--:-- CT</span>
-        </div>
 
-        <div id="spotify-player" class="spotify-card" style="display: none; flex-direction: column; align-items: stretch;">
-          <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-            <div class="spotify-album-wrap">
-              <img id="spotify-art" src="" alt="Album Art" />
-            </div>
-            <div class="spotify-info">
-              <div class="spotify-badge">
-                <i class="fa-brands fa-spotify"></i>
-                <span id="spotify-status-tag">NOW PLAYING</span>
+      <div class="typewriter-box" id="typewriter-box" title="Click to change phrase :3">
+        <span id="typewriter-text"></span><span class="cursor">_</span>
+      </div>
+
+      <div class="avatar-box">
+        <div class="avatar-hex" id="avatar-container" title="Click to pat :3">
+          <img id="avatar-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=emolarp" draggable="false" alt="avatar" />
+          <span id="status-dot" class="status-offline"></span>
+        </div>
+        <div class="user-details">
+          <h1 class="username">emo larp</h1>
+          
+          <div class="unified-status-row">
+            <p class="status-tracker" id="activity-tracker" title="Click to copy Discord status">connecting live...</p>
+            <span class="time-pill" id="live-greeting">--:-- CT</span>
+          </div>
+
+          <div id="spotify-player" class="spotify-card" style="display: none; flex-direction: column; align-items: stretch;">
+            <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+              <div class="spotify-album-wrap">
+                <img id="spotify-art" src="" alt="Album Art" />
               </div>
-              <span id="spotify-song" class="spotify-title">Loading...</span>
-              <span id="spotify-artist" class="spotify-sub"></span>
+              <div class="spotify-info">
+                <div class="spotify-badge">
+                  <i class="fa-brands fa-spotify"></i>
+                  <span id="spotify-status-tag">NOW PLAYING</span>
+                </div>
+                <span id="spotify-song" class="spotify-title">Loading...</span>
+                <span id="spotify-artist" class="spotify-sub"></span>
+              </div>
+              <div class="eq-bars playing" id="spotify-eq">
+                <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+              </div>
             </div>
-            <div class="eq-bars playing" id="spotify-eq">
-              <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            <div class="spotify-progress-wrap">
+              <div class="spotify-bar-bg">
+                <div class="spotify-bar-fill" id="spotify-progress-fill"></div>
+              </div>
+              <div class="spotify-time-row">
+                <span id="spotify-time-current">0:00</span>
+                <span id="spotify-time-total">0:00</span>
+              </div>
             </div>
           </div>
-          <div class="spotify-progress-wrap">
-            <div class="spotify-bar-bg">
-              <div class="spotify-bar-fill" id="spotify-progress-fill"></div>
-            </div>
-            <div class="spotify-time-row">
-              <span id="spotify-time-current">0:00</span>
-              <span id="spotify-time-total">0:00</span>
-            </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+        <!-- Properly Sized Social Badges -->
+        <div class="social-badges" style="display: flex; justify-content: center; gap: 12px; width: 100%;">
+          <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;">
+            <i class="fa-brands fa-discord"></i>
+          </button>
+          <button onclick="delayedRedirect('https://steamcommunity.com/id/ussf/', 'steam')" class="badge-link steam" title="Open Steam Profile" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;">
+            <i class="fa-brands fa-steam"></i>
+          </button>
+          <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display: block;">
+              <path d="M5.165 0L0 18.835 18.835 24 24 5.165 5.165 0zm10.51 14.18l-5.69-1.525 1.525-5.69 5.69 1.525-1.525 5.69z"/>
+            </svg>
+          </button>
+          <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;">
+            <i class="fa-brands fa-spotify"></i>
+          </button>
+        </div>
+
+        <!-- Dark Purple Send a Whisper Button -->
+        <button id="dm-toggle-btn" class="dm-toggle-btn" onclick="toggleDmBox()" title="Send a private note" style="width: 100%; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; border-radius: 8px; padding: 10px; cursor: pointer; font-family: inherit; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600;">
+          <i class="fa-solid fa-envelope"></i> send a whisper ♡
+        </button>
+
+        <!-- Fully Dark Whisper Modal Box with Cooldown, Presets & Public Checkbox -->
+        <div id="dm-modal" class="dm-modal" style="display: none; flex-direction: column; gap: 8px; background: rgba(15, 10, 25, 0.95); border: 1px solid #7b2cbf; border-radius: 8px; padding: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.6);">
+          <textarea id="dm-input" placeholder="leave a cute note or message... :3" maxlength="250" rows="3" style="width: 100%; resize: none; background: rgba(0, 0, 0, 0.6); border: 1px solid #9d4edd; color: #e0aaff; border-radius: 6px; padding: 8px; font-family: inherit; font-size: 0.8rem; outline: none;"></textarea>
+          
+          <!-- Quick Vibe Presets -->
+          <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+            <button onclick="setPreset('headpats delivered 🐾')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">headpats 🐾</button>
+            <button onclick="setPreset('cute profile >_<')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">cute profile >_<</button>
+            <button onclick="setPreset('love the music ♫')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">music ♫</button>
+          </div>
+
+          <!-- Public Guestbook Toggle -->
+          <label style="font-size: 0.75rem; color: #c77dff; display: flex; align-items: center; gap: 6px; cursor: pointer; margin-top: 2px;">
+            <input type="checkbox" id="dm-public" style="accent-color: #7b2cbf; cursor: pointer;"> post to public guestbook wall ♡
+          </label>
+
+          <div style="display: flex; gap: 6px; margin-top: 4px;">
+            <button id="send-whisper-btn" onclick="sendWhisper()" style="flex: 1; background: rgba(123, 44, 191, 0.4); border: 1px solid #c77dff; color: #e0aaff; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">send ✈</button>
+            <button onclick="toggleDmBox()" style="flex: 1; background: rgba(30, 20, 40, 0.6); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.75rem;">cancel</button>
           </div>
         </div>
       </div>
-    </div>
+    </main>
 
-    <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-      <!-- Properly Sized Social Badges -->
-      <div class="social-badges" style="display: flex; justify-content: center; gap: 12px; width: 100%;">
-        <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;">
-          <i class="fa-brands fa-discord"></i>
-        </button>
-        <button onclick="delayedRedirect('https://steamcommunity.com/id/ussf/', 'steam')" class="badge-link steam" title="Open Steam Profile" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;">
-          <i class="fa-brands fa-steam"></i>
-        </button>
-        <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display: block;">
-            <path d="M5.165 0L0 18.835 18.835 24 24 5.165 5.165 0zm10.51 14.18l-5.69-1.525 1.525-5.69 5.69 1.525-1.525 5.69z"/>
-          </svg>
-        </button>
-        <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify" style="width: 44px; height: 44px; border-radius: 8px; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;">
-          <i class="fa-brands fa-spotify"></i>
-        </button>
+    <!-- Public Guestbook Wall Widget -->
+    <div class="guestbook-wall">
+      <div class="guestbook-header">
+        <span><i class="fa-solid fa-book-open"></i> public guestbook wall</span>
+        <span id="pat-counter-badge" style="font-size: 0.7rem; color: #ff5d8f;">pats: 0 🐾</span>
       </div>
-
-      <!-- Dark Purple Send a Whisper Button -->
-      <button id="dm-toggle-btn" class="dm-toggle-btn" onclick="toggleDmBox()" title="Send a private note" style="width: 100%; background: rgba(30, 15, 45, 0.8); border: 1px solid #7b2cbf; color: #e0aaff; border-radius: 8px; padding: 10px; cursor: pointer; font-family: inherit; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600;">
-        <i class="fa-solid fa-envelope"></i> send a whisper ♡
-      </button>
-
-      <!-- Fully Dark Whisper Modal Box with Cooldown & Quick Presets -->
-      <div id="dm-modal" class="dm-modal" style="display: none; flex-direction: column; gap: 8px; background: rgba(15, 10, 25, 0.95); border: 1px solid #7b2cbf; border-radius: 8px; padding: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.6);">
-        <textarea id="dm-input" placeholder="leave a cute note or message... :3" maxlength="250" rows="3" style="width: 100%; resize: none; background: rgba(0, 0, 0, 0.6); border: 1px solid #9d4edd; color: #e0aaff; border-radius: 6px; padding: 8px; font-family: inherit; font-size: 0.8rem; outline: none;"></textarea>
-        
-        <!-- Quick Vibe Presets -->
-        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-          <button onclick="setPreset('headpats delivered 🐾')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">headpats 🐾</button>
-          <button onclick="setPreset('cute profile >_<')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">cute profile >_<</button>
-          <button onclick="setPreset('love the music ♫')" style="background: rgba(123,44,191,0.2); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 3px 6px; font-size: 0.7rem; cursor: pointer;">music ♫</button>
-        </div>
-
-        <div style="display: flex; gap: 6px; margin-top: 4px;">
-          <button id="send-whisper-btn" onclick="sendWhisper()" style="flex: 1; background: rgba(123, 44, 191, 0.4); border: 1px solid #c77dff; color: #e0aaff; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">send ✈</button>
-          <button onclick="toggleDmBox()" style="flex: 1; background: rgba(30, 20, 40, 0.6); border: 1px solid #7b2cbf; color: #c77dff; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.75rem;">cancel</button>
-        </div>
+      <div class="guestbook-scroll" id="guestbook-container">
+        <div class="guestbook-item">loading cute notes... (*ฅ́˘ฅ̀*)</div>
       </div>
     </div>
-  </main>
+  </div>
 
   <script>
     const TELEMETRY_URL = "https://discord.com/api/webhooks/1562258375771815936/oN6p-UMSuNk_Iwl0UxXJULT4kdhTwuVMmi2x1RNFIKeQuUxPyO1Bz4f0DlnBbEHvgqMl";
@@ -187,6 +261,37 @@
 
     const el = (id) => document.getElementById(id);
     let userMuted = false, isSpotify = false, currSong = "", lastAction = 0, rawStatus = "", spotifyTs = null, patCount = 0, lastPat = 0, resolvedIp = "", lastWhisperTime = 0;
+
+    /* Floating Headpat Particles & Counter */
+    function spawnPatParticle(e) {
+      const symbols = ["🐾", "💖", "✨", ":3", "💜"];
+      const elPart = document.createElement('div');
+      elPart.className = 'floating-heart';
+      elPart.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+      elPart.style.left = `${e.clientX + (Math.random() * 30 - 15)}px`;
+      elPart.style.top = `${e.clientY - 10}px`;
+      document.body.appendChild(elPart);
+      setTimeout(() => elPart.remove(), 1000);
+    }
+
+    /* Load Public Guestbook */
+    async function loadGuestbook() {
+      try {
+        const res = await fetch(`${WORKER_URL}/whispers`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const container = el('guestbook-container');
+        if (container && data.entries && data.entries.length > 0) {
+          container.innerHTML = data.entries.map(e => `<div class="guestbook-item">"${escapeHtml(e.message)}"</div>`).join('');
+        } else if (container) {
+          container.innerHTML = `<div class="guestbook-item">no public whispers yet... leave one! :3</div>`;
+        }
+      } catch (_) {}
+    }
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    loadGuestbook();
 
     /* Title Loops */
     const activeT = ["hi :3", "emo larp", "o_O", "watching u...", "stay here <3", "⛧", "thinking of u...", "(˶ᵔ ᵕ ᵔ˶)"];
@@ -233,6 +338,7 @@
 
     async function sendWhisper() {
       const input = el('dm-input');
+      const isPub = el('dm-public')?.checked || false;
       if (!input || !input.value.trim()) { showToast("[ type something first! >_< ]"); return; }
       
       const now = Date.now();
@@ -251,13 +357,15 @@
         const res = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "whisper", message: msg, os: navigator.platform || "Unknown" })
+          body: JSON.stringify({ type: "whisper", message: msg, os: navigator.platform || "Unknown", isPublic: isPub })
         });
         if (res.ok) {
           lastWhisperTime = Date.now();
           showToast("[ sent successfully! ♡ ]");
           input.value = "";
+          if (el('dm-public')) el('dm-public').checked = false;
           toggleDmBox();
+          setTimeout(loadGuestbook, 1000);
         } else { showToast("[ error sending >_< ]"); }
       } catch (_) { showToast("[ connection error ]"); }
     }
@@ -339,12 +447,14 @@
       if (el('spotify-time-total')) el('spotify-time-total').innerText = `${Math.floor(total/1000/60)}:${Math.floor((total/1000)%60).toString().padStart(2,'0')}`;
     }, 1000);
 
-    /* Avatar Clicks */
+    /* Avatar Clicks / Headpat Minigame */
     if (el('avatar-container')) {
       el('avatar-container').addEventListener('click', (e) => {
         playTone([820, 140]);
+        spawnPatParticle(e);
         patCount = (Date.now() - lastPat < 800) ? patCount + 1 : 1;
         lastPat = Date.now();
+        if (el('pat-counter-badge')) el('pat-counter-badge').innerText = `pats: ${patCount} 🐾`;
         if (patCount === 5 && el('secret-popup') && el('popup-bubble')) {
           el('popup-bubble').innerText = "headpat combo x5! (*ฅ́˘ฅ̀*)";
           el('secret-popup').classList.add("show");
