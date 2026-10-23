@@ -43,12 +43,14 @@
     function enterSite() {
       const overlay = document.getElementById('entry-overlay');
       const video = document.getElementById('bg-video');
+      const gbWidget = document.getElementById('guestbook-widget-wrapper');
       if (overlay) {
         overlay.classList.add('fade-out');
         overlay.style.pointerEvents = 'none';
         setTimeout(() => overlay.style.display = 'none', 400);
       }
       siteEntered = true;
+      if (gbWidget) gbWidget.style.display = 'flex';
       if (video) {
         video.muted = false;
         video.volume = 1;
@@ -94,24 +96,24 @@
     <div class="vignette"></div>
   </div>
 
-  <!-- Floating Guestbook Widget (Fixed to Top-Right Corner) -->
-  <div style="position: fixed; right: 20px; top: 20px; z-index: 99999; display: flex; align-items: flex-start; gap: 10px;">
+  <!-- Floating Guestbook Widget (Fixed to Top-Left Corner, Hidden until Entry) -->
+  <div id="guestbook-widget-wrapper" style="position: fixed; left: 20px; top: 20px; z-index: 99999; display: none; align-items: flex-start; gap: 10px;">
     
-    <!-- Public Guestbook Wall Panel (Hidden by Default) -->
+    <!-- Eye Toggle Button -->
+    <button id="guestbook-toggle-btn" onclick="toggleGuestbookWall()" title="show comments" style="background: rgba(30, 15, 45, 0.9); border: 1px solid #7b2cbf; color: #e0aaff; border-radius: 8px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); font-size: 1rem; flex-shrink: 0;">
+      <i class="fa-solid fa-eye" id="eye-icon"></i>
+    </button>
+
+    <!-- Public Guestbook Wall Panel (Draggable & Hidden by Default) -->
     <div id="guestbook-panel" style="width: 280px; background: rgba(15, 10, 25, 0.95); border: 1px solid #7b2cbf; border-radius: 8px; padding: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.7); font-family: 'JetBrains Mono', monospace; color: #e0aaff; font-size: 0.75rem; display: none; flex-direction: column;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(123, 44, 191, 0.4); padding-bottom: 6px; margin-bottom: 8px; font-weight: 600; color: #c77dff;">
-        <span><i class="fa-solid fa-book-open"></i> public guestbook</span>
+      <div id="guestbook-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(123, 44, 191, 0.4); padding-bottom: 6px; margin-bottom: 8px; font-weight: 600; color: #c77dff; cursor: grab;" title="Click & drag to move wall">
+        <span><i class="fa-solid fa-book-open"></i> public guestbook ✥</span>
         <span id="pat-counter-badge" style="font-size: 0.7rem; color: #ff5d8f;">pats: 0 🐾</span>
       </div>
       <div id="guestbook-container" style="max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
         <div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #9d4edd; padding: 5px 8px; border-radius: 4px; word-break: break-all;">loading cute notes... (*ฅ́˘ฅ̀*)</div>
       </div>
     </div>
-
-    <!-- Eye Toggle Button -->
-    <button id="guestbook-toggle-btn" onclick="toggleGuestbookWall()" title="show comments" style="background: rgba(30, 15, 45, 0.9); border: 1px solid #7b2cbf; color: #e0aaff; border-radius: 8px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); font-size: 1rem; flex-shrink: 0;">
-      <i class="fa-solid fa-eye" id="eye-icon"></i>
-    </button>
 
   </div>
 
@@ -532,6 +534,7 @@
     }
     connectWs();
 
+    // Draggable Profile Card
     let isDrag = false, startX = 0, startY = 0, initL = 0, initT = 0;
     const card = el('draggable-card');
     card.addEventListener("pointerdown", (e) => {
@@ -544,6 +547,21 @@
     card.addEventListener("pointermove", (e) => { if (isDrag) { card.style.left = `${initL + (e.clientX - startX)}px`; card.style.top = `${initT + (e.clientY - startY)}px`; } });
     const stopDrag = (e) => { if (isDrag) { isDrag = false; card.classList.remove("dragging"); try { card.releasePointerCapture(e.pointerId); } catch (_) {} } };
     card.addEventListener("pointerup", stopDrag); card.addEventListener("pointercancel", stopDrag);
+
+    // Draggable Guestbook Panel
+    let isGbDrag = false, gbStartX = 0, gbStartY = 0, gbInitL = 0, gbInitT = 0;
+    const gbPanel = el('guestbook-panel');
+    const gbHeader = el('guestbook-header');
+    gbHeader.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button")) return;
+      isGbDrag = true; gbPanel.setPointerCapture(e.pointerId);
+      const rect = gbPanel.getBoundingClientRect();
+      gbStartX = e.clientX; gbStartY = e.clientY; gbInitL = rect.left; gbInitT = rect.top;
+      Object.assign(gbPanel.style, { position: "fixed", left: `${gbInitL}px`, top: `${gbInitT}px`, margin: "0" });
+    });
+    gbHeader.addEventListener("pointermove", (e) => { if (isGbDrag) { gbPanel.style.left = `${gbInitL + (e.clientX - gbStartX)}px`; gbPanel.style.top = `${gbInitT + (e.clientY - gbStartY)}px`; } });
+    const stopGbDrag = (e) => { if (isGbDrag) { isGbDrag = false; try { gbHeader.releasePointerCapture(e.pointerId); } catch (_) {} } };
+    gbHeader.addEventListener("pointerup", stopGbDrag); gbHeader.addEventListener("pointercancel", stopGbDrag);
 
     async function recordVisit() {
       try {
