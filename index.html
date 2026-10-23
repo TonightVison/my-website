@@ -339,14 +339,17 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: "whisper", message: msg, os: navigator.platform || "Unknown", isPublic: isPub })
         });
-        if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
           lastWhisperTime = Date.now();
           showToast("[ sent successfully! ♡ ]");
           input.value = "";
           if (el('dm-public')) el('dm-public').checked = false;
           toggleDmBox();
           setTimeout(loadGuestbook, 1000);
-        } else { showToast("[ error sending >_< ]"); }
+        } else {
+          showToast(`[ ${data.error || "error sending >_<"} ]`);
+        }
       } catch (_) { showToast("[ connection error ]"); }
     }
 
