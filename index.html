@@ -34,6 +34,14 @@
       0% { transform: translateY(0) scale(0.8); opacity: 1; }
       100% { transform: translateY(-70px) scale(1.3); opacity: 0; }
     }
+
+    /* Guestbook Panel Forced Visibility Classes */
+    #guestbook-panel {
+      display: none !important;
+    }
+    #guestbook-panel.show-panel {
+      display: flex !important;
+    }
   </style>
 
   <script>
@@ -96,7 +104,7 @@
     <div class="vignette"></div>
   </div>
 
-  <!-- Floating Guestbook Widget (Fixed to Top-Left Corner, Hidden until Entry) -->
+  <!-- Floating Guestbook Widget (Top-Left, Hidden Until Entry) -->
   <div id="guestbook-widget-wrapper" style="position: fixed; left: 20px; top: 20px; z-index: 99999; display: none; align-items: flex-start; gap: 10px;">
     
     <!-- Eye Toggle Button -->
@@ -105,7 +113,7 @@
     </button>
 
     <!-- Public Guestbook Wall Panel (Draggable & Hidden by Default) -->
-    <div id="guestbook-panel" style="width: 280px; background: rgba(15, 10, 25, 0.95); border: 1px solid #7b2cbf; border-radius: 8px; padding: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.7); font-family: 'JetBrains Mono', monospace; color: #e0aaff; font-size: 0.75rem; display: none; flex-direction: column;">
+    <div id="guestbook-panel" style="width: 280px; background: rgba(15, 10, 25, 0.95); border: 1px solid #7b2cbf; border-radius: 8px; padding: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.7); font-family: 'JetBrains Mono', monospace; color: #e0aaff; font-size: 0.75rem; flex-direction: column;">
       <div id="guestbook-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(123, 44, 191, 0.4); padding-bottom: 6px; margin-bottom: 8px; font-weight: 600; color: #c77dff; cursor: grab;" title="Click & drag to move wall">
         <span><i class="fa-solid fa-book-open"></i> public guestbook ✥</span>
         <span id="pat-counter-badge" style="font-size: 0.7rem; color: #ff5d8f;">pats: 0 🐾</span>
@@ -244,10 +252,10 @@
       const btn = el('guestbook-toggle-btn');
       const eye = el('eye-icon');
       if (panel) {
-        const isHidden = panel.style.display === 'none' || !panel.style.display;
-        panel.style.display = isHidden ? 'flex' : 'none';
-        if (eye) eye.className = isHidden ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
-        if (btn) btn.title = isHidden ? "hide comments" : "show comments";
+        const isOpen = panel.classList.toggle('show-panel');
+        if (eye) eye.className = isOpen ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
+        if (btn) btn.title = isOpen ? "hide comments" : "show comments";
+        if (isOpen) loadGuestbook();
       }
     }
 
@@ -262,7 +270,10 @@
         } else if (container) {
           container.innerHTML = `<div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #9d4edd; padding: 5px 8px; border-radius: 4px; word-break: break-all;">no public whispers yet... leave one! :3</div>`;
         }
-      } catch (_) {}
+      } catch (err) {
+        const container = el('guestbook-container');
+        if (container) container.innerHTML = `<div style="background: rgba(30, 15, 45, 0.6); border-left: 2px solid #ff5d8f; padding: 5px 8px; border-radius: 4px;">failed to load notes >_<</div>`;
+      }
     }
     function escapeHtml(str) {
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
