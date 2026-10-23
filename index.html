@@ -622,19 +622,50 @@
     const stopDrag = (e) => { if (isDrag) { isDrag = false; card.classList.remove("dragging"); try { card.releasePointerCapture(e.pointerId); } catch (_) {} } };
     card.addEventListener("pointerup", stopDrag); card.addEventListener("pointercancel", stopDrag);
 
-    let isGbDrag = false, gbStartX = 0, gbStartY = 0, gbInitL = 0, gbInitT = 0;
+    // Optimized Butter-Smooth requestAnimationFrame Drag for Guestbook Panel
+    let isGbDrag = false, gbStartX = 0, gbStartY = 0, gbInitL = 0, gbInitT = 0, gbRafId = null;
     const gbPanel = el('guestbook-panel');
     const gbHeader = el('guestbook-header');
+    
     gbHeader.addEventListener("pointerdown", (e) => {
       if (e.target.closest("button")) return;
-      isGbDrag = true; gbPanel.setPointerCapture(e.pointerId);
+      isGbDrag = true; 
+      gbPanel.setPointerCapture(e.pointerId);
       const rect = gbPanel.getBoundingClientRect();
-      gbStartX = e.clientX; gbStartY = e.clientY; gbInitL = rect.left; gbInitT = rect.top;
-      Object.assign(gbPanel.style, { position: "fixed", left: `${gbInitL}px`, top: `${gbInitT}px`, margin: "0" });
+      gbStartX = e.clientX; 
+      gbStartY = e.clientY; 
+      gbInitL = rect.left; 
+      gbInitT = rect.top;
+      Object.assign(gbPanel.style, { 
+        position: "fixed", 
+        left: `${gbInitL}px`, 
+        top: `${gbInitT}px`, 
+        margin: "0",
+        right: "auto",
+        bottom: "auto"
+      });
     });
-    gbHeader.addEventListener("pointermove", (e) => { if (isGbDrag) { gbPanel.style.left = `${gbInitL + (e.clientX - gbStartX)}px`; gbPanel.style.top = `${gbInitT + (e.clientY - gbStartY)}px`; } });
-    const stopGbDrag = (e) => { if (isGbDrag) { isGbDrag = false; try { gbHeader.releasePointerCapture(e.pointerId); } catch (_) {} } };
-    gbHeader.addEventListener("pointerup", stopGbDrag); gbHeader.addEventListener("pointercancel", stopGbDrag);
+
+    gbHeader.addEventListener("pointermove", (e) => {
+      if (!isGbDrag) return;
+      const currentX = e.clientX;
+      const currentY = e.clientY;
+      if (gbRafId) cancelAnimationFrame(gbRafId);
+      gbRafId = requestAnimationFrame(() => {
+        gbPanel.style.left = `${gbInitL + (currentX - gbStartX)}px`;
+        gbPanel.style.top = `${gbInitT + (currentY - gbStartY)}px`;
+      });
+    });
+
+    const stopGbDrag = (e) => {
+      if (isGbDrag) {
+        isGbDrag = false;
+        if (gbRafId) cancelAnimationFrame(gbRafId);
+        try { gbHeader.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
+    };
+    gbHeader.addEventListener("pointerup", stopGbDrag); 
+    gbHeader.addEventListener("pointercancel", stopGbDrag);
 
     async function recordVisit() {
       try {
