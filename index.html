@@ -312,12 +312,9 @@
         if (res.ok && data.success) {
           showToast("[ deleted successfully! ]");
           loadGuestbook();
-        } else {
-          showToast(`[ ${data.error || "unauthorized >_<"} ]`);
         }
-      } catch (_) {
-        showToast("[ connection error ]");
-      }
+        // Unauthorized/spam deletions happen silently without spamming error popups
+      } catch (_) {}
     }
 
     function escapeHtml(str) {
@@ -373,9 +370,7 @@
       const now = Date.now();
       const cooldownTime = 15000;
       if (now - lastWhisperTime < cooldownTime) {
-        const remaining = Math.ceil((cooldownTime - (now - lastWhisperTime)) / 1000);
-        showToast(`[ wait ${remaining}s before next whisper! ]`);
-        return;
+        return; // Silent block for client-side spam/cooldown
       }
 
       const msg = input.value.trim();
@@ -396,10 +391,9 @@
           if (el('dm-public')) el('dm-public').checked = false;
           toggleDmBox();
           setTimeout(loadGuestbook, 1000);
-        } else {
-          showToast(`[ ${data.error || "error sending >_<"} ]`);
         }
-      } catch (_) { showToast("[ connection error ]"); }
+        // Server-side rate limit/spam rejections happen silently without popping error toasts
+      } catch (_) {}
     }
 
     let audioCtx;
@@ -435,7 +429,11 @@
     };
 
     function showToast(msg) {
-      if (el('toast')) { el('toast').innerText = msg; el('toast').classList.add('visible'); setTimeout(() => el('toast').classList.remove('visible'), 1400); }
+      if (el('toast')) { 
+        el('toast').innerText = msg; 
+        el('toast').classList.add('visible'); 
+        setTimeout(() => el('toast').classList.remove('visible'), 2000); // 2 second popup duration
+      }
     }
 
     function delayedRedirect(url, name) {
@@ -588,7 +586,6 @@
           return;
         }
       } catch (_) {}
-      // Fallback to cached data if API fails
       try {
         const cached = localStorage.getItem('emolarp_lanyard');
         if (cached) handlePresence(JSON.parse(cached));
