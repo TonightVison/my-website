@@ -297,7 +297,7 @@
     async function deleteWhisper(index) {
       playTone([400, 100]);
       try {
-        const res = await fetch(WORKER_URL, {
+        const res = await fetch(`${WORKER_URL}/whispers`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ index })
