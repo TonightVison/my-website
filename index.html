@@ -247,7 +247,7 @@
 
     function triggerWidgetPat(e) {
       const now = Date.now();
-      if (now - lastPat < 300) return; // Silent cooldown against spam clicking
+      if (now - lastPat < 300) return;
       lastPat = now;
       e.stopPropagation();
       playTone([820, 140]);
@@ -482,7 +482,7 @@
     if (el('avatar-container')) {
       el('avatar-container').addEventListener('click', (e) => {
         const now = Date.now();
-        if (now - lastPat < 300) return; // Silent cooldown against spam clicking
+        if (now - lastPat < 300) return;
         lastPat = now;
         playTone([820, 140]);
         spawnPatParticle(e);
