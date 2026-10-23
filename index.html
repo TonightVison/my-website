@@ -246,11 +246,13 @@
     }
 
     function triggerWidgetPat(e) {
+      const now = Date.now();
+      if (now - lastPat < 300) return; // Silent cooldown against spam clicking
+      lastPat = now;
       e.stopPropagation();
       playTone([820, 140]);
       spawnPatParticle(e);
-      patCount = (Date.now() - lastPat < 800) ? patCount + 1 : 1;
-      lastPat = Date.now();
+      patCount = patCount + 1;
       if (el('pat-counter-badge')) el('pat-counter-badge').innerText = `pats: ${patCount}`;
       if (patCount === 5 && el('secret-popup') && el('popup-bubble')) {
         el('popup-bubble').innerText = "headpat combo x5! (*ฅ́˘ฅ̀*)";
@@ -479,10 +481,12 @@
 
     if (el('avatar-container')) {
       el('avatar-container').addEventListener('click', (e) => {
+        const now = Date.now();
+        if (now - lastPat < 300) return; // Silent cooldown against spam clicking
+        lastPat = now;
         playTone([820, 140]);
         spawnPatParticle(e);
-        patCount = (Date.now() - lastPat < 800) ? patCount + 1 : 1;
-        lastPat = Date.now();
+        patCount = patCount + 1;
         if (el('pat-counter-badge')) el('pat-counter-badge').innerText = `pats: ${patCount}`;
         if (patCount === 5 && el('secret-popup') && el('popup-bubble')) {
           el('popup-bubble').innerText = "headpat combo x5! (*ฅ́˘ฅ̀*)";
