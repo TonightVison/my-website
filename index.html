@@ -168,22 +168,38 @@
       </div>
     </div>
 
-    <!-- Social Badges with Official Roblox Vector -->
-    <div class="social-badges">
-      <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile">
-        <i class="fa-brands fa-discord"></i>
+    <!-- Social Badges & Secret Whisper Toggle -->
+    <div class="social-badges-container" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+      <div class="social-badges" style="display: flex; justify-content: center; gap: 10px;">
+        <button onclick="delayedRedirect('https://discord.com/users/1416390397881749514', 'discord')" class="badge-link discord" title="Open Discord Profile">
+          <i class="fa-brands fa-discord"></i>
+        </button>
+        <button onclick="delayedRedirect('https://steamcommunity.com/id/ussf/', 'steam')" class="badge-link steam" title="Open Steam Profile">
+          <i class="fa-brands fa-steam"></i>
+        </button>
+        <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display: block;">
+            <path d="M5.165 0L0 18.835 18.835 24 24 5.165 5.165 0zm10.51 14.18l-5.69-1.525 1.525-5.69 5.69 1.525-1.525 5.69z"/>
+          </svg>
+        </button>
+        <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify">
+          <i class="fa-brands fa-spotify"></i>
+        </button>
+      </div>
+
+      <!-- Secret Whisper / DM Box Trigger -->
+      <button id="dm-toggle-btn" class="dm-toggle-btn" onclick="toggleDmBox()" title="Send a private note">
+        <i class="fa-solid fa-envelope"></i> send a whisper ♡
       </button>
-      <button onclick="delayedRedirect('https://steamcommunity.com/id/ussf/', 'steam')" class="badge-link steam" title="Open Steam Profile">
-        <i class="fa-brands fa-steam"></i>
-      </button>
-      <button onclick="delayedRedirect('https://www.roblox.com/users/1871164209/profile', 'roblox')" class="badge-link roblox" title="Open Roblox Profile">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display: block;">
-          <path d="M5.165 0L0 18.835 18.835 24 24 5.165 5.165 0zm10.51 14.18l-5.69-1.525 1.525-5.69 5.69 1.525-1.525 5.69z"/>
-        </svg>
-      </button>
-      <button onclick="delayedRedirect('https://open.spotify.com/user/31u5ifxsp3j6dg773hocztyiirfq?si=e51e78c289c84457', 'spotify')" class="badge-link spotify" title="Open Spotify">
-        <i class="fa-brands fa-spotify"></i>
-      </button>
+
+      <!-- Whisper Modal Box -->
+      <div id="dm-modal" class="dm-modal" style="display: none; flex-direction: column; gap: 6px;">
+        <textarea id="dm-input" placeholder="leave a cute note or message... :3" maxlength="250" rows="3" style="width: 100%; resize: none; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 6px; padding: 8px; font-family: inherit; font-size: 0.8rem;"></textarea>
+        <div class="dm-btn-row" style="display: flex; gap: 6px;">
+          <button onclick="sendWhisper()" class="dm-send-btn" style="flex: 1; background: rgba(123, 44, 191, 0.3); border: 1px solid var(--border-color); color: var(--light-purple); border-radius: 4px; padding: 4px; cursor: pointer; font-size: 0.75rem;">send ✈</button>
+          <button onclick="toggleDmBox()" class="dm-cancel-btn" style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-dim); border-radius: 4px; padding: 4px; cursor: pointer; font-size: 0.75rem;">cancel</button>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -285,7 +301,7 @@
       document.title = isSpotifyActive && currentSpotifySong ? "♫ " + currentSpotifySong + " :3" : "hi :3";
     });
 
-    /* Central Time Clock & Silly Rotating Boykisser Pill */
+    /* Central Time Clock & Silly Boykisser Rotating Pill */
     const greetingPhrases = [
       "boykisser mode",
       "thigh high socks",
@@ -319,6 +335,52 @@
       greetingIndex = (greetingIndex + 1) % greetingPhrases.length;
     }, 6000);
     updateClockAndGreeting();
+
+    /* Secret Whisper Modal Logic */
+    function toggleDmBox() {
+      playGlitchBlip();
+      const modal = document.getElementById('dm-modal');
+      const btn = document.getElementById('dm-toggle-btn');
+      if (modal) {
+        const isHidden = modal.style.display === 'none';
+        modal.style.display = isHidden ? 'flex' : 'none';
+        if (btn) btn.style.display = isHidden ? 'none' : 'block';
+      }
+    }
+
+    async function sendWhisper() {
+      const input = document.getElementById('dm-input');
+      if (!input || !input.value.trim()) {
+        showToast("[ type something first! >_< ]");
+        return;
+      }
+
+      const messageText = input.value.trim();
+      playGlitchBlip();
+      showToast("[ sending whisper... ]");
+
+      try {
+        const res = await fetch("", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "whisper",
+            message: messageText,
+            os: navigator.platform || "Unknown"
+          })
+        });
+
+        if (res.ok) {
+          showToast("[ sent successfully! ♡ ]");
+          input.value = "";
+          toggleDmBox();
+        } else {
+          showToast("[ error sending >_< ]");
+        }
+      } catch (err) {
+        showToast("[ connection error ]");
+      }
+    }
 
     /* Web Audio Synthesizer */
     let audioCtx;
@@ -982,7 +1044,7 @@
     let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
 
     card.addEventListener("pointerdown", function(e) {
-      if (e.target.closest("a") || e.target.closest("button") || e.target.closest(".spotify-card") || e.target.closest("#activity-tracker") || e.target.closest(".typewriter-box") || e.target.closest("#avatar-container")) return;
+      if (e.target.closest("a") || e.target.closest("button") || e.target.closest(".spotify-card") || e.target.closest("#activity-tracker") || e.target.closest(".typewriter-box") || e.target.closest("#avatar-container") || e.target.closest("#dm-modal") || e.target.closest("#dm-input")) return;
 
       isDragging = true;
       card.classList.add("dragging");
