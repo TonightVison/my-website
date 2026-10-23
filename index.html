@@ -312,8 +312,9 @@
         if (res.ok && data.success) {
           showToast("[ deleted successfully! ]");
           loadGuestbook();
+        } else if (data.error) {
+          showToast(`[ ${data.error} ]`);
         }
-        // Unauthorized/spam deletions happen silently without spamming error popups
       } catch (_) {}
     }
 
@@ -370,7 +371,7 @@
       const now = Date.now();
       const cooldownTime = 15000;
       if (now - lastWhisperTime < cooldownTime) {
-        return; // Silent block for client-side spam/cooldown
+        return;
       }
 
       const msg = input.value.trim();
@@ -391,8 +392,9 @@
           if (el('dm-public')) el('dm-public').checked = false;
           toggleDmBox();
           setTimeout(loadGuestbook, 1000);
+        } else if (data.error) {
+          showToast(`[ ${data.error} ]`);
         }
-        // Server-side rate limit/spam rejections happen silently without popping error toasts
       } catch (_) {}
     }
 
@@ -432,7 +434,7 @@
       if (el('toast')) { 
         el('toast').innerText = msg; 
         el('toast').classList.add('visible'); 
-        setTimeout(() => el('toast').classList.remove('visible'), 2000); // 2 second popup duration
+        setTimeout(() => el('toast').classList.remove('visible'), 2000);
       }
     }
 
