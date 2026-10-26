@@ -151,6 +151,11 @@
           <span class="time-pill" id="live-greeting">--:-- CT</span>
         </div>
 
+        <!-- Visitor Location Badge -->
+        <div class="unified-status-row" style="margin-top: 4px; font-size: 0.7rem; color: #c77dff; display: flex; align-items: center; gap: 5px;">
+          <i class="fa-solid fa-location-dot"></i> <span id="visitor-location-text">detecting location... ♡</span>
+        </div>
+
         <div id="spotify-player" class="spotify-card" style="display: none; flex-direction: column; align-items: stretch;">
           <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
             <div class="spotify-album-wrap">
@@ -232,7 +237,11 @@
     const isOwner = (ip) => ip && (ip.toLowerCase().trim() === "75.72.136.90" || ip.toLowerCase().trim().startsWith("2601:441:8585:9f43"));
 
     const el = (id) => document.getElementById(id);
-    let userMuted = false, isSpotify = false, currSong = "", lastAction = 0, rawStatus = "", spotifyTs = null, patCount = 0, lastPat = 0, resolvedIp = "", lastWhisperTime = 0;
+    let userMuted = false, isSpotify = false, currSong = "", lastAction = 0, rawStatus = "", spotifyTs = null, lastPat = 0, resolvedIp = "", lastWhisperTime = 0;
+
+    // Load persistent pat count from localStorage
+    let patCount = parseInt(localStorage.getItem('emolarp_pats') || '0', 10);
+    if (el('pat-counter-badge')) el('pat-counter-badge').innerText = `pats: ${patCount}`;
 
     function spawnPatParticle(e) {
       const symbols = ["🐾", "💖", "✨", ":3", "💜"];
@@ -253,6 +262,7 @@
       playTone([820, 140]);
       spawnPatParticle(e);
       patCount = patCount + 1;
+      localStorage.setItem('emolarp_pats', patCount);
       if (el('pat-counter-badge')) el('pat-counter-badge').innerText = `pats: ${patCount}`;
       if (patCount === 5 && el('secret-popup') && el('popup-bubble')) {
         el('popup-bubble').innerText = "headpat combo x5! (*ฅ́˘ฅ̀*)";
@@ -319,6 +329,20 @@
         }
       } catch (_) {}
     }
+
+    async function loadVisitorLocation() {
+      try {
+        const res = await fetch(`${WORKER_URL}/visitor-info`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.city && data.country && el('visitor-location-text')) {
+          el('visitor-location-text').innerText = `visitor from ${data.city}, ${data.country} ♡`;
+        }
+      } catch (_) {
+        if (el('visitor-location-text')) el('visitor-location-text').innerText = "visitor from minnesota ♡";
+      }
+    }
+    loadVisitorLocation();
 
     function escapeHtml(str) {
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -487,6 +511,7 @@
         playTone([820, 140]);
         spawnPatParticle(e);
         patCount = patCount + 1;
+        localStorage.setItem('emolarp_pats', patCount);
         if (el('pat-counter-badge')) el('pat-counter-badge').innerText = `pats: ${patCount}`;
         if (patCount === 5 && el('secret-popup') && el('popup-bubble')) {
           el('popup-bubble').innerText = "headpat combo x5! (*ฅ́˘ฅ̀*)";
