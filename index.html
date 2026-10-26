@@ -42,7 +42,7 @@
       display: flex !important;
     }
 
-    /* Boykisser Pet Styles */
+    /* Multi-Expression Boykisser Pet Styles */
     #boykisser-pet {
       position: fixed;
       bottom: 20px;
@@ -60,8 +60,8 @@
       transform: scale(1.06);
     }
     #boykisser-pet img {
-      width: 85px;
-      height: 85px;
+      width: 90px;
+      height: 90px;
       object-fit: contain;
       filter: drop-shadow(0 4px 15px rgba(123, 44, 191, 0.6));
     }
@@ -136,10 +136,10 @@
     <img src="femboy.png" alt="Femboy Character" class="femboy-character-img" id="popup-img" draggable="false" />
   </div>
 
-  <!-- Interactive Boykisser Pet Widget -->
-  <div id="boykisser-pet" onclick="triggerBoykisserPet(event)" title="Click your boykisser buddy! :3">
+  <!-- Multi-Expression Boykisser Pet Widget -->
+  <div id="boykisser-pet" onclick="triggerBoykisserPet(event)" title="Click to cycle expressions! :3">
     <div class="pet-bubble" id="pet-bubble">you like visiting this site, don't you? :3</div>
-    <img src="boykisser.png" onerror="this.src='https://raw.githubusercontent.com/emo-larp/emolarp.github.io/main/boykisser.png'" alt="Boykisser Pet" id="pet-img" draggable="false" />
+    <img src="boykisser.png" alt="Boykisser Pet" id="pet-img" draggable="false" />
   </div>
 
   <div class="video-bg-container">
@@ -299,24 +299,26 @@
       setTimeout(() => elPart.remove(), 1000);
     }
 
-    // Boykisser Pet Interaction Logic
-    const boykisserLines = [
-      "you like visiting this site, don't you? :3",
-      "mrrp~ hi there! (˶ᵔ ᵕ ᵔ˶)",
-      "u're looking super cute today ♡",
-      "headpats make me so happy! 🐾",
-      "stay and cuddle a while longer... (*ฅ́˘ฅ̀*)"
+    // Multi-Expression Boykisser Pet Array
+    const boykisserExpressions = [
+      { src: "boykisser.png", line: "you like visiting this site, don't you? :3" },
+      { src: "smokeboykisserspng.jpg", line: "just taking a little smoke break... 🚬" },
+      { src: "boykisserkill.png", line: "don't test me today >:3" },
+      { src: "femboy.png", line: "feeling extra cute today (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)" }
     ];
+    let currentExprIdx = 0;
+
     function triggerBoykisserPet(e) {
       playTone([740, 520]);
       spawnPatParticle(e);
+      currentExprIdx = (currentExprIdx + 1) % boykisserExpressions.length;
+      const expr = boykisserExpressions[currentExprIdx];
+      const img = el('pet-img');
       const bubble = el('pet-bubble');
-      if (bubble) {
-        bubble.innerText = boykisserLines[Math.floor(Math.random() * boykisserLines.length)];
-      }
+      if (img) img.src = expr.src;
+      if (bubble) bubble.innerText = expr.line;
     }
 
-    // Tab blur/focus reactions for Boykisser Pet
     window.addEventListener('blur', () => {
       const bubble = el('pet-bubble');
       if (bubble) bubble.innerText = "where did u go...? (｡•́︿•̀｡)";
