@@ -41,6 +41,47 @@
     #guestbook-panel.show-panel {
       display: flex !important;
     }
+
+    /* Boykisser Pet Styles */
+    #boykisser-pet {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9998;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s ease;
+    }
+    #boykisser-pet:hover {
+      transform: scale(1.06);
+    }
+    #boykisser-pet img {
+      width: 85px;
+      height: 85px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 15px rgba(123, 44, 191, 0.6));
+    }
+    .pet-bubble {
+      background: rgba(15, 10, 25, 0.95);
+      border: 1px solid #7b2cbf;
+      color: #e0aaff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      max-width: 190px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+      animation: floatBubble 3s ease-in-out infinite alternate;
+    }
+    @keyframes floatBubble {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-4px); }
+    }
   </style>
 
   <script>
@@ -93,6 +134,12 @@
   <div id="secret-popup" title="Click me! :3">
     <div class="secret-bubble" id="popup-bubble">nyaa~ meow! :3</div>
     <img src="femboy.png" alt="Femboy Character" class="femboy-character-img" id="popup-img" draggable="false" />
+  </div>
+
+  <!-- Interactive Boykisser Pet Widget -->
+  <div id="boykisser-pet" onclick="triggerBoykisserPet(event)" title="Click your boykisser buddy! :3">
+    <div class="pet-bubble" id="pet-bubble">you like visiting this site, don't you? :3</div>
+    <img src="boykisser.png" onerror="this.src='https://raw.githubusercontent.com/emo-larp/emolarp.github.io/main/boykisser.png'" alt="Boykisser Pet" id="pet-img" draggable="false" />
   </div>
 
   <div class="video-bg-container">
@@ -151,7 +198,6 @@
           <span class="time-pill" id="live-greeting">--:-- CT</span>
         </div>
 
-        <!-- Visitor Location Badge -->
         <div class="unified-status-row" style="margin-top: 4px; font-size: 0.7rem; color: #c77dff; display: flex; align-items: center; gap: 5px;">
           <i class="fa-solid fa-location-dot"></i> <span id="visitor-location-text">detecting location... ♡</span>
         </div>
@@ -239,7 +285,6 @@
     const el = (id) => document.getElementById(id);
     let userMuted = false, isSpotify = false, currSong = "", lastAction = 0, rawStatus = "", spotifyTs = null, lastPat = 0, resolvedIp = "", lastWhisperTime = 0;
 
-    // Load persistent pat count from localStorage
     let patCount = parseInt(localStorage.getItem('emolarp_pats') || '0', 10);
     if (el('pat-counter-badge')) el('pat-counter-badge').innerText = `pats: ${patCount}`;
 
@@ -253,6 +298,33 @@
       document.body.appendChild(elPart);
       setTimeout(() => elPart.remove(), 1000);
     }
+
+    // Boykisser Pet Interaction Logic
+    const boykisserLines = [
+      "you like visiting this site, don't you? :3",
+      "mrrp~ hi there! (˶ᵔ ᵕ ᵔ˶)",
+      "u're looking super cute today ♡",
+      "headpats make me so happy! 🐾",
+      "stay and cuddle a while longer... (*ฅ́˘ฅ̀*)"
+    ];
+    function triggerBoykisserPet(e) {
+      playTone([740, 520]);
+      spawnPatParticle(e);
+      const bubble = el('pet-bubble');
+      if (bubble) {
+        bubble.innerText = boykisserLines[Math.floor(Math.random() * boykisserLines.length)];
+      }
+    }
+
+    // Tab blur/focus reactions for Boykisser Pet
+    window.addEventListener('blur', () => {
+      const bubble = el('pet-bubble');
+      if (bubble) bubble.innerText = "where did u go...? (｡•́︿•̀｡)";
+    });
+    window.addEventListener('focus', () => {
+      const bubble = el('pet-bubble');
+      if (bubble) bubble.innerText = "yay u're back! welcome back 💖";
+    });
 
     function triggerWidgetPat(e) {
       const now = Date.now();
