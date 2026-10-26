@@ -41,6 +41,22 @@
     #guestbook-panel.show-panel {
       display: flex !important;
     }
+
+    /* Sparkling Paw Print Cursor Trail Styles */
+    .paw-trail {
+      position: fixed;
+      font-size: 0.9rem;
+      pointer-events: none;
+      z-index: 99999;
+      transform: translate(-50%, -50%);
+      animation: fadeAndRise 0.8s ease-out forwards;
+      color: #ff5d8f;
+      text-shadow: 0 0 6px rgba(255, 93, 143, 0.6);
+    }
+    @keyframes fadeAndRise {
+      0% { transform: translate(-50%, -50%) scale(0.6); opacity: 1; }
+      100% { transform: translate(-50%, -65px) scale(1.1); opacity: 0; }
+    }
   </style>
 
   <script>
@@ -251,6 +267,22 @@
       document.body.appendChild(elPart);
       setTimeout(() => elPart.remove(), 1000);
     }
+
+    // Sparkling Paw Print Cursor Trail Logic
+    const pawSymbols = ["🐾", "✨", "💜"];
+    let lastPawTime = 0;
+    window.addEventListener('mousemove', (e) => {
+      const now = Date.now();
+      if (now - lastPawTime < 70) return;
+      lastPawTime = now;
+      const paw = document.createElement('div');
+      paw.className = 'paw-trail';
+      paw.innerText = pawSymbols[Math.floor(Math.random() * pawSymbols.length)];
+      paw.style.left = `${e.clientX}px`;
+      paw.style.top = `${e.clientY}px`;
+      document.body.appendChild(paw);
+      setTimeout(() => paw.remove(), 800);
+    });
 
     function triggerWidgetPat(e) {
       const now = Date.now();
