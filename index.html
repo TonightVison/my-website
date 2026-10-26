@@ -41,47 +41,6 @@
     #guestbook-panel.show-panel {
       display: flex !important;
     }
-
-    /* Multi-Expression Boykisser Pet Styles */
-    #boykisser-pet {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 9998;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 6px;
-      cursor: pointer;
-      user-select: none;
-      transition: transform 0.2s ease;
-    }
-    #boykisser-pet:hover {
-      transform: scale(1.06);
-    }
-    #boykisser-pet img {
-      width: 90px;
-      height: 90px;
-      object-fit: contain;
-      filter: drop-shadow(0 4px 15px rgba(123, 44, 191, 0.6));
-    }
-    .pet-bubble {
-      background: rgba(15, 10, 25, 0.95);
-      border: 1px solid #7b2cbf;
-      color: #e0aaff;
-      padding: 6px 10px;
-      border-radius: 8px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      max-width: 190px;
-      text-align: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.7);
-      animation: floatBubble 3s ease-in-out infinite alternate;
-    }
-    @keyframes floatBubble {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-4px); }
-    }
   </style>
 
   <script>
@@ -134,12 +93,6 @@
   <div id="secret-popup" title="Click me! :3">
     <div class="secret-bubble" id="popup-bubble">nyaa~ meow! :3</div>
     <img src="femboy.png" alt="Femboy Character" class="femboy-character-img" id="popup-img" draggable="false" />
-  </div>
-
-  <!-- Multi-Expression Boykisser Pet Widget -->
-  <div id="boykisser-pet" onclick="triggerBoykisserPet(event)" title="Click to cycle expressions! :3">
-    <div class="pet-bubble" id="pet-bubble">you like visiting this site, don't you? :3</div>
-    <img src="boykisser.png" alt="Boykisser Pet" id="pet-img" draggable="false" />
   </div>
 
   <div class="video-bg-container">
@@ -298,35 +251,6 @@
       document.body.appendChild(elPart);
       setTimeout(() => elPart.remove(), 1000);
     }
-
-    // Multi-Expression Boykisser Pet Array
-    const boykisserExpressions = [
-      { src: "boykisser.png", line: "you like visiting this site, don't you? :3" },
-      { src: "smokeboykisserspng.jpg", line: "just taking a little smoke break... 🚬" },
-      { src: "boykisserkill.png", line: "don't test me today >:3" },
-      { src: "femboy.png", line: "feeling extra cute today (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)" }
-    ];
-    let currentExprIdx = 0;
-
-    function triggerBoykisserPet(e) {
-      playTone([740, 520]);
-      spawnPatParticle(e);
-      currentExprIdx = (currentExprIdx + 1) % boykisserExpressions.length;
-      const expr = boykisserExpressions[currentExprIdx];
-      const img = el('pet-img');
-      const bubble = el('pet-bubble');
-      if (img) img.src = expr.src;
-      if (bubble) bubble.innerText = expr.line;
-    }
-
-    window.addEventListener('blur', () => {
-      const bubble = el('pet-bubble');
-      if (bubble) bubble.innerText = "where did u go...? (｡•́︿•̀｡)";
-    });
-    window.addEventListener('focus', () => {
-      const bubble = el('pet-bubble');
-      if (bubble) bubble.innerText = "yay u're back! welcome back 💖";
-    });
 
     function triggerWidgetPat(e) {
       const now = Date.now();
