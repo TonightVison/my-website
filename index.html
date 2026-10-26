@@ -42,16 +42,16 @@
       display: flex !important;
     }
 
-    /* Sparkling Paw Print Cursor Trail Styles */
+    /* Pink Paw Print Cursor Trail Styles */
     .paw-trail {
       position: fixed;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       pointer-events: none;
       z-index: 99999;
       transform: translate(-50%, -50%);
       animation: fadeAndRise 0.8s ease-out forwards;
       color: #ff5d8f;
-      text-shadow: 0 0 6px rgba(255, 93, 143, 0.6);
+      text-shadow: 0 0 8px rgba(255, 93, 143, 0.7);
     }
     @keyframes fadeAndRise {
       0% { transform: translate(-50%, -50%) scale(0.6); opacity: 1; }
@@ -268,8 +268,7 @@
       setTimeout(() => elPart.remove(), 1000);
     }
 
-    // Sparkling Paw Print Cursor Trail Logic
-    const pawSymbols = ["🐾", "✨", "💜"];
+    // Pink Paw Print Cursor Trail Logic (Exclusively 🐾)
     let lastPawTime = 0;
     window.addEventListener('mousemove', (e) => {
       const now = Date.now();
@@ -277,7 +276,7 @@
       lastPawTime = now;
       const paw = document.createElement('div');
       paw.className = 'paw-trail';
-      paw.innerText = pawSymbols[Math.floor(Math.random() * pawSymbols.length)];
+      paw.innerText = "🐾";
       paw.style.left = `${e.clientX}px`;
       paw.style.top = `${e.clientY}px`;
       document.body.appendChild(paw);
